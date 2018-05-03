@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+"e1839a8" = {path = ".", editable = true}
+tinydb = "*"
+gitpython = "*"
+
+[dev-packages]
+"flake8" = "*"
+pylint = "*"
+
+[requires]
+python_version = "3.6"
