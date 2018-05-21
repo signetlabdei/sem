@@ -1,12 +1,7 @@
-import pprint
-
-
 def print_campaign_information(campaign):
     """
     Print information about the current campaign.
     """
-    pprint.PrettyPrinter(indent=4).print(
-        campaign.db.get_campaign_information())
 
 
 def get_current_commit(path):
