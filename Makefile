@@ -5,8 +5,8 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = sem
-SOURCEDIR     = .
-BUILDDIR      = _build
+SOURCEDIR     = ./docs
+BUILDDIR      = ./docs/_build
 
 # Put it first so that "make" without argument is like "make help".
 help:
