@@ -54,6 +54,12 @@ class CampaignManager(object):
 
         return cls(db, runner)
 
+    #############
+    # Utilities #
+    #############
+
+    def __str__(self):
+        return "--- Campaign info ---\n%s\n------------" % self.db
 
     ######################
     # Simulation running #
