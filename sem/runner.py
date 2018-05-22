@@ -1,3 +1,7 @@
+import subprocess
+import re
+
+
 class SimulationRunner(object):
     """
     The class tasked with running simulations.
@@ -7,11 +11,44 @@ class SimulationRunner(object):
     # Initialization #
     ##################
 
-    def __init__(self, db):
+    def __init__(self, path, script):
         """
-        Initialization, using a DatabaseManager.
+        Initialization function.
         """
-        self.db = db
+
+        # Check whether path points to a valid installation
+        if subprocess.run(
+                "./waf", cwd=path, stdout=subprocess.PIPE).returncode != 0:
+            raise ValueError(
+                "Path does not point to a valid ns-3 installation")
+
+        # Check script is available
+        if script not in str(subprocess.run(["./waf", 'list'], cwd=path,
+                                            stdout=subprocess.PIPE).stdout):
+            raise ValueError(
+                "Script is not a valid ns-3 program name")
+
+        self.path = path
+        self.script = script
+
+    #############
+    # Utilities #
+    #############
+
+    def get_available_parameters(self):
+        """
+        Return a list of the parameters made available by the script.
+        """
+        result = subprocess.check_output(['./waf', '--run', '%s --PrintHelp' %
+                                          self.script], cwd=self.path).decode(
+                                             'utf-8')
+        options = re.findall('.*Program\sOptions:(.*)General\sArguments.*',
+                             result, re.DOTALL)
+        if len(options):
+            args = re.findall('.*--(.*?):.*', options[0], re.MULTILINE)
+            return args
+        else:
+            return []
 
     ######################
     # Simulation running #
