@@ -1,40 +1,59 @@
-import pprint
 from .database import DatabaseManager
 from .runner import SimulationRunner
 
 
 class CampaignManager(object):
     """
-    The main Simulation Execution Manager class, which can be used to load,
-    save, execute and access the results of simulation campaigns.
+    The main Simulation Execution Manager class can be used to load, save,
+    execute and access the results of simulation campaigns.
     """
 
     #######################################
     # Campaign initialization and loading #
     #######################################
 
-    def __init__(self, campaign_db):
+    def __init__(self, campaign_db, campaign_runner):
         """
         Initialize the Simulation Execution Manager.
         """
         self.db = campaign_db
-        self.runner = SimulationRunner(self.db)
+        self.runner = campaign_runner
 
     @classmethod
-    def new_from_config(cls, campaign_config, filename):
+    def new(cls, path, script, filename):
         """
-        Read a dictionary describing the campaign configuration and initialize
-        a corresponding campaign database.
+        Initialize a campaign database based on a script and ns-3 path.
         """
-        # return cls(campaign_db)
+        # Create a runner for the desired configuration
+        runner = SimulationRunner(path, script)
+
+        # Get list of available parameters
+        params = runner.get_available_parameters()
+
+        # Create a database manager from configuration
+        config = {
+            'script': script,
+            'path': path,
+            'params': params
+        }
+
+        db = DatabaseManager.new(config, filename)
+
+        return cls(db, runner)
 
     @classmethod
-    def load_from_file(cls, filename):
+    def load(cls, filename):
         """
         Read a filename and load the corresponding campaign database.
         """
-        # Create DatabaseManager from file
-        # return cls(campaign_db)
+        # Read from database
+        db = DatabaseManager.load(filename)
+
+        # Create a runner
+        runner = SimulationRunner(db.get_path(), db.get_script())
+
+        return cls(db, runner)
+
 
     ######################
     # Simulation running #
