@@ -1,5 +1,6 @@
 from .database import DatabaseManager
 from .runner import SimulationRunner
+from git import Repo
 
 
 class CampaignManager(object):
@@ -30,11 +31,17 @@ class CampaignManager(object):
         # Get list of available parameters
         params = runner.get_available_parameters()
 
+        # Repository check
+        # TODO Make sure there are no staged/unstaged changes
+        # Get current commit
+        commit = Repo(path).head.commit.hexsha
+
         # Create a database manager from configuration
         config = {
             'script': script,
             'path': path,
-            'params': params
+            'params': params,
+            'commit': commit
         }
 
         db = DatabaseManager.new(config, filename)

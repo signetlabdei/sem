@@ -16,10 +16,10 @@ filename = "/tmp/wifi-tcp-sims.json"
 # Create campaign
 #################
 
-# if (Path(filename).exists()):
-#     os.remove(filename)
-# campaign = CampaignManager.new(ns_path, script, filename)
-campaign = CampaignManager.load(filename)
+if (Path(filename).exists()):
+    os.remove(filename)
+campaign = CampaignManager.new(ns_path, script, filename)
+# campaign = CampaignManager.load(filename)
 
 print(campaign)
 
@@ -43,8 +43,8 @@ param_space = [dict(zip(param_ranges, v)) for v in
                product(*param_ranges.values())]
 
 # Visualize parameter space
-for param in param_space:
-    print(param)
+# for param in param_space:
+#     print(param)
 
 # campaign.run_simulations(param_space)
 

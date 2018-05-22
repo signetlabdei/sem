@@ -4,12 +4,6 @@ def print_campaign_information(campaign):
     """
 
 
-def get_current_commit(path):
-    """
-    Return a string containing the hash of the current commit.
-    """
-
-
 def get_parameter_combinations(parameter_space):
     """
     Return a list of all parameter combinations that lie in the specified

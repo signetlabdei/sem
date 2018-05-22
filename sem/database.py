@@ -51,7 +51,8 @@ class DatabaseManager(object):
         # Make sure the configuration is a valid dictionary
         if set(tinydb.table('config').all()[0].keys()) != set(['script',
                                                                'path',
-                                                               'params']):
+                                                               'params',
+                                                               'commit']):
             raise ValueError("Existing database is corrupt")
 
         return cls(tinydb)
@@ -62,9 +63,9 @@ class DatabaseManager(object):
 
     def __str__(self):
         configuration = self.db.table('config').all()[0]
-        return "ns-3 path: %s\nscript: %s\nparams: %s" % (
-            configuration["path"], configuration["script"],
-            configuration["params"])
+        return "ns-3 path: %s\nscript: %s\nparams: %s\ncommit: %s" % (
+            configuration['path'], configuration['script'],
+            configuration['params'], configuration['commit'])
 
     ###################
     # Database access #
