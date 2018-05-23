@@ -12,6 +12,7 @@ gitpython = "*"
 "flake8" = "*"
 pylint = "*"
 sphinx = "*"
+pygments = "*"
 
 [requires]
 python_version = "3.6"

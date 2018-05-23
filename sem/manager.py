@@ -72,7 +72,7 @@ class CampaignManager(object):
     # Simulation running #
     ######################
 
-    def run_simulations(self, parameter_space):
+    def run_simulations(self, param_list):
         """
         Run the missing simulations from a dictionary containing parameter -
         array of values pairs, defining the parameter space to explore.

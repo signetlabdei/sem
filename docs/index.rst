@@ -7,11 +7,16 @@ them for processing.
 
 User's guide
 ------------
+.. toctree::
+   :hidden:
+
+   self
 
 .. toctree::
    :maxdepth: 2
 
-   quick-start
+   intro
+   getting-started
 
 API Reference
 -------------

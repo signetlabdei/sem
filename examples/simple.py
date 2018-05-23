@@ -16,10 +16,10 @@ filename = "/tmp/wifi-tcp-sims.json"
 # Create campaign
 #################
 
-if (Path(filename).exists()):
-    os.remove(filename)
-campaign = CampaignManager.new(ns_path, script, filename)
-# campaign = CampaignManager.load(filename)
+# if (Path(filename).exists()):
+    # os.remove(filename)
+# campaign = CampaignManager.new(ns_path, script, filename)
+campaign = CampaignManager.load(filename)
 
 print(campaign)
 
