@@ -24,6 +24,10 @@ The following lines give an example:
    >>> filename = "/tmp/wifi-tcp-sims.json"
    >>> campaign = CampaignManager.new(ns_path, script, filename)
 
+Internally, SEM also checks whether the path points to a valid ns-3
+installation and whether the script is available or not. An error is
+also raised if the filename points to an already existing file.
+
 CampaignManager objects can be directly printed to inspect the status
 of the campaign:
 
@@ -33,11 +37,19 @@ of the campaign:
    --- Campaign info ---
    ns-3 path: /tmp/ns-3-dev-gsoc/
    script: wifi-tcp
-   params: ['payloadSize', 'dataRate', 'tcpVariant', 'phyRate', 'simulationTime', 'pcap']
+   params: ['payloadSize', 'dataRate', 'tcpVariant', 'phyRate',
+            'simulationTime', 'pcap']
    commit: 9386dc7d106fd9241ff151195a0e6e5cb954d363
-   ------------
+   ---------------------
 
 Note that, additionally to the path and script we specified in the
 campaign creation process, SEM also retrieved a list of the available
 script parameters and the SHA of the current HEAD of the git
 repository at the ns-3 path.
+
+..
+   Running simulations
+   -------------------
+
+   Exporting results
+   -----------------
