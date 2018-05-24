@@ -1,7 +1,7 @@
-# This is a simple example of how to use the ns-3 SimulationExecutionManager
+# This is an example showing how to use the ns-3 SimulationExecutionManager to
+# run simulations exploring a parameter space
 
 from sem import CampaignManager
-from itertools import product
 import os
 from pathlib import Path
 
@@ -26,25 +26,15 @@ print(campaign)
 # Run some simulations
 ######################
 
-param_ranges = {
-    'payloadSize': [1472/2, 1472],
-    'dataRate': ['100Mbps'],
-    'tcpVariant': ['TcpHybla', 'TcpHighSpeed', 'TcpHtcp', 'TcpVegas',
-                   'TcpScalable', 'TcpVeno', 'TcpBic', 'TcpYeah',
-                   'TcpIllinois', 'TcpWestwood', 'TcpWestwoodPlus',
-                   'TcpLedbat'],
-    'phyRate': ['HtMcs7'],
-    'simulationTime': [4],
-    'pcap': ['false'],
-    'runs': [10]
+param_combination = {
+    'payloadSize': 1472/2,
+    'dataRate': '100Mbps',
+    'tcpVariant': 'TcpHybla',
+    'phyRate': 'HtMcs7',
+    'simulationTime': 4,
+    'pcap': 'false',
+    'runs': 10
 }
-
-param_space = [dict(zip(param_ranges, v)) for v in
-               product(*param_ranges.values())]
-
-# Visualize parameter space
-# for param in param_space:
-#     print(param)
 
 # campaign.run_simulations(param_space)
 
