@@ -1,5 +1,7 @@
 from tinydb import TinyDB, Query
 from pathlib import Path
+from functools import reduce
+from operator import and_
 
 
 class DatabaseManager(object):
@@ -62,7 +64,7 @@ class DatabaseManager(object):
     #############
 
     def __str__(self):
-        configuration = self.db.table('config').all()[0]
+        configuration = self.get_config()
         return "ns-3 path: %s\nscript: %s\nparams: %s\ncommit: %s" % (
             configuration['path'], configuration['script'],
             configuration['params'], configuration['commit'])
@@ -76,6 +78,7 @@ class DatabaseManager(object):
         Return the configuration dictionary of this DatabaseManager's campaign
         """
         # Read from self.db and return the config entry of the database
+        return self.db.table('config').all()[0]
 
     def get_path(self):
         return self.db.table('config').all()[0]['path']
@@ -83,21 +86,70 @@ class DatabaseManager(object):
     def get_script(self):
         return self.db.table('config').all()[0]['script']
 
-    def get_results(self, parameters):
-        """
-        Return the currently available results which correspond to the
-        specified parameter space.
-
-        parameters: dictionary containing name-value(s) pairs for each one of
-        the available parameters.
-        """
-
-    def insert_config(self, config):
-        """
-        Insert a configuration in the database.
-        """
+    def get_params(self):
+        return self.db.table('config').all()[0]['params']
 
     def insert_result(self, result):
         """
         Insert a new result in the database.
+
+        This function also verifies that the result dictionaries saved in the
+        database have the following fields:
+
+        * One key for each available script parameter
+        * A run key (with the employed RngRun as a value)
+        * A stdout key (with the output of the script as a value)
         """
+
+        # Verify result format is correct
+        expected = set(result.keys())
+        got = (set(self.get_params()) | set(['run', 'stdout']))
+        if (expected != got):
+            raise ValueError(
+                '%s:\nExpected: %s\nGot: %s' % (
+                    "Result dictionary does not correspond to database format",
+                    expected,
+                    got))
+
+        # Insert result
+        self.db.table('results').insert(result)
+
+    def get_results(self, params=None):
+        """
+        Get an iterator over all results corresponding to the specified
+        parameter combination.
+
+        If params is not specified, return all results.
+        If params is specified, it must be a dictionary specifying the results
+        we are interested in.
+        """
+
+        # In this case, return all results
+        if params is None:
+            return self.db.table('results').all()
+
+        # Verify parameter format is correct
+        all_params = set(self.get_params())
+        param_subset = set(params.keys())
+        if (not all_params.issuperset(param_subset)):
+            raise ValueError(
+                '%s:\nParameters: %s\nQuery: %s' % (
+                    'Specified parameter keys do not match database format',
+                    all_params,
+                    param_subset))
+
+        # Create the TinyDB query, by &-ing multiple single-key queries
+        #
+        # We use the .any() format of TinyDB query since we want the query to
+        # match if the key is any one of the values specified in the params
+        # value array
+        queries = (Query()[key].any(value) for key, value in params.items())
+        final_query = reduce(and_, queries)
+
+        return self.db.table('results').search(final_query)
+
+    def wipe_results(self):
+        """
+        Removes all results from the database.
+        """
+        self.db.purge_table('results')
