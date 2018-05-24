@@ -16,15 +16,14 @@ filename = "/tmp/wifi-tcp-sims.json"
 # Create campaign
 #################
 
-# if (Path(filename).exists()):
-    # os.remove(filename)
-# campaign = CampaignManager.new(ns_path, script, filename)
-campaign = CampaignManager.load(filename)
+if (Path(filename).exists()):
+    os.remove(filename)
+campaign = CampaignManager.new(ns_path, script, filename)
 
 print(campaign)
 
-# Run some simulations
-######################
+# Run a simulation
+##################
 
 param_combination = {
     'payloadSize': 1472,
@@ -32,10 +31,9 @@ param_combination = {
     'tcpVariant': 'TcpHybla',
     'phyRate': 'HtMcs7',
     'simulationTime': 4,
-    'pcap': 'false',
-    'runs': 10
+    'pcap': 'false'
 }
 
-# campaign.run_simulations(param_space)
+campaign.run_single_simulation(param_combination)
 
 # campaign.get_results_as_numpy_array(param_space)

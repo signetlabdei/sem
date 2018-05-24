@@ -58,6 +58,13 @@ class SimulationRunner(object):
         """
         Run a simulation using a certain combination of parameters.
         """
+        command = ' '.join(['./waf --run "', self.script] + ['--%s=%s' % (param, value) for param, value in parameters.items()] + ['"'])
+
+        print (command)
+        print (self.path)
+
+        subprocess.run(command, cwd=self.path)
+                       # , stdout=subprocess.PIPE)
 
     def run_missing_simulations(self, parameter_space):
         """

@@ -72,12 +72,13 @@ class CampaignManager(object):
     # Simulation running #
     ######################
 
-    def run_simulations(self, param_list):
+    def run_single_simulation(self, param_combination):
         """
-        Run the missing simulations from a dictionary containing parameter -
-        array of values pairs, defining the parameter space to explore.
+        Run the simulations from a dictionary containing parameter/value pairs,
+        defining the parameter combination to simulate.
         """
         # Offload simulation execution to self.runner
+        self.runner.run_single_simulation(param_combination)
 
     #####################
     # Result management #
