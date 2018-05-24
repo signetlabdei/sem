@@ -1,5 +1,5 @@
 # This is an example showing how to use the ns-3 SimulationExecutionManager to
-# run simulations exploring a parameter space
+# run a single simulation and view the result.
 
 from sem import CampaignManager
 import os
@@ -27,7 +27,7 @@ print(campaign)
 ######################
 
 param_combination = {
-    'payloadSize': 1472/2,
+    'payloadSize': 1472,
     'dataRate': '100Mbps',
     'tcpVariant': 'TcpHybla',
     'phyRate': 'HtMcs7',
