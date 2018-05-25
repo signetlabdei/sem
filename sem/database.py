@@ -89,6 +89,11 @@ class DatabaseManager(object):
     def get_params(self):
         return self.db.table('config').all()[0]['params']
 
+    def get_next_rngrun(self):
+        if (len(self.get_results()) == 0):
+            return 0
+        return 1+max([result['RngRun'] for result in self.get_results()])
+
     def insert_result(self, result):
         """
         Insert a new result in the database.
@@ -97,13 +102,13 @@ class DatabaseManager(object):
         database have the following fields:
 
         * One key for each available script parameter
-        * A run key (with the employed RngRun as a value)
+        * A RngRun key (with the employed RngRun as a value)
         * A stdout key (with the output of the script as a value)
         """
 
         # Verify result format is correct
         expected = set(result.keys())
-        got = (set(self.get_params()) | set(['run', 'stdout']))
+        got = (set(self.get_params()) | set(['RngRun', 'stdout']))
         if (expected != got):
             raise ValueError(
                 '%s:\nExpected: %s\nGot: %s' % (
