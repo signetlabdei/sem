@@ -23,7 +23,12 @@ pipenv install
 If a development environment is needed, the `Pipfile`'s `dev-packages`
 can be installed by attaching the `--dev` flag to the above command.
 
-After
+After this step, a sub-shell using the new virtual environment can be
+created by calling:
+
+```bash
+pipenv shell
+```
 
 ## Documentation ##
 
