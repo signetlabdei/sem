@@ -23,11 +23,6 @@ class SimulationRunner(object):
             raise ValueError(
                 "Path does not point to a valid ns-3 installation")
 
-        # Import
-        sys.path.append(path)
-        print(sys.path)
-        import wscript
-
         # Check script is available
         if script not in str(subprocess.run(["./waf", 'list'], cwd=path,
                                             stdout=subprocess.PIPE).stdout):
@@ -64,20 +59,13 @@ class SimulationRunner(object):
         """
         Run a simulation using a certain combination of parameters.
         """
-        # command = ' '.join(['--%s=%s' % (param, value) for param, value in parameters.items()])
-        # command = '%s %s' % (self.script, command)
-
-        # print(command)
-        # print(self.path)
-
-        # return subprocess.run(['./waf', '--run', command], cwd=self.path,
-        #                       stdout=subprocess.PIPE).stdout
-        command = ['--%s=%s' % (param, value) for param, value in parameters.items()]
+        command = ' '.join(['--%s=%s' % (param, value) for param, value in parameters.items()])
+        command = '%s %s' % (self.script, command)
 
         print(command)
         print(self.path)
 
-        return subprocess.run(['./build/', '--run', command], cwd=self.path,
+        return subprocess.run(['./waf', '--run', command], cwd=self.path,
                               stdout=subprocess.PIPE).stdout
 
     def run_missing_simulations(self, parameter_space):
