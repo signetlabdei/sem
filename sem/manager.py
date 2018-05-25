@@ -77,8 +77,17 @@ class CampaignManager(object):
         Run the simulations from a dictionary containing parameter/value pairs,
         defining the parameter combination to simulate.
         """
+        # Compute next RngRun value
+        param_combination['RngRun'] = self.db.get_next_rngrun()
+
         # Offload simulation execution to self.runner
-        self.runner.run_single_simulation(param_combination)
+        result = {}
+        result.update(param_combination)
+
+        result['stdout'] = str(self.runner.run_single_simulation(
+            param_combination).decode('utf-8'))
+
+        self.db.insert_result(result)
 
     #####################
     # Result management #

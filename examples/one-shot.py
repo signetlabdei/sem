@@ -34,6 +34,10 @@ param_combination = {
     'pcap': 'false'
 }
 
+print("Next RngRun: %s" % campaign.db.get_next_rngrun())
 campaign.run_single_simulation(param_combination)
+print("Next RngRun: %s" % campaign.db.get_next_rngrun())
+
+print(campaign.db.get_results())
 
 # campaign.get_results_as_numpy_array(param_space)
