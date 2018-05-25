@@ -7,7 +7,7 @@ from os import path
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
-with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     readme = f.read()
 
 with open(path.join(here, 'LICENSE'), encoding='utf-8') as f:
@@ -18,6 +18,7 @@ setup(
     version='0.1.0',
     description='A simulation execution manager for ns-3',
     long_description=readme,
+    long_description_content_type='text/markdown',
     author='Davide Magrin',
     author_email='magrinda@dei.unipd.it',
     keywords='ns-3 simulation execution',
