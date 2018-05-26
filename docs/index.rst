@@ -3,7 +3,7 @@ Welcome to SEM
 
 SEM, a Simulation Execution Manager for ns-3, can help you efficiently
 perform multiple simulations, easily manage the results and export
-them for processing.
+them for processing with a few lines of Python code.
 
 User's guide
 ------------
@@ -15,7 +15,6 @@ User's guide
 .. toctree::
    :maxdepth: 2
 
-   intro
    getting-started
 
 API Reference

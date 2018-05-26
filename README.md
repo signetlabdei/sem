@@ -1,7 +1,7 @@
 # A Simulation Execution Manager for ns-3 #
 
-A Python library to perform multiple ns-3 script executions, manage the results
-and collect them in processing-friendly data structures.
+A Python library to perform multiple ns-3 script executions, manage
+the results and collect them in processing-friendly data structures.
 
 ## Building the module ##
 
@@ -20,8 +20,9 @@ requirements with the following:
 pipenv install
 ```
 
-If a development environment is needed, the `Pipfile`'s `dev-packages`
-can be installed by attaching the `--dev` flag to the above command.
+If a development environment is also desired, the `Pipfile`'s
+`dev-packages` can be installed by attaching the `--dev` flag to the
+command above.
 
 After this step, a sub-shell using the new virtual environment can be
 created by calling:
@@ -29,6 +30,9 @@ created by calling:
 ```bash
 pipenv shell
 ```
+
+From here, the examples in `examples/` can be run and a python
+REPL can be started to use the library interactively.
 
 ## Documentation ##
 
