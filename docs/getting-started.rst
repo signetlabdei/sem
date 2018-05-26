@@ -2,9 +2,12 @@ Getting started
 ===============
 
 SEM operates on a simulation campaign paradigm. Simulation campaigns
-are accessible through a CampaignManager object. Through this class
-it's possible to create new campaigns, load existing ones, run
-simulations and export results.
+are thought as a collection of results obtained from running an ns-3
+simulation with different parameters. A simulation campaign is
+contained in a single json database for portability, and is accessible
+through a CampaignManager object, which is provided by this library.
+Through this class it's possible to create new campaigns, load
+existing ones, run simulations and export results to other formats.
 
 Creating a new simulation campaign
 ----------------------------------
@@ -25,8 +28,9 @@ The following lines give an example:
    >>> campaign = CampaignManager.new(ns_path, script, filename)
 
 Internally, SEM also checks whether the path points to a valid ns-3
-installation and whether the script is available or not. An error is
-also raised if the filename points to an already existing file.
+installation, and whether the script is actually available for
+execution or not. An error is also raised if the new campaign filename
+points to an already existing file.
 
 CampaignManager objects can be directly printed to inspect the status
 of the campaign:

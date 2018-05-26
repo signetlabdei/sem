@@ -1,51 +1,28 @@
-# This is a simple example of how to use the ns-3 SimulationExecutionManager
+# This example shows how itertools' product function can be used to easily
+# expand the parameter space from an initial specification.
 
-from sem import CampaignManager
 from itertools import product
-import os
-from pathlib import Path
+from pprint import PrettyPrinter
 
+printer = PrettyPrinter(indent=4)
 
-# Define campaign parameters
-############################
-
-script = 'wifi-tcp'
-ns_path = "/home/davide/Work/ns-3-dev-gsoc/"
-filename = "/tmp/wifi-tcp-sims.json"
-
-# Create campaign
-#################
-
-# if (Path(filename).exists()):
-    # os.remove(filename)
-# campaign = CampaignManager.new(ns_path, script, filename)
-campaign = CampaignManager.load(filename)
-
-print(campaign)
-
-# Run some simulations
-######################
-
+# Dictionary containing desired values in an array
 param_ranges = {
-    'payloadSize': [1472/2, 1472],
+    'payloadSize': [1472, 1472/2],
     'dataRate': ['100Mbps'],
-    'tcpVariant': ['TcpHybla', 'TcpHighSpeed', 'TcpHtcp', 'TcpVegas',
-                   'TcpScalable', 'TcpVeno', 'TcpBic', 'TcpYeah',
-                   'TcpIllinois', 'TcpWestwood', 'TcpWestwoodPlus',
-                   'TcpLedbat'],
+    'tcpVariant': ['TcpHybla', 'TcpHighSpeed', 'TcpHtcp', 'TcpVegas'],
     'phyRate': ['HtMcs7'],
     'simulationTime': [4],
     'pcap': ['false'],
     'runs': [10]
 }
 
+# This space will contain every combination specified in the ranges
 param_space = [dict(zip(param_ranges, v)) for v in
                product(*param_ranges.values())]
 
-# Visualize parameter space
-# for param in param_space:
-#     print(param)
+print("Starting parameter space specification:")
+printer.pprint(param_ranges)
 
-# campaign.run_simulations(param_space)
-
-# campaign.get_results_as_numpy_array(param_space)
+print("Expanded parameter space:\n")
+printer.pprint(param_space)

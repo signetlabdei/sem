@@ -1,8 +1,5 @@
 import subprocess
-import re, glob
-import sys
-import os, inspect
-import importlib.machinery
+import re
 
 
 class SimulationRunner(object):
@@ -25,14 +22,15 @@ class SimulationRunner(object):
             raise ValueError(
                 "Path does not point to a valid ns-3 installation")
 
-        # Check script is available
+        # Make sure script is available
         if script not in str(subprocess.run(["./waf", 'list'], cwd=path,
                                             stdout=subprocess.PIPE).stdout):
             raise ValueError(
                 "Script is not a valid ns-3 program name")
 
         # Get the program's executable filename
-        # TODO Do this using build/build-status.py
+        # TODO We can do this using build/build-status.py, provided we find a
+        # way to link the script name in ns-3 to the correct build-status entry
 
         self.path = path
         self.script = script
@@ -45,11 +43,18 @@ class SimulationRunner(object):
         """
         Return a list of the parameters made available by the script.
         """
+
+        # At the moment, we rely on regex to extract the list of available
+        # parameters. A tighter integration with waf would allow for a more
+        # natural extraction of the information.
+
         result = subprocess.check_output(['./waf', '--run', '%s --PrintHelp' %
                                           self.script], cwd=self.path).decode(
                                              'utf-8')
+
         options = re.findall('.*Program\sOptions:(.*)General\sArguments.*',
                              result, re.DOTALL)
+
         if len(options):
             args = re.findall('.*--(.*?):.*', options[0], re.MULTILINE)
             return args
@@ -64,17 +69,14 @@ class SimulationRunner(object):
         """
         Run a simulation using a certain combination of parameters.
         """
-        command = ' '.join(['--%s=%s' % (param, value) for param, value in parameters.items()])
-        command = '%s %s' % (self.script, command)
 
-        print(command)
-        print(self.path)
+        # XXX For now, we use waf to run the simulation. This dirties the
+        # stdout with waf's build output.
+
+        command = ' '.join(['--%s=%s' % (param, value) for param, value in
+                            parameters.items()])
+
+        command = '%s %s' % (self.script, command)
 
         return subprocess.run(['./waf', '--run', command], cwd=self.path,
                               stdout=subprocess.PIPE).stdout
-
-    def run_missing_simulations(self, parameter_space):
-        """
-        Run the simulations belonging to the parameter_space that are still
-        missing from the database.
-        """

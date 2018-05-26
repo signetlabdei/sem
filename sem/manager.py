@@ -61,13 +61,6 @@ class CampaignManager(object):
 
         return cls(db, runner)
 
-    #############
-    # Utilities #
-    #############
-
-    def __str__(self):
-        return "--- Campaign info ---\n%s\n------------" % self.db
-
     ######################
     # Simulation running #
     ######################
@@ -77,6 +70,8 @@ class CampaignManager(object):
         Run the simulations from a dictionary containing parameter/value pairs,
         defining the parameter combination to simulate.
         """
+        # XXX This works, but is work in progress
+
         # Compute next RngRun value
         param_combination['RngRun'] = self.db.get_next_rngrun()
 
@@ -100,3 +95,10 @@ class CampaignManager(object):
         """
         # Collect list of relevant results from DatabaseManager
         # Package results in a numpy array
+
+    #############
+    # Utilities #
+    #############
+
+    def __str__(self):
+        return "--- Campaign info ---\n%s\n------------" % self.db

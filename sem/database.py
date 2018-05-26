@@ -35,7 +35,9 @@ class DatabaseManager(object):
             raise FileExistsError
 
         tinydb = TinyDB(filename)
+
         tinydb.table('config').insert(config)
+
         return cls(tinydb)
 
     @classmethod
@@ -46,6 +48,10 @@ class DatabaseManager(object):
         # We only accept absolute paths
         if not Path(filename).is_absolute():
             raise ValueError("Path is not absolute")
+
+        # Verify file exists
+        if not Path(filename).exists():
+            raise ValueError("File does not exist")
 
         # Read TinyDB instance from file
         tinydb = TinyDB(filename)
@@ -77,22 +83,24 @@ class DatabaseManager(object):
         """
         Return the configuration dictionary of this DatabaseManager's campaign
         """
+
         # Read from self.db and return the config entry of the database
         return self.db.table('config').all()[0]
 
     def get_path(self):
-        return self.db.table('config').all()[0]['path']
+        return self.get_config()['path']
 
     def get_script(self):
-        return self.db.table('config').all()[0]['script']
+        return self.get_config()['script']
 
     def get_params(self):
-        return self.db.table('config').all()[0]['params']
+        return self.get_config()['params']
 
     def get_next_rngrun(self):
-        if (len(self.get_results()) == 0):
+        if len(self.get_results()):
+            return 1+max([result['RngRun'] for result in self.get_results()])
+        else:
             return 0
-        return 1+max([result['RngRun'] for result in self.get_results()])
 
     def insert_result(self, result):
         """
