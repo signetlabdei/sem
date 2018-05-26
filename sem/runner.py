@@ -1,6 +1,8 @@
 import subprocess
-import re
+import re, glob
 import sys
+import os, inspect
+import importlib.machinery
 
 
 class SimulationRunner(object):
@@ -28,6 +30,9 @@ class SimulationRunner(object):
                                             stdout=subprocess.PIPE).stdout):
             raise ValueError(
                 "Script is not a valid ns-3 program name")
+
+        # Get the program's executable filename
+        # TODO Do this using build/build-status.py
 
         self.path = path
         self.script = script
