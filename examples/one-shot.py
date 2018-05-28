@@ -35,7 +35,7 @@ param_combination = {
 }
 
 print('Running simulation...', end='', flush=True)
-campaign.run_single_simulation(param_combination)
+campaign.run_simulations([param_combination])
 print(' done!')
 
 print('Results:')

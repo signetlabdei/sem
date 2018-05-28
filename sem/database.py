@@ -124,6 +124,10 @@ class DatabaseManager(object):
                     expected,
                     got))
 
+        for key in result:
+            if not isinstance(result[key], list):
+                result[key] = [result[key]]
+
         # Insert result
         self.db.table('results').insert(result)
 

@@ -65,24 +65,25 @@ class CampaignManager(object):
     # Simulation running #
     ######################
 
-    def run_single_simulation(self, param_combination):
+    def run_simulations(self, param_list, verbose=False):
         """
-        Run the simulations from a dictionary containing parameter/value pairs,
-        defining the parameter combination to simulate.
+        Run several simulations specified by a list of parameters.
+
+        This function does not run the listed simulations that are already
+        available in the database.
         """
-        # XXX This works, but is work in progress
+        # TODO Filter param_list to exclude simulations that we already have
 
         # Compute next RngRun value
-        param_combination['RngRun'] = self.db.get_next_rngrun()
+        next_run = self.db.get_next_rngrun()
+        for idx, param in enumerate(param_list):
+            param['RngRun'] = next_run + idx
 
         # Offload simulation execution to self.runner
-        result = {}
-        result.update(param_combination)
+        results = self.runner.run_simulations(param_list, verbose)
 
-        result['stdout'] = str(self.runner.run_single_simulation(
-            param_combination).decode('utf-8'))
-
-        self.db.insert_result(result)
+        for result in results:
+            self.db.insert_result(result)
 
     #####################
     # Result management #

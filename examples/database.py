@@ -10,7 +10,7 @@
 from sem import CampaignManager
 import os
 from pathlib import Path
-from pprint import PrettyPrinter
+from pprint import pprint
 
 
 # Define campaign parameters
@@ -54,16 +54,11 @@ db.insert_result(result)
 
 # Print results
 params_query = {
-    'payloadSize': [1472/2],
-    'dataRate': ['100Mbps'],
-    'tcpVariant': ['TcpHybla'],
-    'phyRate': ['HtMcs7'],
     'simulationTime': [3, 4],  # Also try: [3] and [4] to verify query result
-    'pcap': ['false'],
 }
 
 print("All results:")
-PrettyPrinter(indent=4).pprint(db.get_results())
+pprint(db.get_results())
 
 print("Query results:")
-PrettyPrinter(indent=4).pprint(db.get_results(params_query))
+pprint(db.get_results(params_query))
