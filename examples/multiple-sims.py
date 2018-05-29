@@ -40,10 +40,13 @@ print('Running simulations...', end='', flush=True)
 campaign.run_simulations(expand_to_space(param_combinations), verbose=True)
 print(' done!')
 
-print('Results:')
-pprint(campaign.db.get_results())
+print('All results:')
+campaign.db.get_results()
+
+print('Query results:')
 query = {
-    'simulationTime': [4]
+    'tcpVariant': ['TcpHybla', 'TcpHighSpeed'],
+    'simulationTime': [4, 8]
 }
 pprint(campaign.db.get_results(query))
 # pprint(campaign.db.get_results({'tcpVariant': ['TcpHybla', 'TcpHighSpeed',
