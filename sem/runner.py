@@ -70,27 +70,23 @@ class SimulationRunner(object):
         """
         Run several simulations using a certain combination of parameters.
 
-        Returns a list of results once all simulations are done.
+        Yields results once simulations are completed
         """
 
         # XXX For now, we use waf to run the simulation. This dirties the
         # stdout with waf's build output.
 
-        results = []
-
         for idx, parameter in enumerate(parameter_list):
             if verbose:
                 print("\nSimulation %s/%s:\n%s" % (idx+1, len(parameter_list),
-                                                   pformat(parameter)))
+                                                   parameter))
 
             current_result = {}
             current_result.update(parameter)
 
             command = ' '.join(['--%s=%s' % (param, value) for param, value in
                                 parameter.items()])
-
             command = '%s %s' % (self.script, command)
-
             execution = subprocess.run(['./waf', '--run', command],
                                        cwd=self.path, stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE)
@@ -100,6 +96,4 @@ class SimulationRunner(object):
 
             current_result['stdout'] = execution.stdout.decode('utf-8')
 
-            results.append(current_result)
-
-        return results
+            yield current_result
