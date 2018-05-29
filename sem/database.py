@@ -1,7 +1,8 @@
 from tinydb import TinyDB, Query
 from pathlib import Path
 from functools import reduce
-from operator import and_
+from operator import and_, or_
+from pprint import pprint
 
 
 class DatabaseManager(object):
@@ -124,10 +125,6 @@ class DatabaseManager(object):
                     expected,
                     got))
 
-        for key in result:
-            if not isinstance(result[key], list):
-                result[key] = [result[key]]
-
         # Insert result
         self.db.table('results').insert(result)
 
@@ -160,10 +157,21 @@ class DatabaseManager(object):
         # We use the .any() format of TinyDB query since we want the query to
         # match if the key is any one of the values specified in the params
         # value array
-        queries = (Query()[key].any(value) for key, value in params.items())
-        final_query = reduce(and_, queries)
+        print("Params:")
+        pprint(params)
 
-        return self.db.table('results').search(final_query)
+
+        # queries = dict(
+        #     [(key, reduce(or_, [Query()[key] == v for v in value])) for key,
+        #      value in params.items()])
+
+        query = reduce(and_, [reduce(or_, [Query()[key] == v for v in value])
+                                for key, value in params.items()])
+
+        print("Query:")
+        print(query)
+
+        return self.db.table('results').search(query)
 
     def wipe_results(self):
         """
