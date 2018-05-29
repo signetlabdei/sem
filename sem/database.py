@@ -2,7 +2,6 @@ from tinydb import TinyDB, Query
 from pathlib import Path
 from functools import reduce
 from operator import and_, or_
-from pprint import pprint
 
 
 class DatabaseManager(object):
@@ -152,24 +151,9 @@ class DatabaseManager(object):
                     all_params,
                     param_subset))
 
-        # Create the TinyDB query, by &-ing multiple single-key queries
-        #
-        # We use the .any() format of TinyDB query since we want the query to
-        # match if the key is any one of the values specified in the params
-        # value array
-        print("Params:")
-        pprint(params)
-
-
-        # queries = dict(
-        #     [(key, reduce(or_, [Query()[key] == v for v in value])) for key,
-        #      value in params.items()])
-
+        # Create the TinyDB query
         query = reduce(and_, [reduce(or_, [Query()[key] == v for v in value])
-                                for key, value in params.items()])
-
-        print("Query:")
-        print(query)
+                              for key, value in params.items()])
 
         return self.db.table('results').search(query)
 
