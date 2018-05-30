@@ -17,11 +17,8 @@ class SimulationRunner(object):
         Initialization function.
         """
 
-        # Check whether path points to a valid installation
-        if subprocess.run(
-                "./waf", cwd=path, stdout=subprocess.PIPE).returncode != 0:
-            raise ValueError(
-                "Path does not point to a valid ns-3 installation")
+        # Configure and build ns-3
+        self.configure_and_build(path, verbose=True)
 
         # Make sure script is available
         if script not in str(subprocess.run(["./waf", 'list'], cwd=path,
@@ -39,6 +36,19 @@ class SimulationRunner(object):
     #############
     # Utilities #
     #############
+    def configure_and_build(self, path, verbose=False):
+        """
+        Configure and build the ns-3 code.
+        """
+
+        # Check whether path points to a valid installation
+        subprocess.run(['./waf', 'configure', '--enable-examples',
+                        '--disable-gtk'], cwd=path, stdout=subprocess.PIPE if
+                       not verbose else None)
+
+        # Build ns-3
+        subprocess.run(['./waf', 'build'], cwd=path, stdout=subprocess.PIPE if
+                       not verbose else None)
 
     def get_available_parameters(self):
         """
