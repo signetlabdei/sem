@@ -31,8 +31,19 @@ created by calling:
 pipenv shell
 ```
 
-From here, the examples in `examples/` can be run and a python
-REPL can be started to use the library interactively.
+Now, a python REPL can be started to use the library interactively.
+
+## ns-3-dev submodule ##
+
+In order to execute the scripts in the `examples/` folder, it's possible to
+populate the `ns-3-dev` git submodule:
+
+```bash
+git submodule init
+git submodule update
+```
+
+Once this is done, the scripts in `examples/` can be directly run.
 
 ## Documentation ##
 
