@@ -10,7 +10,7 @@ from pathlib import Path
 ############################
 
 script = 'wifi-tcp'
-ns_path = "/home/davide/Work/ns-3-dev-gsoc"
+ns_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ns-3')
 filename = "/tmp/wifi-tcp-sims.json"
 
 # Create campaign

@@ -1,11 +1,15 @@
 import subprocess
 import re
-from pprint import pformat
+import sys
+import glob
+import os
+from contextlib import redirect_stdout
 
 
 class SimulationRunner(object):
     """
-    The class tasked with running simulations.
+    The class tasked with running simulations and interfacing with the ns-3
+    system.
     """
 
     ##################
@@ -17,25 +21,28 @@ class SimulationRunner(object):
         Initialization function.
         """
 
-        # Configure and build ns-3
-        self.configure_and_build(path, verbose=True)
+        # Update path with the provided information
+        sys.path += [path, glob.glob(path + '/.waf*')[0]]
 
-        # Make sure script is available
-        if script not in str(subprocess.run(["./waf", 'list'], cwd=path,
-                                            stdout=subprocess.PIPE).stdout):
-            raise ValueError(
-                "Script is not a valid ns-3 program name")
+        # Run waf (via its library)
+        with redirect_stdout(open(os.devnull, "w")):
+            os.chdir(path)
+            from waflib import Scripting, Context
+            Scripting.waf_entry_point(os.getcwd(), Context.WAFVERSION,
+                                      glob.glob(path + '/.waf*')[0])
 
-        # Get the program's executable filename
-        # TODO We can do this using build/build-status.py, provided we find a
-        # way to link the script name in ns-3 to the correct build-status entry
-
+        # Get the program's executable filename, via the functions provided by
+        # wutils.
+        import wutils
         self.path = path
         self.script = script
+        self.script_executable = wutils.get_run_program(script)[1][0]
+        self.environment = wutils.get_proc_env()
 
     #############
     # Utilities #
     #############
+
     def configure_and_build(self, path, verbose=False):
         """
         Configure and build the ns-3 code.
@@ -44,11 +51,13 @@ class SimulationRunner(object):
         # Check whether path points to a valid installation
         subprocess.run(['./waf', 'configure', '--enable-examples',
                         '--disable-gtk'], cwd=path, stdout=subprocess.PIPE if
-                       not verbose else None)
+                       not verbose else None, stderr=subprocess.PIPE if not
+                       verbose else None)
 
         # Build ns-3
         subprocess.run(['./waf', 'build'], cwd=path, stdout=subprocess.PIPE if
-                       not verbose else None)
+                       not verbose else None, stderr=subprocess.PIPE if not
+                       verbose else None)
 
     def get_available_parameters(self):
         """
@@ -59,11 +68,11 @@ class SimulationRunner(object):
         # parameters. A tighter integration with waf would allow for a more
         # natural extraction of the information.
 
-        result = subprocess.check_output(['./waf', '--run', '%s --PrintHelp' %
-                                          self.script], cwd=self.path).decode(
-                                             'utf-8')
+        result = subprocess.check_output([self.script_executable,
+                                          '--PrintHelp'], env=self.environment,
+                                         cwd=self.path).decode('utf-8')
 
-        options = re.findall('.*Program\sOptions:(.*)General\sArguments.*',
+        options = re.findall('.*Program\sArguments:(.*)General\sArguments.*',
                              result, re.DOTALL)
 
         if len(options):
@@ -83,9 +92,6 @@ class SimulationRunner(object):
         Yields results once simulations are completed
         """
 
-        # XXX For now, we use waf to run the simulation. This dirties the
-        # stdout with waf's build output.
-
         for idx, parameter in enumerate(parameter_list):
             if verbose:
                 print("\nSimulation %s/%s:\n%s" % (idx+1, len(parameter_list),
@@ -94,15 +100,20 @@ class SimulationRunner(object):
             current_result = {}
             current_result.update(parameter)
 
-            command = ' '.join(['--%s=%s' % (param, value) for param, value in
-                                parameter.items()])
-            command = '%s %s' % (self.script, command)
-            execution = subprocess.run(['./waf', '--run', command],
-                                       cwd=self.path, stdout=subprocess.PIPE,
+            command = [self.script_executable] + ['--%s=%s' % (param, value)
+                                                  for param, value in
+                                                  parameter.items()]
+
+            # TODO Run from dedicated temporary folder
+            execution = subprocess.run(command, cwd=self.path,
+                                       env=self.environment,
+                                       stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE)
 
             if execution.returncode > 0:
-                print("Simulation exited with an error. \nStderr: %s\nStdout: %s" % (execution.stderr, execution.stdout))
+                print('Simulation exited with an error.'
+                      '\nStderr: %s\nStdout: %s' % (execution.stderr,
+                                                    execution.stdout))
 
             current_result['stdout'] = execution.stdout.decode('utf-8')
 

@@ -11,7 +11,7 @@ from pprint import pprint
 ############################
 
 script = 'wifi-tcp'
-ns_path = "/home/davide/Work/ns-3-dev-gsoc"
+ns_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ns-3')
 filename = "/tmp/wifi-tcp-sims.json"
 
 # Create campaign
@@ -24,8 +24,8 @@ campaign = CampaignManager.new(ns_path, script, filename)
 
 print(campaign)
 
-# Run a simulation
-##################
+# Run simulations
+#################
 
 param_combinations = {
     'payloadSize': 1472,
@@ -40,17 +40,15 @@ print('Running simulations...', end='', flush=True)
 campaign.run_simulations(expand_to_space(param_combinations), verbose=True)
 print(' done!')
 
+# Print results
+###############
+
 print('All results:')
 campaign.db.get_results()
 
-print('Query results:')
 query = {
     'tcpVariant': ['TcpHybla', 'TcpHighSpeed'],
     'simulationTime': [4, 8]
 }
+print('Query results:')
 pprint(campaign.db.get_results(query))
-# pprint(campaign.db.get_results({'tcpVariant': ['TcpHybla', 'TcpHighSpeed',
-#                                                'TcpHtcp', 'TcpVegas',
-#                                                'TcpScalable', 'TcpVeno']}))
-
-# campaign.get_results_as_numpy_array()
