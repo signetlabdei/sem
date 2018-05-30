@@ -100,7 +100,7 @@ class DatabaseManager(object):
         if len(self.get_results()):
             return 1+max([result['RngRun'] for result in self.get_results()])
         else:
-            return 0
+            return 1
 
     def insert_result(self, result):
         """
@@ -151,9 +151,19 @@ class DatabaseManager(object):
                     all_params,
                     param_subset))
 
+        # Convert values that are not lists into lists to later perform
+        # iteration over values more naturally. Perform this on a new
+        # dictionary not to modify the original copy.
+        query_params = {}
+        for key in params:
+            if not isinstance(params[key], list):
+                query_params[key] = [params[key]]
+            else:
+                query_params[key] = params[key]
+
         # Create the TinyDB query
         query = reduce(and_, [reduce(or_, [Query()[key] == v for v in value])
-                              for key, value in params.items()])
+                              for key, value in query_params.items()])
 
         return self.db.table('results').search(query)
 

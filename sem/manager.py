@@ -1,6 +1,8 @@
 from .database import DatabaseManager
 from .runner import SimulationRunner
 from git import Repo
+from itertools import repeat
+from copy import deepcopy
 
 
 class CampaignManager(object):
@@ -65,15 +67,14 @@ class CampaignManager(object):
     # Simulation running #
     ######################
 
-    def run_simulations(self, param_list, verbose=False):
+    def run_simulations(self, param_list, verbose=True):
         """
         Run several simulations specified by a list of parameters.
 
-        This function does not run the listed simulations that are already
-        available in the database.
+        This function does not verify whether we already have the required
+        simulations in the database - it just runs all the parameter
+        combinations that are specified in the list.
         """
-        # TODO Filter param_list to exclude simulations that we already have
-
         # Compute next RngRun value
         next_run = self.db.get_next_rngrun()
         for idx, param in enumerate(param_list):
@@ -84,6 +85,37 @@ class CampaignManager(object):
 
         for result in results:
             self.db.insert_result(result)
+
+    def get_missing_simulations(self, param_list, runs):
+        """
+        Return a list of the simulations among the required ones that are not
+        available in the database.
+
+        param_list is a list of dictionaries containing all the parameters,
+        runs is an integer representing how many repetitions we need for each
+        parameter combination.
+        """
+        params_to_simulate = []
+
+        for param_comb in param_list:
+            available_sims = self.db.get_results(param_comb)
+            needed_runs = runs - len(available_sims)
+            # Here it's important that we make copies of the dictionaries, so
+            # that if we modify one we don't modify the others. This is
+            # necessary because after this step, typically, we will add the
+            # RngRun key which must be different for each copy.
+            params_to_simulate += [deepcopy(param_comb) for i in
+                                   range(needed_runs)]
+
+        return params_to_simulate
+
+    def run_missing_simulations(self, param_list, runs):
+        """
+        Run the simulations from the parameter list that are not yet available
+        in the database. Make sure that we have at least runs replications for
+        each parameter combination.
+        """
+        self.run_simulations(self.get_missing_simulations(param_list, runs))
 
     #####################
     # Result management #

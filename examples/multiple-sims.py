@@ -30,14 +30,14 @@ print(campaign)
 param_combinations = {
     'payloadSize': 1472,
     'dataRate': '100Mbps',
-    'tcpVariant': ['TcpHybla', 'TcpHighSpeed'],
+    'tcpVariant': ['TcpHybla', 'TcpHighSpeed', 'TcpVegas'],
     'phyRate': 'HtMcs7',
-    'simulationTime': 4,
+    'simulationTime': [2, 4],
     'pcap': 'false'
 }
 
 print('Running simulations...', end='', flush=True)
-campaign.run_simulations(expand_to_space(param_combinations), verbose=True)
+campaign.run_missing_simulations(expand_to_space(param_combinations), runs=4)
 print(' done!')
 
 # Print results
