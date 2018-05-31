@@ -3,23 +3,23 @@
 
 from sem import CampaignManager, expand_to_space
 import os
-from pprint import pprint
+from pathlib import Path
 
 
 # Define campaign parameters
 ############################
 
-script = 'lena-pathloss-traces'
+script = 'lena-simple-epc'
 ns_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ns-3')
 filename = "/tmp/test-sims.json"
 
 # Create campaign
 #################
 
-# if (Path(filename).exists()):
-#     os.remove(filename)
-# campaign = CampaignManager.new(ns_path, script, filename)
-campaign = CampaignManager.load(filename)
+if (Path(filename).exists()):
+    os.remove(filename)
+campaign = CampaignManager.new(ns_path, script, filename)
+# campaign = CampaignManager.load(filename)
 
 print(campaign)
 
@@ -27,13 +27,15 @@ print(campaign)
 #################
 
 param_combinations = {
-    'enbDist': list(range(20, 100, 10)),
-    'radius': 10,
-    'numUes': list(range(1, 5))
+    'numberOfNodes': 10,
+    'simTime': 3,
+    'distance': 3000,
+    'interPacketInterval': [100, 200],
+    'useCa': ['true', 'false']
 }
 
 print('Running simulations...', end='', flush=True)
-campaign.run_missing_simulations(expand_to_space(param_combinations), runs=5)
+campaign.run_missing_simulations(expand_to_space(param_combinations), runs=3)
 print(' done!')
 
 # Print results
@@ -43,9 +45,7 @@ print('All results:')
 campaign.db.get_results()
 
 query = {
-    'enbDist': [20, 30, 40],
-    'radius': 10,
-    'numUes': [1, 3]
+    'distance': [3000],
+    'useCa': ['true']
 }
-print('Query results:')
-pprint(campaign.db.get_results(query))
+print('Found %s results' % len(campaign.db.get_results(query)))
