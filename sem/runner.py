@@ -21,7 +21,11 @@ class SimulationRunner(object):
         Initialization function.
         """
 
-        # Update path with the provided information
+        # Configure and build ns-3
+        print("Compiling and building ns-3...")
+        self.configure_and_build(path, verbose=False)
+
+        # Update path
         sys.path += [path, glob.glob(path + '/.waf*')[0]]
 
         # Run waf (via its library)
@@ -50,9 +54,10 @@ class SimulationRunner(object):
 
         # Check whether path points to a valid installation
         subprocess.run(['./waf', 'configure', '--enable-examples',
-                        '--disable-gtk'], cwd=path, stdout=subprocess.PIPE if
-                       not verbose else None, stderr=subprocess.PIPE if not
-                       verbose else None)
+                        '--disable-gtk', '--disable-python',
+                       '--build-profile=optimized'], cwd=path,
+                       stdout=subprocess.PIPE if not verbose else None,
+                       stderr=subprocess.PIPE if not verbose else None)
 
         # Build ns-3
         subprocess.run(['./waf', 'build'], cwd=path, stdout=subprocess.PIPE if
