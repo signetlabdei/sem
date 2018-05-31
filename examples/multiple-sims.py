@@ -4,6 +4,7 @@
 from sem import CampaignManager, expand_to_space
 import os
 from pathlib import Path
+import time
 
 
 # Define campaign parameters
@@ -18,7 +19,9 @@ filename = "/tmp/test-sims.json"
 
 if (Path(filename).exists()):
     os.remove(filename)
-campaign = CampaignManager.new(ns_path, script, filename)
+campaign = CampaignManager.new(ns_path, script, filename,
+                               runner='SimulationRunner')
+
 # campaign = CampaignManager.load(filename)
 
 print(campaign)
@@ -27,25 +30,31 @@ print(campaign)
 #################
 
 param_combinations = {
-    'numberOfNodes': 10,
-    'simTime': 3,
+    'numberOfNodes': 20,
+    'simTime': 10,
     'distance': 3000,
-    'interPacketInterval': [100, 200],
+    'interPacketInterval': 50,
     'useCa': ['true', 'false']
 }
 
 print('Running simulations...', end='', flush=True)
-campaign.run_missing_simulations(expand_to_space(param_combinations), runs=3)
+start = time.time()
+campaign.run_missing_simulations(expand_to_space(param_combinations), runs=5)
+end = time.time()
 print(' done!')
 
-# Print results
-###############
+elapsed = (end-start)
 
-print('All results:')
-campaign.db.get_results()
+print('Elapsed time: %s s' % elapsed)
 
-query = {
-    'distance': [3000],
-    'useCa': ['true']
-}
-print('Found %s results' % len(campaign.db.get_results(query)))
+# # Print results
+# ###############
+
+# print('All results:')
+# campaign.db.get_results()
+
+# query = {
+#     'distance': [3000],
+#     'useCa': ['true']
+# }
+# print('Found %s results' % len(campaign.db.get_results(query)))

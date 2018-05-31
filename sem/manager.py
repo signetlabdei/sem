@@ -1,7 +1,7 @@
 from .database import DatabaseManager
+from .runner import SimulationRunner
 from .parallelrunner import ParallelRunner
 from git import Repo
-from itertools import repeat
 from copy import deepcopy
 
 
@@ -23,12 +23,19 @@ class CampaignManager(object):
         self.runner = campaign_runner
 
     @classmethod
-    def new(cls, path, script, filename):
+    def new(cls, path, script, filename, runner='SimulationRunner'):
         """
         Initialize a campaign database based on a script and ns-3 path.
+
+        runner can be either SimulationRunner (default) or ParallelRunner
         """
         # Create a runner for the desired configuration
-        runner = ParallelRunner(path, script)
+        if runner == 'SimulationRunner':
+            runner = SimulationRunner(path, script)
+        elif runner == 'ParallelRunner':
+            runner = ParallelRunner(path, script)
+        else:
+            raise ValueError('Unknown runner')
 
         # Get list of available parameters
         params = runner.get_available_parameters()
@@ -51,7 +58,7 @@ class CampaignManager(object):
         return cls(db, runner)
 
     @classmethod
-    def load(cls, filename):
+    def load(cls, filename, runner='SimulationRunner'):
         """
         Read a filename and load the corresponding campaign database.
         """
