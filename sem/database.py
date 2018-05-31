@@ -116,7 +116,8 @@ class DatabaseManager(object):
 
         # Verify result format is correct
         expected = set(result.keys())
-        got = (set(self.get_params()) | set(['RngRun', 'stdout']))
+        got = (set(self.get_params()) | set(['RngRun', 'stdout', 'files',
+                                             'time']))
         if (expected != got):
             raise ValueError(
                 '%s:\nExpected: %s\nGot: %s' % (

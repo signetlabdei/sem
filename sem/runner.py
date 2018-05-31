@@ -3,7 +3,9 @@ import re
 import sys
 import glob
 import os
+import uuid
 from contextlib import redirect_stdout
+import time
 
 
 class SimulationRunner(object):
@@ -109,16 +111,29 @@ class SimulationRunner(object):
                                                   for param, value in
                                                   parameter.items()]
 
-            # TODO Run from dedicated temporary folder
-            execution = subprocess.run(command, cwd=self.path,
+            # Run from dedicated temporary folder
+            temp_dir = "/tmp/.sem/%s" % uuid.uuid4()
+            if not os.path.exists(temp_dir):
+                os.makedirs(temp_dir)
+
+            start = time.time()  # Time execution
+            execution = subprocess.run(command, cwd=temp_dir,
                                        env=self.environment,
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE)
+            end = time.time()  # Time execution
 
             if execution.returncode > 0:
                 print('Simulation exited with an error.'
                       '\nStderr: %s\nStdout: %s' % (execution.stderr,
                                                     execution.stdout))
+
+            current_result['time'] = end-start
+
+            current_result['files'] = {}
+            for filename in os.listdir(temp_dir):
+                with open(filename, 'r') as file_contents:
+                    current_result['files'][filename] = file_contents.read()
 
             current_result['stdout'] = execution.stdout.decode('utf-8')
 
