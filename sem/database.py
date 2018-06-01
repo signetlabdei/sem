@@ -6,7 +6,11 @@ from operator import and_, or_
 
 class DatabaseManager(object):
     """
-    The class tasked with interfacing to the simulation campaign database.
+    This class is tasked with interfacing to the simulation campaign database.
+
+    A database can either be created from scratch or loaded, via the new and
+    load @classmethods.
+
     """
 
     ##################
@@ -22,7 +26,14 @@ class DatabaseManager(object):
     @classmethod
     def new(cls, config, filename, overwrite=False):
         """
-        Initialize a new instance with a set filename.
+        Initialize a new class instance with a set configuration and filename.
+
+        Args:
+            config (dict): A dictionary containing the campaign configuration.
+            filename (str): The path of the file where to save the db.
+            overwrite (bool): Whether or not existing filenames should be
+                overwritten.
+
         """
         # Create new TinyDB instance
 
@@ -130,12 +141,24 @@ class DatabaseManager(object):
 
     def get_results(self, params=None):
         """
-        Get an iterator over all results corresponding to the specified
-        parameter combination.
+        Get a list of all results corresponding to the specified parameter
+        combination.
 
-        If params is not specified, return all results.
-        If params is specified, it must be a dictionary specifying the results
-        we are interested in.
+        If params is not specified or None, return all results.
+        If params is specified, it must be a dictionary specifying the result
+        values we are interested in, with multiple values specified as lists.
+
+        For example, if the following params value is used the database will be
+        queried for results having key1 equal to value1, and key2 equal to
+        value2 or value3::
+
+            params = {
+            'key1': 'value1',
+            'key2': ['value2', 'value3']
+            }
+
+        Returns:
+            A list of database results matching the query.
         """
 
         # In this case, return all results
@@ -169,7 +192,5 @@ class DatabaseManager(object):
         return self.db.table('results').search(query)
 
     def wipe_results(self):
-        """
-        Removes all results from the database.
-        """
+        """ Removes all results from the database. """
         self.db.purge_table('results')

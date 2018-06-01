@@ -25,7 +25,7 @@ class SimulationRunner(object):
 
         # Configure and build ns-3
         print("Compiling and building ns-3...")
-        self.configure_and_build(path, verbose=False)
+        self.configure_and_build(path, verbose=True)
 
         # Update path
         sys.path += [path, glob.glob(path + '/.waf*')[0]]

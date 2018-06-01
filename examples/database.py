@@ -36,20 +36,20 @@ db.wipe_results()
 
 # Insert a couple of results
 params = {
-    'payloadSize': [1472/2],
-    'dataRate': ['100Mbps'],
-    'tcpVariant': ['TcpHybla'],
-    'phyRate': ['HtMcs7'],
-    'simulationTime': [4],
-    'pcap': ['false'],
+    'payloadSize': 1472/2,
+    'dataRate': '100Mbps',
+    'tcpVariant': 'TcpHybla',
+    'phyRate': 'HtMcs7',
+    'simulationTime': 4,
+    'pcap': 'false',
 }
 result = {}
-result.update({**params, **{'stdout': ['0 1 2 3 4'], 'RngRun': [10]}})
+result.update({**params, **{'stdout': '0 1 2 3 4', 'RngRun': 10, 'time': 2, 'files': {}}})
 db.insert_result(result)
 
 result = {}
-params['simulationTime'] = [3]
-result.update({**params, **{'stdout': ['1 2 3 4 5'], 'RngRun': [11]}})
+params['simulationTime'] = 3
+result.update({**params, **{'stdout': '1 2 3 4 5', 'RngRun': 11, 'time': 2, 'files': {}}})
 db.insert_result(result)
 
 # Print results

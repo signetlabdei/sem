@@ -43,7 +43,11 @@ git submodule init
 git submodule update
 ```
 
-Once this is done, the scripts in `examples/` can be directly run.
+Once this is done, the scripts in `examples/` can be directly run:
+
+```bash
+python examples/one-shot.py
+```
 
 ## Documentation ##
 

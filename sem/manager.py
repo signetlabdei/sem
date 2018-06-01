@@ -98,9 +98,11 @@ class CampaignManager(object):
         Return a list of the simulations among the required ones that are not
         available in the database.
 
-        param_list is a list of dictionaries containing all the parameters,
-        runs is an integer representing how many repetitions we need for each
-        parameter combination.
+        Args:
+            param_list (list): A list of dictionaries containing all the
+                parameters combinations.
+            runs (int): An integer representing how many repetitions are wanted
+                for each parameter combination.
         """
         params_to_simulate = []
 
@@ -119,7 +121,9 @@ class CampaignManager(object):
     def run_missing_simulations(self, param_list, runs):
         """
         Run the simulations from the parameter list that are not yet available
-        in the database. Make sure that we have at least runs replications for
+        in the database.
+
+        This function makes sure that we have at least runs replications for
         each parameter combination.
         """
         self.run_simulations(self.get_missing_simulations(param_list, runs))

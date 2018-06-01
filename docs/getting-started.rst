@@ -9,8 +9,8 @@ through a CampaignManager object, which is provided by this library.
 Through this class it's possible to create new campaigns, load
 existing ones, run simulations and export results to other formats.
 
-Creating a new simulation campaign
-----------------------------------
+Creating and loading a simulation campaign
+------------------------------------------
 
 Creation of a new campaign requires:
 
@@ -32,6 +32,12 @@ installation, and whether the script is actually available for
 execution or not. An error is also raised if the new campaign filename
 points to an already existing file.
 
+Alternatively, campaigns can be loaded from existing files:
+
+::
+
+   >>> campaign = CampaignManager.load(filename)
+
 CampaignManager objects can be directly printed to inspect the status
 of the campaign:
 
@@ -51,9 +57,44 @@ campaign creation process, SEM also retrieved a list of the available
 script parameters and the SHA of the current HEAD of the git
 repository at the ns-3 path.
 
-..
-   Running simulations
-   -------------------
+Running simulations
+-------------------
 
+Simulations can be run by specifying a list of parameter combinations.
+
+::
+
+   >>> param_combination = {
+    'payloadSize': 1472,
+    'dataRate': '100Mbps',
+    'tcpVariant': 'TcpHybla',
+    'phyRate': 'HtMcs7',
+    'simulationTime': 4,
+    'pcap': 'false'
+   }
+   >>> campaign.run_simulations([param_combination])
+   Simulation 1/1:
+   {'payloadSize': 1472, 'dataRate': '100Mbps', 'tcpVariant': 'TcpHybla', 'phyRate': 'HtMcs7', 'simulationTime': 4, 'pcap': 'false', 'RngRun': 1}
+
+The run_simulations method automatically queries the database looking for an
+appropriate RngRun value that has not yet been used, and runs the simulations.
+
+Multiple simulations corresponding to the exploration of a parameter space can
+be run by employing the expand_to_space function, which can take a dictionary
+specifying multiple values for a key and translate it into a list of
+dictionaries specifying all combinations of parameter values::
+
+  >>> from sem import expand_to_space
+  >>> param_combinations = {
+   'payloadSize': 1472,
+   'dataRate': '100Mbps',
+   'tcpVariant': ['TcpHybla', 'TcpNewReno'],
+   'phyRate': 'HtMcs7',
+   'simulationTime': [4, 8],
+   'pcap': 'false'
+  }
+  >>> campaign.run_simulations(expand_to_space(param_combinations))
+
+..
    Exporting results
    -----------------

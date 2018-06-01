@@ -20,7 +20,7 @@ filename = "/tmp/test-sims.json"
 if (Path(filename).exists()):
     os.remove(filename)
 campaign = CampaignManager.new(ns_path, script, filename,
-                               runner='SimulationRunner')
+                               runner='ParallelRunner')
 
 # campaign = CampaignManager.load(filename)
 
