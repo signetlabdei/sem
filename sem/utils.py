@@ -1,7 +1,7 @@
 from itertools import product
 
 
-def expand_to_space(param_ranges):
+def list_param_combinations(param_ranges):
     # Convert non-list values to single-element lists
     # This is required to make sure product work.
     for key in param_ranges:

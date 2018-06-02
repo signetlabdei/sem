@@ -1,10 +1,10 @@
 from .manager import CampaignManager
 from .runner import SimulationRunner
 from .database import DatabaseManager
-from .utils import expand_to_space
+from .utils import list_param_combinations
 
 __all__ = ('CampaignManager', 'SimulationRunner', 'DatabaseManager',
-           'expand_to_space')
+           'list_param_combinations')
 
 
 def main():

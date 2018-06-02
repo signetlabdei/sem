@@ -1,7 +1,7 @@
 # This is an example showing how to use the ns-3 SimulationExecutionManager to
 # run a single simulation and view the result.
 
-from sem import CampaignManager, expand_to_space
+from sem import CampaignManager, list_param_combinations
 import os
 from pathlib import Path
 import time
@@ -39,7 +39,7 @@ param_combinations = {
 
 print('Running simulations...', end='', flush=True)
 start = time.time()
-campaign.run_missing_simulations(expand_to_space(param_combinations), runs=5)
+campaign.run_missing_simulations(list_param_combinations(param_combinations), runs=5)
 end = time.time()
 print(' done!')
 

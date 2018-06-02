@@ -80,11 +80,11 @@ The run_simulations method automatically queries the database looking for an
 appropriate RngRun value that has not yet been used, and runs the simulations.
 
 Multiple simulations corresponding to the exploration of a parameter space can
-be run by employing the expand_to_space function, which can take a dictionary
+be run by employing the list_param_combinations function, which can take a dictionary
 specifying multiple values for a key and translate it into a list of
 dictionaries specifying all combinations of parameter values::
 
-  >>> from sem import expand_to_space
+  >>> from sem import list_param_combinations
   >>> param_combinations = {
    'payloadSize': 1472,
    'dataRate': '100Mbps',
@@ -93,7 +93,7 @@ dictionaries specifying all combinations of parameter values::
    'simulationTime': [4, 8],
    'pcap': 'false'
   }
-  >>> campaign.run_simulations(expand_to_space(param_combinations))
+  >>> campaign.run_simulations(list_param_combinations(param_combinations))
 
 ..
    Exporting results
