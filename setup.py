@@ -23,7 +23,7 @@ setup(
     author_email='magrinda@dei.unipd.it',
     keywords='ns-3 simulation execution',
     packages=find_packages(exclude=['contrib', 'docs', 'tests', 'examples']),
-    install_requires=['tinydb', 'gitpython'],
+    install_requires=['tinydb', 'gitpython', 'sphinxcontrib-napoleon'],
     extras_require={
         'dev': ['check-manifest'],
         'test': ['pytest'],
