@@ -5,6 +5,8 @@ from git import Repo
 from copy import deepcopy
 from tqdm import tqdm
 from random import shuffle
+import numpy as np
+import xarray as xr
 
 
 class CampaignManager(object):
@@ -150,13 +152,68 @@ class CampaignManager(object):
     # Result management #
     #####################
 
-    def get_results_as_numpy_array(self, parameter_space):
+    def get_results_as_numpy_array(self, parameter_space,
+                                   stdout_parsing_function,
+                                   run_averaging_function=None):
         """
         Return the results relative to the desired parameter space in the form
         of a numpy array.
         """
-        # Collect list of relevant results from DatabaseManager
-        # Package results in a numpy array
+        return np.squeeze(np.array(self.get_space({}, parameter_space,
+                                                  stdout_parsing_function,
+                                                  run_averaging_function)))
+
+    def get_results_as_xarray(self, parameter_space,
+                              stdout_parsing_function,
+                              run_averaging_function=None):
+        """
+        Return the results relative to the desired parameter space in the form
+        of an xarray data structure.
+        """
+        np_array = np.squeeze(np.array(self.get_space({}, parameter_space,
+                                                      stdout_parsing_function,
+                                                      run_averaging_function)))
+
+        # Create a parameter space only containing the variable parameters
+        clean_parameter_space = {}
+        for key, value in parameter_space.items():
+            if isinstance(value, list) and len(value) > 1:
+                clean_parameter_space[key] = value
+
+        clean_parameter_space['runs'] = range(np_array.shape[-1])
+
+        xr_array = xr.DataArray(np_array, coords=clean_parameter_space,
+                                dims=list(clean_parameter_space.keys()))
+
+        return xr_array
+
+    def get_space(self, current_query, param_space, stdout_parsing_function,
+                  run_averaging_function):
+        # print("Parameter space: %s" % param_space)
+        # print("Current query: %s" % current_query)
+        if not param_space:
+            # print("Querying database with query:\n%s" % current_query)
+            results = self.db.get_results(current_query)
+            parsed = []
+            for r in results:
+                parsed.append(stdout_parsing_function(r['stdout']))
+
+            # print("Runs: %s" % parsed)
+            if run_averaging_function is not None:
+                return run_averaging_function(parsed)
+            else:
+                return parsed
+
+        space = []
+        [key, value] = list(param_space.items())[0]
+        for v in value:
+            # print("Key: %s, Value: %s" % (key, v))
+            next_query = deepcopy(current_query)
+            next_query[key] = v
+            next_param_space = deepcopy(param_space)
+            del(next_param_space[key])
+            space.append(self.get_space(next_query, next_param_space, stdout_parsing_function, run_averaging_function))
+        return space
 
     #############
     # Utilities #
