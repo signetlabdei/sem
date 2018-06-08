@@ -120,7 +120,7 @@ class SimulationRunner(object):
     # Simulation running #
     ######################
 
-    def run_simulations(self, parameter_list, verbose=False):
+    def run_simulations(self, parameter_list, data_folder, verbose=False):
         """
         Run several simulations using a certain combination of parameters.
 
@@ -140,7 +140,8 @@ class SimulationRunner(object):
                                                   parameter.items()]
 
             # Run from dedicated temporary folder
-            temp_dir = "/tmp/.sem/%s" % uuid.uuid4()
+            current_result['id'] = str(uuid.uuid4())
+            temp_dir = os.path.join(data_folder, current_result['id'])
             if not os.path.exists(temp_dir):
                 os.makedirs(temp_dir)
 
@@ -157,11 +158,6 @@ class SimulationRunner(object):
                                                     execution.stdout))
 
             current_result['time'] = end-start
-
-            current_result['files'] = {}
-            for filename in os.listdir(temp_dir):
-                with open(filename, 'r') as file_contents:
-                    current_result['files'][filename] = file_contents.read()
 
             current_result['stdout'] = execution.stdout.decode('utf-8')
 
