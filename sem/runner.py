@@ -153,9 +153,17 @@ class SimulationRunner(object):
             end = time.time()  # Time execution
 
             if execution.returncode > 0:
-                print('Simulation exited with an error.'
-                      '\nStderr: %s\nStdout: %s' % (execution.stderr,
-                                                    execution.stdout))
+                complete_command = [self.script]
+                complete_command.extend(command[1:])
+                complete_command = "./waf --run \"%s\"" % ' '.join(complete_command)
+
+                raise Exception(('Simulation exited with an error.\n'
+                                 'Params: %s\n'
+                                 '\nStderr: %s\n'
+                                 'Stdout: %s\n'
+                                 'Use the following command to reproduce:\n%s'
+                                 % (parameter, execution.stderr,
+                                    execution.stdout, complete_command)))
 
             current_result['time'] = end-start
 
