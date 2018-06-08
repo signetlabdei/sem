@@ -6,6 +6,7 @@ import os
 import uuid
 from contextlib import redirect_stdout
 import time
+from tqdm import tqdm
 
 
 class SimulationRunner(object):
@@ -24,8 +25,7 @@ class SimulationRunner(object):
         """
 
         # Configure and build ns-3
-        print("Compiling and building ns-3...")
-        self.configure_and_build(path, verbose=True)
+        self.configure_and_build(path)
 
         # Update path
         sys.path += [path, glob.glob(path + '/.waf*')[0]]
@@ -49,7 +49,7 @@ class SimulationRunner(object):
     # Utilities #
     #############
 
-    def configure_and_build(self, path, verbose=False):
+    def configure_and_build(self, path, verbose=False, progress=True):
         """
         Configure and build the ns-3 code.
         """
@@ -57,14 +57,42 @@ class SimulationRunner(object):
         # Check whether path points to a valid installation
         subprocess.run(['./waf', 'configure', '--enable-examples',
                         '--disable-gtk', '--disable-python',
-                       '--build-profile=optimized'], cwd=path,
-                       stdout=subprocess.PIPE if not verbose else None,
-                       stderr=subprocess.PIPE if not verbose else None)
+                        '--build-profile=optimized', '--out=build/optimized'],
+                       cwd=path, stdout=subprocess.PIPE if not verbose else
+                       None, stderr=subprocess.PIPE if not verbose else None)
 
         # Build ns-3
-        subprocess.run(['./waf', 'build'], cwd=path, stdout=subprocess.PIPE if
-                       not verbose else None, stderr=subprocess.PIPE if not
-                       verbose else None)
+        build_process = subprocess.Popen(['./waf', 'build'], cwd=path,
+                                         stdout=subprocess.PIPE if not verbose
+                                         else None, stderr=subprocess.PIPE if
+                                         not verbose else None)
+
+        # Show a progress bar
+        if progress and not verbose:
+            line_iterator = self.get_output(build_process)
+            try:
+                [initial, total] = next(line_iterator)
+                pbar = tqdm(line_iterator, initial=initial, total=total,
+                            unit='file', desc='Building ns-3', smoothing=0)
+                for current, total in pbar:
+                    pbar.n = current
+            except (StopIteration):
+                pass
+
+    def get_output(self, process):
+        """Get the output of a process"""
+        while True:
+            output = process.stdout.readline()
+            if output == b'' and process.poll() is not None:
+                raise StopIteration
+            if output:
+                # Parse the output to get current and total tasks
+                # print("Raw output: %s" % output.strip())
+                # print("Doing task %s out of %s" % (current, total))
+                matches = re.search('\[\s*(\d+?)/(\d+)\].*',
+                                    output.strip().decode('utf-8'))
+                if matches is not None:
+                    yield [int(matches.group(1)), int(matches.group(2))]
 
     def get_available_parameters(self):
         """
