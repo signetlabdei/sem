@@ -25,7 +25,7 @@ class CampaignManager(object):
         self.runner = campaign_runner
 
     @classmethod
-    def new(cls, path, script, filename, runner='SimulationRunner'):
+    def new(cls, path, script, campaign_dir, runner='SimulationRunner'):
         """
         Initialize a campaign database based on a script and ns-3 path.
 
@@ -52,10 +52,11 @@ class CampaignManager(object):
             'script': script,
             'path': path,
             'params': params,
-            'commit': commit
+            'commit': commit,
+            'campaign_dir': campaign_dir
         }
 
-        db = DatabaseManager.new(config, filename)
+        db = DatabaseManager.new(config, campaign_dir)
 
         return cls(db, runner)
 
@@ -67,8 +68,13 @@ class CampaignManager(object):
         # Read from database
         db = DatabaseManager.load(filename)
 
-        # Create a runner
-        runner = ParallelRunner(db.get_path(), db.get_script())
+        # Create a runner for the desired configuration
+        if runner == 'SimulationRunner':
+            runner = SimulationRunner(db.get_path(), db.get_script())
+        elif runner == 'ParallelRunner':
+            runner = ParallelRunner(db.get_path(), db.get_script())
+        else:
+            raise ValueError('Unknown runner')
 
         return cls(db, runner)
 

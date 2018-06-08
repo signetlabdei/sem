@@ -2,6 +2,7 @@ from tinydb import TinyDB, Query
 from pathlib import Path
 from functools import reduce
 from operator import and_, or_
+import os
 
 
 class DatabaseManager(object):
@@ -24,7 +25,7 @@ class DatabaseManager(object):
         self.db = db
 
     @classmethod
-    def new(cls, config, filename, overwrite=False):
+    def new(cls, config, campaign_dir, overwrite=False):
         """
         Initialize a new class instance with a set configuration and filename.
 
@@ -38,14 +39,18 @@ class DatabaseManager(object):
         # Create new TinyDB instance
 
         # We only accept absolute paths
-        if not Path(filename).is_absolute():
+        if not Path(campaign_dir).is_absolute():
             raise ValueError("Path is not absolute")
 
-        # Make sure file does not exist already
-        if Path(filename).exists():
-            raise FileExistsError
+        # Make sure the directory does not exist already
+        if Path(campaign_dir).exists():
+            raise FileExistsError("The specified directory already exists")
 
-        tinydb = TinyDB(filename)
+        # Create the directory
+        os.makedirs(campaign_dir)
+
+        tinydb = TinyDB(os.path.join(campaign_dir, "%s.json" %
+                                     os.path.basename(campaign_dir)))
 
         tinydb.table('config').insert(config)
 
@@ -82,7 +87,7 @@ class DatabaseManager(object):
 
     def __str__(self):
         configuration = self.get_config()
-        return "ns-3 path: %s\nscript: %s\nparams: %s\ncommit: %s" % (
+        return "ns-3: %s\nscript: %s\nparams: %s\ncommit: %s" % (
             configuration['path'], configuration['script'],
             configuration['params'], configuration['commit'])
 
@@ -100,6 +105,16 @@ class DatabaseManager(object):
 
     def get_path(self):
         return self.get_config()['path']
+
+    def get_data_dir(self):
+        """
+        Return the data directory, which is simply campaign_directory/data.
+        """
+
+        return os.path.join(self.get_config()['campaign_dir'], 'data')
+
+    def get_commit(self):
+        return self.get_config()['commit']
 
     def get_script(self):
         return self.get_config()['script']
@@ -127,8 +142,8 @@ class DatabaseManager(object):
 
         # Verify result format is correct
         expected = set(result.keys())
-        got = (set(self.get_params()) | set(['RngRun', 'stdout', 'files',
-                                             'time']))
+        got = (set(self.get_params()) | set(['RngRun', 'stdout', 'time',
+                                             'id']))
         if (expected != got):
             raise ValueError(
                 '%s:\nExpected: %s\nGot: %s' % (

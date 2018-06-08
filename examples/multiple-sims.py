@@ -4,7 +4,7 @@
 from sem import CampaignManager, list_param_combinations
 import os
 from pathlib import Path
-import time
+import shutil
 
 
 # Define campaign parameters
@@ -12,14 +12,14 @@ import time
 
 script = 'lena-simple-epc'
 ns_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ns-3')
-filename = "/tmp/test-sims.json"
+campaign_dir = "/tmp/sem-test/lena-simple-epc-example"
 
 # Create campaign
 #################
 
-if (Path(filename).exists()):
-    os.remove(filename)
-campaign = CampaignManager.new(ns_path, script, filename,
+if (Path(campaign_dir).exists()):
+    shutil.rmtree(campaign_dir)
+campaign = CampaignManager.new(ns_path, script, campaign_dir,
                                runner='ParallelRunner')
 
 # campaign = CampaignManager.load(filename)
@@ -30,22 +30,15 @@ print(campaign)
 #################
 
 param_combinations = {
-    'numberOfNodes': 20,
-    'simTime': 10,
-    'distance': 3000,
-    'interPacketInterval': 50,
+    'numberOfNodes': [5, 10],
+    'simTime': 5,
+    'distance': [1000, 2000, 3000],
+    'interPacketInterval': [50, 100, 200],
     'useCa': ['true', 'false']
 }
 
-print('Running simulations...', end='', flush=True)
-start = time.time()
-campaign.run_missing_simulations(list_param_combinations(param_combinations), runs=5)
-end = time.time()
-print(' done!')
-
-elapsed = (end-start)
-
-print('Elapsed time: %s s' % elapsed)
+campaign.run_missing_simulations(list_param_combinations(param_combinations),
+                                 runs=5)
 
 # # Print results
 # ###############
