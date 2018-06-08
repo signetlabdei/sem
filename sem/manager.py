@@ -3,6 +3,8 @@ from .runner import SimulationRunner
 from .parallelrunner import ParallelRunner
 from git import Repo
 from copy import deepcopy
+from tqdm import tqdm
+from random import shuffle
 
 
 class CampaignManager(object):
@@ -87,10 +89,20 @@ class CampaignManager(object):
         for idx, param in enumerate(param_list):
             param['RngRun'] = next_run + idx
 
-        # Offload simulation execution to self.runner
-        results = self.runner.run_simulations(param_list, verbose)
+        # Shuffle simulations
+        # This mixes up long and short simulations, and gives better time
+        # estimates
+        shuffle(param_list)
 
-        for result in results:
+        # Offload simulation execution to self.runner
+        # Note that this only creates a generator for the results, no
+        # computation is performed on this line
+        results = self.runner.run_simulations(param_list,
+                                              self.db.get_data_dir())
+
+        for result in tqdm(results, total=len(param_list), unit='simulation',
+                           desc='Running simulations'):
+            # Insert result object in db
             self.db.insert_result(result)
 
     def get_missing_simulations(self, param_list, runs):
