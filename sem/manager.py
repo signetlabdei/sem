@@ -92,6 +92,10 @@ class CampaignManager(object):
         simulations in the database - it just runs all the parameter
         combinations that are specified in the list.
         """
+        # Check that the current repo commit corresponds to the one specified
+        # in the campaign
+        self.check_repo_ok()
+
         # Compute next RngRun value
         next_run = self.db.get_next_rngrun()
         for idx, param in enumerate(param_list):
@@ -221,3 +225,18 @@ class CampaignManager(object):
 
     def __str__(self):
         return "--- Campaign info ---\n%s\n------------" % self.db
+
+    def check_repo_ok(self):
+        # Check that git is at the expected commit and that the repo is not
+        # dirty
+        path = self.db.get_path()
+        repo = Repo(path)
+        current_commit = repo.head.commit.hexsha
+        campaign_commit = self.db.get_commit()
+
+        if repo.is_dirty(untracked_files=True):
+            raise Exception("ns-3 repository is not clean")
+
+        if current_commit != campaign_commit:
+            raise Exception("ns-3 repository is on a different commit from the"
+                            "one specified in the campaign")
