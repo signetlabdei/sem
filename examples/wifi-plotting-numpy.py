@@ -43,16 +43,6 @@ print(campaign)
 # channelWidth_values = ['20', '40']
 # useShortGuardInterval_values = ['false', 'true']
 
-# Partial parameter space
-#########################
-# nWifi_values = [4]
-# distance_values = [1]
-# simulationTime_values = [10]
-# useRts_values = ['false', 'true']
-# mcs_values = list(range(8))
-# channelWidth_values = [20]
-# useShortGuardInterval_values = ['false', 'true']
-
 # Small parameter space
 #######################
 nWifi_values = [4]
