@@ -1,0 +1,6 @@
+#+title: Development organization
+#+author: Davide Magrin
+
+* Next features
+** Add sample output parsing functions
+** Add support for parsing output files
