@@ -15,9 +15,7 @@ import xarray as xr
 ############################
 
 script = 'wifi-multi-tos'
-# ns_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ns-3')
-# ns_path = '/home/davide/Work/sem/examples/ns-3'
-ns_path = '/Users/davide/Work/sem/examples/ns-3'
+ns_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ns-3')
 campaign_dir = "/tmp/sem-test/wifi-plotting-example"
 
 # Create campaign
