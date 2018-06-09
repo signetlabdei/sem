@@ -74,14 +74,15 @@ Simulations can be run by specifying a list of parameter combinations.
    }
    >>> campaign.run_simulations([param_combination])
    Simulation 1/1:
-   {'payloadSize': 1472, 'dataRate': '100Mbps', 'tcpVariant': 'TcpHybla', 'phyRate': 'HtMcs7', 'simulationTime': 4, 'pcap': 'false', 'RngRun': 1}
+   {'payloadSize': 1472, 'dataRate': '100Mbps', 'tcpVariant': 'TcpHybla',
+    'phyRate': 'HtMcs7', 'simulationTime': 4, 'pcap': 'false', 'RngRun': 1}
 
 The run_simulations method automatically queries the database looking for an
 appropriate RngRun value that has not yet been used, and runs the simulations.
 
 Multiple simulations corresponding to the exploration of a parameter space can
-be run by employing the list_param_combinations function, which can take a dictionary
-specifying multiple values for a key and translate it into a list of
+be run by employing the list_param_combinations function, which can take a
+dictionary specifying multiple values for a key and translate it into a list of
 dictionaries specifying all combinations of parameter values::
 
   >>> from sem import list_param_combinations
@@ -95,6 +96,20 @@ dictionaries specifying all combinations of parameter values::
   }
   >>> campaign.run_simulations(list_param_combinations(param_combinations))
 
-..
-   Exporting results
-   -----------------
+Exporting results
+-----------------
+
+Once enough simulations are run, results can be exported to the numpy or xarray
+formats. At its current state, the SEM library supports automatic parsing of the
+stdout result field: in the following example, a get_average_throughput function
+is passed to the export function. This allows SEM to use the function to
+automatically clean up the results before putting them in an xarray structure.
+
+::
+
+  >>> results = campaign.get_results_as_xarray(param_combinations,
+                                            get_average_throughput)
+
+After results are exported, they can be plotted via facilities such as
+matplotlib or xarray. See the examples/wifi-plotting-xarray.py script for a
+complete example.
