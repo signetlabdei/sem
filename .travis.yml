@@ -4,6 +4,8 @@ python:
 branches:
   only:
   - /.*/
-script:
+install:
   - pip install pipenv
   - pipenv install --dev
+script:
+  - pytest -x -s
