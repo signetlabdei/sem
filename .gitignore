@@ -14,3 +14,6 @@ lib
 lib64
 __pycache__
 _build
+/tests/ns-3-compiled/
+/tests/ns-3
+.pytest_cache

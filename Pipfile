@@ -11,7 +11,6 @@ tqdm = "*"
 
 [dev-packages]
 "flake8" = "*"
-pylint = "*"
 sphinx = "*"
 pygments = "*"
 importmagic = "*"
@@ -19,6 +18,7 @@ sphinxcontrib-napoleon = "*"
 numpy = "*"
 matplotlib = "*"
 xarray = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.6"
