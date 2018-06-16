@@ -7,6 +7,7 @@ from tqdm import tqdm
 from random import shuffle
 import numpy as np
 import xarray as xr
+from pathlib import Path
 
 
 class CampaignManager(object):
@@ -27,54 +28,72 @@ class CampaignManager(object):
         self.runner = campaign_runner
 
     @classmethod
-    def new(cls, path, script, campaign_dir, runner='SimulationRunner'):
+    def new(cls, ns_path, script, campaign_dir, runner='SimulationRunner',
+            overwrite=False):
         """
-        Initialize a campaign database based on a script and ns-3 path.
+        Initialize a campaign database based on a script and ns-3 ns_path.
+
+        If a database is already available at the ns_path described in the
+        specified campaign_dir and its configuration matches config, this
+        instance is used instead. If the overwrite argument is set to True
+        instead, the specified directory is wiped and a new campaign is
+        created in its place.
 
         runner can be either SimulationRunner (default) or ParallelRunner
         """
+        # Verify if the specified campaign is already available
+        if Path(campaign_dir).exists() and not overwrite:
+            try:
+                manager = CampaignManager.load(campaign_dir)
+                same_path = manager.db.get_path() == ns_path
+                same_script = manager.db.get_script() == script
+                if same_path and same_script:
+                    return manager
+                else:
+                    del manager
+            except ValueError:
+                # Go on with the database creation
+                pass
+
         # Create a runner for the desired configuration
         if runner == 'SimulationRunner':
-            runner = SimulationRunner(path, script)
+            runner = SimulationRunner(ns_path, script)
         elif runner == 'ParallelRunner':
-            runner = ParallelRunner(path, script)
+            runner = ParallelRunner(ns_path, script)
         else:
             raise ValueError('Unknown runner')
 
         # Get list of available parameters
         params = runner.get_available_parameters()
 
-        # Repository check
-        # TODO Make sure there are no staged/unstaged changes
         # Get current commit
-        commit = Repo(path).head.commit.hexsha
+        commit = Repo(ns_path).head.commit.hexsha
 
         # Create a database manager from configuration
         config = {
             'script': script,
-            'path': path,
+            'path': ns_path,
             'params': params,
             'commit': commit,
-            'campaign_dir': campaign_dir
+            'campaign_dir': campaign_dir,
         }
 
-        db = DatabaseManager.new(config, campaign_dir)
+        db = DatabaseManager.new(**config, overwrite=overwrite)
 
         return cls(db, runner)
 
     @classmethod
-    def load(cls, filename, runner='SimulationRunner'):
-        """
-        Read a filename and load the corresponding campaign database.
-        """
-        # Read from database
-        db = DatabaseManager.load(filename)
+    def load(cls, campaign_dir, runner='SimulationRunner'):
+        # Read configuration into new DatabaseManager
+        db = DatabaseManager.load(campaign_dir)
+        ns_path = db.get_path()
+        script = db.get_script()
 
         # Create a runner for the desired configuration
         if runner == 'SimulationRunner':
-            runner = SimulationRunner(db.get_path(), db.get_script())
+            runner = SimulationRunner(ns_path, script)
         elif runner == 'ParallelRunner':
-            runner = ParallelRunner(db.get_path(), db.get_script())
+            runner = ParallelRunner(ns_path, script)
         else:
             raise ValueError('Unknown runner')
 
