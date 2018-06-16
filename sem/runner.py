@@ -1,12 +1,10 @@
 import subprocess
 import re
-import sys
-import glob
 import os
 import uuid
-from contextlib import redirect_stdout
 import time
 from tqdm import tqdm
+import importlib
 
 
 class SimulationRunner(object):
@@ -27,23 +25,25 @@ class SimulationRunner(object):
         # Configure and build ns-3
         self.configure_and_build(path)
 
-        # Update path
-        sys.path += [path, glob.glob(path + '/.waf*')[0]]
-
-        # Run waf (via its library)
-        with redirect_stdout(open(os.devnull, "w")):
-            os.chdir(path)
-            from waflib import Scripting, Context
-            Scripting.waf_entry_point(os.getcwd(), Context.WAFVERSION,
-                                      glob.glob(path + '/.waf*')[0])
-
-        # Get the program's executable filename, via the functions provided by
-        # wutils.
-        import wutils
         self.path = path
         self.script = script
-        self.script_executable = wutils.get_run_program(script)[1][0]
-        self.environment = wutils.get_proc_env()
+        build_status_path = os.path.join(path,
+                                         'build/optimized/build-status.py')
+        spec = importlib.util.spec_from_file_location('build_status',
+                                                      build_status_path)
+        build_status = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(build_status)
+
+        self.script_executable = next((os.path.join(path, program) for program
+                                       in build_status.ns3_runnable_programs if
+                                       self.script in program), None)
+
+        if self.script_executable is None:
+            raise ValueError("Cannot find %s script" % self.script)
+
+        self.environment = {
+            'LD_LIBRARY_PATH': os.path.join(path, 'build/optimized'),
+            'DYLD_LIBRARY_PATH': os.path.join(path, 'build/optimized')}
 
     #############
     # Utilities #
@@ -78,12 +78,16 @@ class SimulationRunner(object):
                     pbar.n = current
             except (StopIteration):
                 pass
+        else:  # Wait for the build to finish anyway
+            build_process.communicate()
 
     def get_output(self, process):
         """Get the output of a process"""
         while True:
             output = process.stdout.readline()
             if output == b'' and process.poll() is not None:
+                if process.returncode > 0:
+                    raise Exception("Compilation ended with an error.")
                 raise StopIteration
             if output:
                 # Parse the output to get current and total tasks
@@ -155,7 +159,8 @@ class SimulationRunner(object):
             if execution.returncode > 0:
                 complete_command = [self.script]
                 complete_command.extend(command[1:])
-                complete_command = "./waf --run \"%s\"" % ' '.join(complete_command)
+                complete_command = "./waf --run \"%s\"" % (
+                    ' '.join(complete_command))
 
                 raise Exception(('Simulation exited with an error.\n'
                                  'Params: %s\n'
@@ -165,7 +170,7 @@ class SimulationRunner(object):
                                  % (parameter, execution.stderr,
                                     execution.stdout, complete_command)))
 
-            current_result['time'] = end-start
+            current_result['elapsed_time'] = end-start
 
             current_result['stdout'] = execution.stdout.decode('utf-8')
 
