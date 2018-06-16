@@ -15,7 +15,9 @@ User's guide
 .. toctree::
    :maxdepth: 2
 
+   installation
    getting-started
+   advanced-usage
 
 API Reference
 -------------

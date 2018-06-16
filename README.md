@@ -1,5 +1,7 @@
 # A Simulation Execution Manager for ns-3 #
 
+[![Build Status](https://travis-ci.org/DvdMgr/sem.svg?branch=develop)](https://travis-ci.org/DvdMgr/sem)
+
 A Python library to perform multiple ns-3 script executions, manage
 the results and collect them in processing-friendly data structures.
 
