@@ -115,6 +115,9 @@ class CampaignManager(object):
         # in the campaign
         self.check_repo_ok()
 
+        # Configure and build ns-3 before running any simulations
+        self.runner.configure_and_build(self.db.get_path())
+
         # Compute next RngRun value
         next_run = self.db.get_next_rngrun()
         for idx, param in enumerate(param_list):
@@ -188,14 +191,14 @@ class CampaignManager(object):
 
     def get_results_as_xarray(self, parameter_space,
                               stdout_parsing_function,
-                              run_averaging_function=None):
+                              output_labels, runs):
         """
         Return the results relative to the desired parameter space in the form
         of an xarray data structure.
         """
         np_array = np.squeeze(np.array(self.get_space({}, parameter_space,
                                                       stdout_parsing_function,
-                                                      run_averaging_function)))
+                                                      runs)))
 
         # Create a parameter space only containing the variable parameters
         clean_parameter_space = {}
@@ -203,29 +206,27 @@ class CampaignManager(object):
             if isinstance(value, list) and len(value) > 1:
                 clean_parameter_space[key] = value
 
-        clean_parameter_space['runs'] = range(np_array.shape[-1])
+        if isinstance(output_labels, list):
+            clean_parameter_space['metrics'] = output_labels
+
+        clean_parameter_space['runs'] = range(runs)
 
         xr_array = xr.DataArray(np_array, coords=clean_parameter_space,
                                 dims=list(clean_parameter_space.keys()))
 
         return xr_array
 
-    def get_space(self, current_query, param_space, stdout_parsing_function,
-                  run_averaging_function):
+    def get_space(self, current_query, param_space, stdout_parsing_function, runs):
         # print("Parameter space: %s" % param_space)
         # print("Current query: %s" % current_query)
         if not param_space:
             # print("Querying database with query:\n%s" % current_query)
             results = self.db.get_results(current_query)
             parsed = []
-            for r in results:
+            for r in results[:runs]:
                 parsed.append(stdout_parsing_function(r['stdout']))
 
-            # print("Runs: %s" % parsed)
-            if run_averaging_function is not None:
-                return run_averaging_function(parsed)
-            else:
-                return parsed
+            return parsed
 
         space = []
         [key, value] = list(param_space.items())[0]
@@ -235,7 +236,8 @@ class CampaignManager(object):
             next_query[key] = v
             next_param_space = deepcopy(param_space)
             del(next_param_space[key])
-            space.append(self.get_space(next_query, next_param_space, stdout_parsing_function, run_averaging_function))
+            space.append(self.get_space(next_query, next_param_space,
+                                        stdout_parsing_function, runs))
         return space
 
     #############

@@ -1,8 +1,10 @@
-from tinydb import TinyDB, Query
-from pathlib import Path
+import os
 from functools import reduce
 from operator import and_, or_
-import os
+from pathlib import Path
+import shutil
+
+from tinydb import Query, TinyDB
 
 
 class DatabaseManager(object):
@@ -11,40 +13,52 @@ class DatabaseManager(object):
 
     A database can either be created from scratch or loaded, via the new and
     load @classmethods.
-
     """
 
     ##################
     # Initialization #
     ##################
 
-    def __init__(self, db):
+    def __init__(self, db, campaign_dir):
         """
         Initialize the DatabaseManager with a TinyDB instance.
+
+        This function assumes that the db is already complete with a config
+        entry, as created by the new and load classmethods, and should not be
+        called directly. Use the CampaignManager.new() and
+        CampaignManager.load() facilities instead.
         """
+        self.campaign_dir = campaign_dir
         self.db = db
 
     @classmethod
-    def new(cls, config, campaign_dir, overwrite=False):
+    def new(cls, script, path, commit, params, campaign_dir, overwrite=False):
         """
         Initialize a new class instance with a set configuration and filename.
 
+        The created database has the same name of the campaign directory.
+
         Args:
-            config (dict): A dictionary containing the campaign configuration.
-            filename (str): The path of the file where to save the db.
+            script (str): the ns-3 name of the script that will be used in this
+                campaign;
+            path (str): the absolute path to the ns-3 installation;
+            commit (str): the commit of the ns-3 installation that is used to
+                run the simulations.
+            params (list): a list of the parameters that can be used on the
+            campaign_dir (str): The path of the file where to save the db.
             overwrite (bool): Whether or not existing filenames should be
                 overwritten.
 
         """
-        # Create new TinyDB instance
-
         # We only accept absolute paths
         if not Path(campaign_dir).is_absolute():
             raise ValueError("Path is not absolute")
 
         # Make sure the directory does not exist already
-        if Path(campaign_dir).exists():
+        if Path(campaign_dir).exists() and not overwrite:
             raise FileExistsError("The specified directory already exists")
+        elif Path(campaign_dir).exists() and overwrite:
+            shutil.rmtree(campaign_dir)
 
         # Create the directory
         os.makedirs(campaign_dir)
@@ -52,25 +66,36 @@ class DatabaseManager(object):
         tinydb = TinyDB(os.path.join(campaign_dir, "%s.json" %
                                      os.path.basename(campaign_dir)))
 
+        # Save the configuration in the database
+        config = {
+            'script': script,
+            'path': path,
+            'commit': commit,
+            'params': params
+        }
         tinydb.table('config').insert(config)
 
-        return cls(tinydb)
+        return cls(tinydb, campaign_dir)
 
     @classmethod
-    def load(cls, filename):
+    def load(cls, campaign_dir):
         """
         Initialize from an existing database.
         """
         # We only accept absolute paths
-        if not Path(filename).is_absolute():
+        if not Path(campaign_dir).is_absolute():
             raise ValueError("Path is not absolute")
 
         # Verify file exists
-        if not Path(filename).exists():
+        if not Path(campaign_dir).exists():
             raise ValueError("File does not exist")
 
+        # Extract filename from campaign dir
+        filename = "%s.json" % os.path.split(campaign_dir)[1]
+        filepath = os.path.join(campaign_dir, filename)
+
         # Read TinyDB instance from file
-        tinydb = TinyDB(filename)
+        tinydb = TinyDB(filepath)
 
         # Make sure the configuration is a valid dictionary
         if set(tinydb.table('config').all()[0].keys()) != set(['script',
@@ -79,7 +104,7 @@ class DatabaseManager(object):
                                                                'commit']):
             raise ValueError("Existing database is corrupt")
 
-        return cls(tinydb)
+        return cls(tinydb, campaign_dir)
 
     #############
     # Utilities #
@@ -110,8 +135,7 @@ class DatabaseManager(object):
         """
         Return the data directory, which is simply campaign_directory/data.
         """
-
-        return os.path.join(self.get_config()['campaign_dir'], 'data')
+        return os.path.join(self.campaign_dir, 'data')
 
     def get_commit(self):
         return self.get_config()['commit']
@@ -142,8 +166,8 @@ class DatabaseManager(object):
 
         # Verify result format is correct
         expected = set(result.keys())
-        got = (set(self.get_params()) | set(['RngRun', 'stdout', 'time',
-                                             'id']))
+        got = (set(self.get_params()) | set(['RngRun', 'stdout',
+                                             'elapsed_time', 'id']))
         if (expected != got):
             raise ValueError(
                 '%s:\nExpected: %s\nGot: %s' % (
