@@ -1,13 +1,18 @@
 Getting started
 ===============
 
-SEM operates on a simulation campaign paradigm. Simulation campaigns
-are thought as a collection of results obtained from running an ns-3
-simulation with different parameters. A simulation campaign is
-contained in a single json database for portability, and is accessible
-through a CampaignManager object, which is provided by this library.
-Through this class it's possible to create new campaigns, load
-existing ones, run simulations and export results to other formats.
+`SEM` operates on simulation campaigns, which consist in a collection of results
+obtained from running a specific `ns-3` simulation script with possibly varying
+command line parameters.
+
+Simulation campaigns are saved in a single folder for portability, and are
+accessible through a `CampaignManager` object. Through this class it's possible
+to create new campaigns, load existing ones, run simulations and export results
+to a variety of formats for analysis and plotting.
+
+In the following sections we will use `SEM` to go from a vanilla ns-3
+installation (assumed to be available at `/tmp/ns-3`) to plots visualizing the
+results, in as few commands as possible.
 
 Creating and loading a simulation campaign
 ------------------------------------------
@@ -15,47 +20,41 @@ Creating and loading a simulation campaign
 Creation of a new campaign requires:
 
 * The path of the ns-3 installation to use
-* The name of the simulation script
-* A name for the file where the campaign will be saved.
+* The name of the simulation script that will be run
+* The location of the folder where the campaign will be saved.
 
-The following lines give an example:
+We can create a campaign using the following instructions::
 
-::
+  import sem
+  ns_path = '/tmp/ns-3'
+  script = 'wifi-multi-tos'
+  campaign_dir = '/tmp/wifi-plotting-example'
+  campaign = sem.CampaignManager.new(ns_path, script,
+                                     campaign_dir)
 
-   >>> ns_path = "/tmp/ns-3-dev-gsoc/"
-   >>> script = 'wifi-tcp'
-   >>> filename = "/tmp/wifi-tcp-sims.json"
-   >>> campaign = CampaignManager.new(ns_path, script, filename)
+Internally, `SEM` also checks whether the path points to a valid ns-3
+installation, and whether the script is actually available for execution or not.
+If a simulation campaign already exists at the specified `campaign_dir`, and if
+it points to the same `ns_path` and `script` values, that campaign is loaded
+instead.
 
-Internally, SEM also checks whether the path points to a valid ns-3
-installation, and whether the script is actually available for
-execution or not. An error is also raised if the new campaign filename
-points to an already existing file.
-
-Alternatively, campaigns can be loaded from existing files:
-
-::
-
-   >>> campaign = CampaignManager.load(filename)
-
-CampaignManager objects can be directly printed to inspect the status
-of the campaign:
+`CampaignManager` objects can also be directly printed to inspect the status of
+the campaign:
 
 ::
 
    >>> print(campaign)
    --- Campaign info ---
-   ns-3 path: /tmp/ns-3-dev-gsoc/
-   script: wifi-tcp
-   params: ['payloadSize', 'dataRate', 'tcpVariant', 'phyRate',
-            'simulationTime', 'pcap']
+   ns-3 path: /tmp/ns-3
+   script: wifi-multi-tos
+   params: ['nWifi', 'distance', 'simulationTime', 'useRts', 'mcs',
+            'channelWidth', 'useShortGuardInterval']
    commit: 9386dc7d106fd9241ff151195a0e6e5cb954d363
    ---------------------
 
-Note that, additionally to the path and script we specified in the
-campaign creation process, SEM also retrieved a list of the available
-script parameters and the SHA of the current HEAD of the git
-repository at the ns-3 path.
+Note that, additionally to the path and script we specified in the campaign
+creation process, `SEM` also retrieved a list of the available script parameters
+and the SHA of the current HEAD of the git repository at the `ns-3` path.
 
 Running simulations
 -------------------
@@ -64,52 +63,167 @@ Simulations can be run by specifying a list of parameter combinations.
 
 ::
 
-   >>> param_combination = {
-    'payloadSize': 1472,
-    'dataRate': '100Mbps',
-    'tcpVariant': 'TcpHybla',
-    'phyRate': 'HtMcs7',
-    'simulationTime': 4,
-    'pcap': 'false'
-   }
-   >>> campaign.run_simulations([param_combination])
-   Simulation 1/1:
-   {'payloadSize': 1472, 'dataRate': '100Mbps', 'tcpVariant': 'TcpHybla',
-    'phyRate': 'HtMcs7', 'simulationTime': 4, 'pcap': 'false', 'RngRun': 1}
+  param_combination = {
+      'nWifi': 1,
+      'distance': 1,
+      'simulationTime': 10,
+      'useRts': 'false',
+      'mcs': 7,
+      'channelWidth': 20,
+      'useShortGuardInterval': 'false'
+  }
+  >>> campaign.run_simulations([param_combination])
+      Running simulations: 100%|██████| 1/1 [00:04<00:00,  4.28s/simulation]
 
-The run_simulations method automatically queries the database looking for an
-appropriate RngRun value that has not yet been used, and runs the simulations.
+The `run_simulations` method automatically queries the database looking for an
+appropriate `RngRun` value that has not yet been used, and runs the requested
+simulations. After the simulation finishes, the results (i.e., any generated
+output files and the standard output) are added to the database and can be
+retrieved later on. A progress bar is displayed to indicate progress and give an
+estimate of the remaining time.
 
 Multiple simulations corresponding to the exploration of a parameter space can
-be run by employing the list_param_combinations function, which can take a
-dictionary specifying multiple values for a key and translate it into a list of
-dictionaries specifying all combinations of parameter values::
+be easily run by employing the `list_param_combinations` function, which can
+take a dictionary specifying multiple values for a key and translate it into a
+list of dictionaries specifying all combinations of parameter values. For
+example, let's try the same simulation parameters as before, but perform the
+simulations both for the `true` and `false` values of the `useRts` parameter::
 
-  >>> from sem import list_param_combinations
-  >>> param_combinations = {
-   'payloadSize': 1472,
-   'dataRate': '100Mbps',
-   'tcpVariant': ['TcpHybla', 'TcpNewReno'],
-   'phyRate': 'HtMcs7',
-   'simulationTime': [4, 8],
-   'pcap': 'false'
+  param_combinations = {
+      'nWifi': 1,
+      'distance': 1,
+      'simulationTime': 10,
+      'useRts': ['false', 'true'],
+      'mcs': 7,
+      'channelWidth': 20,
+      'useShortGuardInterval': 'false'
   }
-  >>> campaign.run_simulations(list_param_combinations(param_combinations))
+  >>> campaign.run_missing_simulations(
+                 sem.list_param_combinations(param_combinations),
+                 runs=1)
+      Running simulations: 100%|██████| 1/1 [00:04<00:00,  4.72s/simulation]
+
+From the output, it can be noticed that only one simulation was run: in fact,
+since we used the `run_missing_simulations` function, before running the
+specified simulations, `SEM` checked whether some results were already available
+in the database, found the previously executed simulation, and only performed
+the simulation for which no result employing the requested parameter combination
+was already available. Additionally, the `run_missing_simulations` function
+requires a `runs` parameter, specifying how many runs should be performed for
+each parameter combination.
+
+Finally, let's make `SEM` run multiple simulations so that we have something to
+plot. In order to do this, first we define a new `param_combinations`
+dictionary, ranging the `mcs` parameter from 0 to 7 and turning on and off the
+`RequestToSend` and `ShortGuardInterval` parameters::
+
+  param_combinations = {
+      'nWifi': 1,
+      'distance': 1,
+      'simulationTime': 10,
+      'useRts': ['false', 'true'],
+      'mcs': list(range(8)),
+      'channelWidth': 20,
+      'useShortGuardInterval': ['false', 'true']
+  }
+
+  >>> campaign.run_missing_simulations(
+                  sem.list_param_combinations(param_combinations),
+                  runs=3)
+      Running simulations: 100%|██████| 94/94 [05:47<00:00,  3.70s/simulation]
 
 Exporting results
 -----------------
 
-Once enough simulations are run, results can be exported to the numpy or xarray
-formats. At its current state, the SEM library supports automatic parsing of the
-stdout result field: in the following example, a get_average_throughput function
-is passed to the export function. This allows SEM to use the function to
-automatically clean up the results before putting them in an xarray structure.
+Available results can be inspected using the `DatabaseManager` object associated
+to the `CampaignManager`, and available as the `db` attribute of the campaign.
+For instance, let's check out the first result::
 
-::
+  >>> len(campaign.db.get_results())
+      96
+  >>> campaign.db.get_results()[0]
+      {
+        'nWifi': 1,
+        'distance': 1,
+        'simulationTime': 10,
+        'useRts': 'false',
+        'mcs': 7,
+        'channelWidth': 20,
+        'useShortGuardInterval': 'false',
+        'RngRun': 1,
+        'id': '771e0511-43b9-4e33-aa6a-dc4266be24f1',
+        'elapsed_time': 4.270819187164307,
+        'stdout': 'Aggregated throughput: 49.2696 Mbit/s\n'
+      }
+
+Results are returned as dictionaries, with a key-value pair for each available
+script parameter, and the following additional fields:
+
+  * `RngRun`: the `--RngRun` value that was used for this simulation;
+  * `id`: an unique identifier for the simulation;
+  * `elapsed_time`: the required time, in seconds, to run the simulation;
+  * `stdout`: the output of the simulation script.
+
+Finally, results can be exported to the `numpy` or `xarray` formats.
+
+At its current state, the `SEM` library supports automatic parsing of the
+`stdout` result field: in the following lines we will define a
+`get_average_throughput` function, which transforms strings formatted like the
+`stdout` field of the result above into float numbers containing the average
+throughput measured by the simulation. `SEM` will then use the function to
+automatically clean up the results before putting them in an `xarray`
+structure::
+
+  import re  # Regular expressions to perform the parsing
+
+
+  def get_average_throughput(stdout):
+    m = re.match('.*throughput: [-+]?([0-9]*\.?[0-9]+).*', stdout,
+                re.DOTALL).group(1)
+    return float(m)
+
 
   >>> results = campaign.get_results_as_xarray(param_combinations,
-                                            get_average_throughput)
+                                               get_average_throughput,
+                                               'AvgThroughput', runs=3)
 
-After results are exported, they can be plotted via facilities such as
-matplotlib or xarray. See the examples/wifi-plotting-xarray.py script for a
-complete example.
+      <xarray.DataArray (useRts: 2, mcs: 8, useShortGuardInterval: 2, runs: 3)>
+      array([[[[10.8351 , 10.8057 , 10.8163 ],
+              [11.849  , 11.8549 , 11.7901 ]],
+
+              [...]
+
+              [[35.2868 , 35.3763 , 35.3044 ],
+              [36.4903 , 36.4137 , 36.4432 ]]]])
+      Coordinates:
+        * useRts                 (useRts) <U5 'false' 'true'
+        * mcs                    (mcs) int64 0 1 2 3 4 5 6 7
+        * useShortGuardInterval  (useShortGuardInterval) <U5 'false' 'true'
+        * runs                   (runs) int64 0 1 2
+
+Finally, we can easily plot the obtained results by appropriately slicing the
+`DataArray`::
+
+  import matplotlib.pyplot as plt
+  import numpy as np
+  plt.figure()  # Create a new figure
+  # Iterate over all possible parameter values
+  for useShortGuardInterval in ['false', 'true']:
+    for useRts in ['false', 'true']:
+        avg = results.sel(useShortGuardInterval=useShortGuardInterval,
+                          useRts=useRts).reduce(np.mean, 'runs')
+        std = results.sel(useShortGuardInterval=useShortGuardInterval,
+                          useRts=useRts).reduce(np.std, 'runs')
+        plt.errorbar(x=param_combinations['mcs'], y=avg, yerr=6*std,
+                     label='SGI %s, RTS %s' % (useShortGuardInterval, useRts))
+        plt.xlabel('MCS')
+        plt.ylabel('Throughput [Mbit/s]')
+  plt.legend(loc='best')
+  plt.show()
+
+.. figure:: throughput.png
+    :width: 100%
+    :align: center
+    :figclass: align-center
+
+    The plot obtained from the simulations.
