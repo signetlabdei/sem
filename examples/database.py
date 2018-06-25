@@ -44,12 +44,12 @@ params = {
     'pcap': 'false',
 }
 result = {}
-result.update({**params, **{'stdout': '0 1 2 3 4', 'RngRun': 10, 'time': 2, 'files': {}}})
+result.update({**params, **{'RngRun': 10, 'time': 2, 'files': {}}})
 db.insert_result(result)
 
 result = {}
 params['simulationTime'] = 3
-result.update({**params, **{'stdout': '1 2 3 4 5', 'RngRun': 11, 'time': 2, 'files': {}}})
+result.update({**params, **{'RngRun': 11, 'time': 2, 'files': {}}})
 db.insert_result(result)
 
 # Print results

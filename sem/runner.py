@@ -150,10 +150,14 @@ class SimulationRunner(object):
                 os.makedirs(temp_dir)
 
             start = time.time()  # Time execution
-            execution = subprocess.run(command, cwd=temp_dir,
-                                       env=self.environment,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE)
+            stdout_file_path = os.path.join(temp_dir, 'stdout')
+            stderr_file_path = os.path.join(temp_dir, 'stderr')
+            with open(stdout_file_path, 'w') as stdout_file, open(
+                    stderr_file_path, 'w') as stderr_file:
+                execution = subprocess.run(command, cwd=temp_dir,
+                                           env=self.environment,
+                                           stdout=stdout_file,
+                                           stderr=stderr_file)
             end = time.time()  # Time execution
 
             if execution.returncode > 0:
@@ -162,16 +166,16 @@ class SimulationRunner(object):
                 complete_command = "./waf --run \"%s\"" % (
                     ' '.join(complete_command))
 
-                raise Exception(('Simulation exited with an error.\n'
-                                 'Params: %s\n'
-                                 '\nStderr: %s\n'
-                                 'Stdout: %s\n'
-                                 'Use the following command to reproduce:\n%s'
-                                 % (parameter, execution.stderr,
-                                    execution.stdout, complete_command)))
+                with open(stdout_file_path, 'r') as stdout_file, open(
+                        stderr_file_path, 'r') as stderr_file:
+                    raise Exception(('Simulation exited with an error.\n'
+                                    'Params: %s\n'
+                                    '\nStderr: %s\n'
+                                    'Stdout: %s\n'
+                                    'Use the following command to reproduce:\n%s'
+                                    % (parameter, stderr_file.read(),
+                                        stdout_file.read(), complete_command)))
 
             current_result['elapsed_time'] = end-start
-
-            current_result['stdout'] = execution.stdout.decode('utf-8')
 
             yield current_result

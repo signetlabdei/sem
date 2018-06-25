@@ -48,7 +48,7 @@ class CampaignManager(object):
         # Verify if the specified campaign is already available
         if Path(campaign_dir).exists() and not overwrite:
             try:
-                manager = CampaignManager.load(campaign_dir)
+                manager = CampaignManager.load(campaign_dir, runner=runner)
                 same_path = manager.db.get_path() == ns_path
                 same_script = manager.db.get_script() == script
                 if same_path and same_script:
@@ -187,25 +187,25 @@ class CampaignManager(object):
     #####################
 
     def get_results_as_numpy_array(self, parameter_space,
-                                   stdout_parsing_function,
+                                   result_parsing_function,
                                    run_averaging_function=None):
         """
         Return the results relative to the desired parameter space in the form
         of a numpy array.
         """
         return np.squeeze(np.array(self.get_space({}, parameter_space,
-                                                  stdout_parsing_function,
+                                                  result_parsing_function,
                                                   run_averaging_function)))
 
     def get_results_as_xarray(self, parameter_space,
-                              stdout_parsing_function,
+                              result_parsing_function,
                               output_labels, runs):
         """
         Return the results relative to the desired parameter space in the form
         of an xarray data structure.
         """
         np_array = np.squeeze(np.array(self.get_space({}, parameter_space,
-                                                      stdout_parsing_function,
+                                                      result_parsing_function,
                                                       runs)))
 
         # Create a parameter space only containing the variable parameters
@@ -224,7 +224,8 @@ class CampaignManager(object):
 
         return xr_array
 
-    def get_space(self, current_query, param_space, stdout_parsing_function, runs):
+    def get_space(self, current_query, param_space, result_parsing_function,
+                  runs):
         # print("Parameter space: %s" % param_space)
         # print("Current query: %s" % current_query)
         if not param_space:
@@ -232,7 +233,7 @@ class CampaignManager(object):
             results = self.db.get_results(current_query)
             parsed = []
             for r in results[:runs]:
-                parsed.append(stdout_parsing_function(r['stdout']))
+                parsed.append(result_parsing_function(r))
 
             return parsed
 
@@ -245,7 +246,7 @@ class CampaignManager(object):
             next_param_space = deepcopy(param_space)
             del(next_param_space[key])
             space.append(self.get_space(next_query, next_param_space,
-                                        stdout_parsing_function, runs))
+                                        result_parsing_function, runs))
         return space
 
     #############

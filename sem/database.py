@@ -166,8 +166,7 @@ class DatabaseManager(object):
 
         # Verify result format is correct
         expected = set(result.keys())
-        got = (set(self.get_params()) | set(['RngRun', 'stdout',
-                                             'elapsed_time', 'id']))
+        got = (set(self.get_params()) | set(['RngRun', 'elapsed_time', 'id']))
         if (expected != got):
             raise ValueError(
                 '%s:\nExpected: %s\nGot: %s' % (
@@ -229,6 +228,14 @@ class DatabaseManager(object):
                               for key, value in query_params.items()])
 
         return self.db.table('results').search(query)
+
+    def get_result_files(self, result_id):
+        # Return a dictionary containing filename: filepath
+        return {k: v for k, v in [(f, os.path.join(self.get_data_dir(),
+                                  result_id, f)) for f in
+                                  next(os.walk(os.path.join(
+                                      self.get_data_dir(),
+                                      result_id)))[2]]}
 
     def wipe_results(self):
         """ Removes all results from the database. """
