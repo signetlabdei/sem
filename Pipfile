@@ -4,18 +4,19 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"e1839a8" = {path = ".", editable = true}
 tinydb = "*"
 gitpython = "*"
 tqdm = "*"
+drmaa = "*"
+numpy = "*"
 
 [dev-packages]
+"e1839a8" = {path = ".", editable = true}
 "flake8" = "*"
 sphinx = "*"
 pygments = "*"
 importmagic = "*"
 sphinxcontrib-napoleon = "*"
-numpy = "*"
 matplotlib = "*"
 xarray = "*"
 pytest = "*"
