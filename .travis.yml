@@ -6,6 +6,7 @@ branches:
   - /.*/
 install:
   - pip install pipenv
-  - pipenv install --dev
+  - PIPENV_IGNORE_VIRTUALENVS=1 pipenv run python setup.py build
+  - PIPENV_IGNORE_VIRTUALENVS=1 pipenv install --dev
 script:
-  - pytest -x -s
+  - PIPENV_IGNORE_VIRTUALENVS=1 pipenv run pytest -x -s
