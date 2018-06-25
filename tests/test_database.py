@@ -92,3 +92,9 @@ def test_results(db, result):
     # wipe_results actually empties result list
     db.wipe_results()
     assert db.get_results() == []
+
+
+def test_get_result_files(manager, parameter_combination):
+    manager.run_simulations([parameter_combination])
+    assert manager.db.get_result_files(
+        manager.db.get_results()[0]['id']).get('stdout') is not None

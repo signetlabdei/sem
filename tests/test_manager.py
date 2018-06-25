@@ -3,11 +3,6 @@ import os
 import pytest
 
 
-@pytest.fixture(scope='function')
-def manager(ns_3_compiled, config):
-    return CampaignManager.new(ns_3_compiled, config['script'],
-                               config['campaign_dir'])
-
 ##################################
 # Campaign creation from scratch #
 ##################################

@@ -3,6 +3,7 @@ import shutil
 import os
 import subprocess
 from git import Repo
+from sem import CampaignManager
 
 ns_3_test = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ns-3')
 ns_3_test_compiled = os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -51,12 +52,25 @@ def result(config):
         'dict': '/usr/share/dict/web2',
         'time': 'false',
         'RngRun': 10,
-        'stdout': '1 2 3 4 5',
         'elapsed_time': 10,
-        'id': '29f4893fhj8943hg934',
+        'id': '98f89356-3682-4cb4-b6c3-3c792979a8fc',
     }
 
     return r
+
+
+@pytest.fixture(scope='function')
+def parameter_combination():
+    return {
+        'dict': '/usr/share/dict/web2',
+        'time': 'false'
+    }
+
+
+@pytest.fixture(scope='function')
+def manager(ns_3_compiled, config):
+    return CampaignManager.new(ns_3_compiled, config['script'],
+                               config['campaign_dir'])
 
 #########################################################################
 # Clean up after each session                                           #

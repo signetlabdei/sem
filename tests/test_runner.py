@@ -22,11 +22,7 @@ def test_get_available_parameters(runner, config):
     assert runner.get_available_parameters() == config['params']
 
 
-def test_run_simulations(runner, config):
+def test_run_simulations(runner, config, parameter_combination):
     # Make sure that simulations run without any issue
-    param_comb = {
-        'dict': '/usr/share/dict/web2',
-        'time': 'false'
-        }
     data_dir = os.path.join(config['campaign_dir'], 'data')
-    list(runner.run_simulations([param_comb], data_dir))
+    list(runner.run_simulations([parameter_combination], data_dir))
