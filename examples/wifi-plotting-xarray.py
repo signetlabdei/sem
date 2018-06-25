@@ -19,7 +19,8 @@ campaign_dir = "/tmp/sem-test/wifi-plotting-example"
 #################
 
 campaign = sem.CampaignManager.new(ns_path, script, campaign_dir,
-                                   runner='ParallelRunner')
+                                   runner='ParallelRunner',
+                                   overwrite=False)
 
 print(campaign)
 
@@ -35,7 +36,7 @@ useRts_values = ['false', 'true']
 mcs_values = list(range(8))
 channelWidth_values = ['20']
 useShortGuardInterval_values = ['false', 'true']
-runs = 6
+runs = 2
 
 param_combinations = {
     'nWifi': nWifi_values,
@@ -57,12 +58,19 @@ print("Simulations done.")
 ###############################
 
 
-def get_average_throughput(stdout):
-    # This function takes a string and parses it to extract relevant
-    # information
-    m = re.match('.*throughput: [-+]?([0-9]*\.?[0-9]+).*', stdout,
-                 re.DOTALL).group(1)
-    return float(m)
+def get_average_throughput(result):
+    # This function takes a result and parses its standard output to extract
+    # relevant information
+    stdout_file = campaign.db.get_result_files(result['id'])['stdout']
+    stderr_file = campaign.db.get_result_files(result['id'])['stderr']
+    with open(stderr_file, 'r') as stderr:
+        if stderr.read() != '':
+            print(stderr.read())
+    with open(stdout_file, 'r') as stdout:
+        stdout = stdout.read()
+        m = re.match('.*throughput: [-+]?([0-9]*\.?[0-9]+).*', stdout,
+                     re.DOTALL).group(1)
+        return float(m)
 
 
 # Reduce multiple runs to a single value (or tuple)
@@ -97,11 +105,9 @@ for nWifi in [1, 3]:
         stacked_params = results.sel(nWifi=nWifi, distance=distance).stack(
             sgi_rts=('useShortGuardInterval', 'useRts')).reduce(np.mean,
                                                                 'runs')
-
         plt.subplot(2, 2, subplot_idx)
         stacked_params.plot.line(x='mcs', add_legend=True)
         plt.xlabel('MCS')
         plt.ylabel('Throughput [Mbit/s]')
         subplot_idx += 1
-
 plt.show()
