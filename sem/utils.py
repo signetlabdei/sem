@@ -1,5 +1,11 @@
 from itertools import product
 
+try:
+    DRMAA_AVAILABLE = True
+    import drmaa
+except(RuntimeError):
+    DRMAA_AVAILABLE = False
+
 
 def list_param_combinations(param_ranges):
     # Convert non-list values to single-element lists

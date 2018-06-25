@@ -1,6 +1,7 @@
 from .database import DatabaseManager
 from .runner import SimulationRunner
 from .parallelrunner import ParallelRunner
+from .utils import DRMAA_AVAILABLE
 from git import Repo
 from copy import deepcopy
 from tqdm import tqdm
@@ -8,6 +9,9 @@ from random import shuffle
 import numpy as np
 import xarray as xr
 from pathlib import Path
+
+if DRMAA_AVAILABLE:
+    from .gridrunner import GridRunner
 
 
 class CampaignManager(object):
@@ -60,6 +64,8 @@ class CampaignManager(object):
             runner = SimulationRunner(ns_path, script)
         elif runner == 'ParallelRunner':
             runner = ParallelRunner(ns_path, script)
+        elif runner == 'GridRunner':
+            runner = GridRunner(ns_path, script)
         else:
             raise ValueError('Unknown runner')
 
@@ -94,6 +100,8 @@ class CampaignManager(object):
             runner = SimulationRunner(ns_path, script)
         elif runner == 'ParallelRunner':
             runner = ParallelRunner(ns_path, script)
+        elif runner == 'GridRunner':
+            runner = GridRunner(ns_path, script)
         else:
             raise ValueError('Unknown runner')
 
