@@ -169,11 +169,12 @@ class SimulationRunner(object):
                 with open(stdout_file_path, 'r') as stdout_file, open(
                         stderr_file_path, 'r') as stderr_file:
                     raise Exception(('Simulation exited with an error.\n'
-                                    'Params: %s\n'
-                                    '\nStderr: %s\n'
-                                    'Stdout: %s\n'
-                                    'Use the following command to reproduce:\n%s'
-                                    % (parameter, stderr_file.read(),
+                                     'Params: %s\n'
+                                     '\nStderr: %s\n'
+                                     'Stdout: %s\n'
+                                     'Use this command to reproduce:\n'
+                                     '%s'
+                                     % (parameter, stderr_file.read(),
                                         stdout_file.read(), complete_command)))
 
             current_result['elapsed_time'] = end-start

@@ -32,7 +32,7 @@ class DatabaseManager(object):
         self.db = db
 
     @classmethod
-    def new(cls, script, path, commit, params, campaign_dir, overwrite=False):
+    def new(cls, script, commit, params, campaign_dir, overwrite=False):
         """
         Initialize a new class instance with a set configuration and filename.
 
@@ -41,7 +41,6 @@ class DatabaseManager(object):
         Args:
             script (str): the ns-3 name of the script that will be used in this
                 campaign;
-            path (str): the absolute path to the ns-3 installation;
             commit (str): the commit of the ns-3 installation that is used to
                 run the simulations.
             params (list): a list of the parameters that can be used on the
@@ -99,7 +98,6 @@ class DatabaseManager(object):
 
         # Make sure the configuration is a valid dictionary
         if set(tinydb.table('config').all()[0].keys()) != set(['script',
-                                                               'path',
                                                                'params',
                                                                'commit']):
             raise ValueError("Existing database is corrupt")
@@ -113,8 +111,8 @@ class DatabaseManager(object):
     def __str__(self):
         configuration = self.get_config()
         return "ns-3: %s\nscript: %s\nparams: %s\ncommit: %s" % (
-            configuration['path'], configuration['script'],
-            configuration['params'], configuration['commit'])
+            configuration['script'], configuration['params'],
+            configuration['commit'])
 
     ###################
     # Database access #
@@ -127,9 +125,6 @@ class DatabaseManager(object):
 
         # Read from self.db and return the config entry of the database
         return self.db.table('config').all()[0]
-
-    def get_path(self):
-        return self.get_config()['path']
 
     def get_data_dir(self):
         """

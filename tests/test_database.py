@@ -19,15 +19,7 @@ def db(config):
 #################################
 
 
-def test_db_creation_from_scratch(tmpdir, ns_3):
-    # Creation through the new method
-    config = {
-        'script': 'wifi-tcp',
-        'path': ns_3,
-        'commit': 'whatever',
-        'params': ['param1', 'param2'],
-        'campaign_dir': os.path.join(tmpdir, 'test_campaign'),
-    }
+def test_db_creation_from_scratch(tmpdir, config, ns_3):
     # This should be ok
     DatabaseManager.new(**config)
     # This should raise FileExistsError because directory already exists
