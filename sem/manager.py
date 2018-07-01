@@ -121,7 +121,7 @@ class CampaignManager(object):
         self.check_repo_ok()
 
         # Configure and build ns-3 before running any simulations
-        self.runner.configure_and_build(self.db.get_path())
+        self.runner.configure_and_build()
 
         # Compute next RngRun value
         next_run = self.db.get_next_rngrun()

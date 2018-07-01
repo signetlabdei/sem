@@ -96,6 +96,8 @@ class SimulationRunner(object):
                 for current, total in pbar:
                     pbar.n = current
             except (StopIteration):
+                if pbar is not None:
+                    pbar.n = pbar.total
                 pass
         else:  # Wait for the build to finish anyway
             build_process.communicate()
@@ -123,16 +125,19 @@ class SimulationRunner(object):
         """
 
         # At the moment, we rely on regex to extract the list of available
-        # parameters. A tighter integration with waf would allow for a more
-        # natural extraction of the information.
+        # parameters. This solution will break if the format of the output
+        # changes, but I know of no better way to do this.
 
         result = subprocess.check_output([self.script_executable,
                                           '--PrintHelp'], env=self.environment,
                                          cwd=self.path).decode('utf-8')
 
-        options = re.findall('.*Program\sArguments:(.*)General\sArguments.*',
+        # Isolate the list of parameters
+        options = re.findall('.*Program\s(?:Options|Arguments):'
+                             '(.*)General\sArguments.*',
                              result, re.DOTALL)
 
+        # Get the single parameter names
         if len(options):
             args = re.findall('.*--(.*?):.*', options[0], re.MULTILINE)
             return args
