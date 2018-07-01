@@ -232,6 +232,15 @@ class DatabaseManager(object):
                                       self.get_data_dir(),
                                       result_id)))[2]]}
 
+    def get_complete_results(self, params=None):
+        results = self.get_results(params)
+        for r in results:
+            available_files = self.get_result_files(r['id'])
+            for name, filepath in available_files.items():
+                with open(filepath, 'r') as file_contents:
+                    r[name] = file_contents.read()
+        return results
+
     def wipe_results(self):
         """ Removes all results from the database. """
         self.db.purge_table('results')
