@@ -48,8 +48,8 @@ param_combinations = {
     'useShortGuardInterval': useShortGuardInterval_values,
 }
 
-campaign.run_missing_simulations(sem.list_param_combinations(param_combinations),
-                                 runs=runs)
+campaign.run_missing_simulations(sem.list_param_combinations(
+    param_combinations), runs=runs)
 
 print("Simulations done.")
 
@@ -61,12 +61,11 @@ print("Simulations done.")
 def get_average_throughput(result):
     # This function takes a result and parses its standard output to extract
     # relevant information
-    stdout_file = campaign.db.get_result_files(result['id'])['stdout']
-    stderr_file = campaign.db.get_result_files(result['id'])['stderr']
-    with open(stderr_file, 'r') as stderr:
+    available_files = campaign.db.get_result_files(result['id'])
+    with open(available_files['stderr'], 'r') as stderr:
         if stderr.read() != '':
             print(stderr.read())
-    with open(stdout_file, 'r') as stdout:
+    with open(available_files['stdout'], 'r') as stdout:
         stdout = stdout.read()
         m = re.match('.*throughput: [-+]?([0-9]*\.?[0-9]+).*', stdout,
                      re.DOTALL).group(1)
@@ -100,8 +99,8 @@ plt.show()
 # Assess the influence of nWifi and distance parameters
 plt.figure()
 subplot_idx = 1
-for nWifi in [1, 3]:
-    for distance in [1, 10]:
+for nWifi in nWifi_values:
+    for distance in distance_values:
         stacked_params = results.sel(nWifi=nWifi, distance=distance).stack(
             sgi_rts=('useShortGuardInterval', 'useRts')).reduce(np.mean,
                                                                 'runs')
