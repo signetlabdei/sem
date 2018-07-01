@@ -20,6 +20,7 @@ sphinxcontrib-napoleon = "*"
 matplotlib = "*"
 xarray = "*"
 pytest = "*"
+scipy = "*"
 
 [requires]
 python_version = "3.6"
