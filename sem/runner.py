@@ -17,18 +17,33 @@ class SimulationRunner(object):
     # Initialization #
     ##################
 
-    def __init__(self, path, script):
+    def __init__(self, path, script, optimized=True):
         """
         Initialization function.
         """
-
-        # Configure and build ns-3
-        self.configure_and_build(path)
-
+        # Save member variables
         self.path = path
         self.script = script
-        build_status_path = os.path.join(path,
-                                         'build/optimized/build-status.py')
+        if optimized:
+            self.environment = {
+                'LD_LIBRARY_PATH': os.path.join(path, 'build/optimized'),
+                'DYLD_LIBRARY_PATH': os.path.join(path, 'build/optimized')}
+        else:
+            self.environment = {
+                'LD_LIBRARY_PATH': os.path.join(path, 'build'),
+                'DYLD_LIBRARY_PATH': os.path.join(path, 'build')}
+
+        # Configure and build ns-3
+        self.configure_and_build(path, optimized=optimized)
+
+        # Build status is used to get the executable path for the specified
+        # script
+        if optimized:
+            build_status_path = os.path.join(path,
+                                             'build/optimized/build-status.py')
+        else:
+            build_status_path = os.path.join(path,
+                                             'build/build-status.py')
         spec = importlib.util.spec_from_file_location('build_status',
                                                       build_status_path)
         build_status = importlib.util.module_from_spec(spec)
@@ -41,35 +56,39 @@ class SimulationRunner(object):
         if self.script_executable is None:
             raise ValueError("Cannot find %s script" % self.script)
 
-        self.environment = {
-            'LD_LIBRARY_PATH': os.path.join(path, 'build/optimized'),
-            'DYLD_LIBRARY_PATH': os.path.join(path, 'build/optimized')}
-
     #############
     # Utilities #
     #############
 
-    def configure_and_build(self, path, verbose=False, progress=True):
+    def configure_and_build(self, show_progress=True, optimized=True):
         """
         Configure and build the ns-3 code.
         """
 
-        # Check whether path points to a valid installation
-        subprocess.run(['./waf', 'configure', '--enable-examples',
-                        '--disable-gtk', '--disable-python',
-                        '--build-profile=optimized', '--out=build/optimized'],
-                       cwd=path, stdout=subprocess.PIPE if not verbose else
-                       None, stderr=subprocess.PIPE if not verbose else None)
+        if optimized:
+            # Check whether path points to a valid installation
+            subprocess.run(['./waf', 'configure', '--enable-examples',
+                            '--disable-gtk', '--disable-python',
+                            '--build-profile=optimized',
+                            '--out=build/optimized'], cwd=self.path,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE)
+        else:
+            # Check whether path points to a valid installation
+            subprocess.run(['./waf', 'configure', '--enable-examples',
+                            '--disable-python'], cwd=self.path,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE)
 
         # Build ns-3
-        build_process = subprocess.Popen(['./waf', 'build'], cwd=path,
-                                         stdout=subprocess.PIPE if not verbose
-                                         else None, stderr=subprocess.PIPE if
-                                         not verbose else None)
+        build_process = subprocess.Popen(['./waf', 'build'], cwd=self.path,
+                                         stdout=subprocess.PIPE,
+                                         stderr=subprocess.PIPE)
 
         # Show a progress bar
-        if progress and not verbose:
+        if show_progress:
             line_iterator = self.get_output(build_process)
+            pbar = None
             try:
                 [initial, total] = next(line_iterator)
                 pbar = tqdm(line_iterator, initial=initial, total=total,
