@@ -211,10 +211,10 @@ class CampaignManager(object):
             if isinstance(value, list) and len(value) > 1:
                 clean_parameter_space[key] = value
 
+        clean_parameter_space['runs'] = range(runs)
+
         if isinstance(output_labels, list):
             clean_parameter_space['metrics'] = output_labels
-
-        clean_parameter_space['runs'] = range(runs)
 
         xr_array = xr.DataArray(np_array, coords=clean_parameter_space,
                                 dims=list(clean_parameter_space.keys()))
