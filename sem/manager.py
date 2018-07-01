@@ -32,8 +32,8 @@ class CampaignManager(object):
         self.runner = campaign_runner
 
     @classmethod
-    def new(cls, ns_path, script, campaign_dir, runner='SimulationRunner',
-            overwrite=False):
+    def new(cls, ns_path, script, campaign_dir, runner_type='SimulationRunner',
+            overwrite=False, optimized=True):
         """
         Initialize a campaign database based on a script and ns-3 ns_path.
 
@@ -48,10 +48,11 @@ class CampaignManager(object):
         # Verify if the specified campaign is already available
         if Path(campaign_dir).exists() and not overwrite:
             try:
-                manager = CampaignManager.load(campaign_dir, runner=runner)
-                same_path = manager.db.get_path() == ns_path
+                manager = CampaignManager.load(campaign_dir, ns_path,
+                                               runner_type=runner_type,
+                                               optimized=optimized)
                 same_script = manager.db.get_script() == script
-                if same_path and same_script:
+                if same_script:
                     return manager
                 else:
                     del manager
@@ -59,17 +60,10 @@ class CampaignManager(object):
                 # Go on with the database creation
                 pass
 
-        # Create a runner for the desired configuration
-        if runner == 'SimulationRunner':
-            runner = SimulationRunner(ns_path, script)
-        elif runner == 'ParallelRunner':
-            runner = ParallelRunner(ns_path, script)
-        elif runner == 'GridRunner':
-            runner = GridRunner(ns_path, script)
-        else:
-            raise ValueError('Unknown runner')
-
         # Get list of available parameters
+        runner = CampaignManager.create_runner(ns_path, script,
+                                               runner_type=runner_type,
+                                               optimized=optimized)
         params = runner.get_available_parameters()
 
         # Get current commit
@@ -78,7 +72,6 @@ class CampaignManager(object):
         # Create a database manager from configuration
         config = {
             'script': script,
-            'path': ns_path,
             'params': params,
             'commit': commit,
             'campaign_dir': campaign_dir,
@@ -89,23 +82,27 @@ class CampaignManager(object):
         return cls(db, runner)
 
     @classmethod
-    def load(cls, campaign_dir, runner='SimulationRunner'):
+    def load(cls, campaign_dir, ns_path=None, runner_type='SimulationRunner',
+             optimized=True):
         # Read configuration into new DatabaseManager
         db = DatabaseManager.load(campaign_dir)
-        ns_path = db.get_path()
         script = db.get_script()
 
-        # Create a runner for the desired configuration
-        if runner == 'SimulationRunner':
-            runner = SimulationRunner(ns_path, script)
-        elif runner == 'ParallelRunner':
-            runner = ParallelRunner(ns_path, script)
-        elif runner == 'GridRunner':
-            runner = GridRunner(ns_path, script)
-        else:
-            raise ValueError('Unknown runner')
+        runner = None
+        if ns_path is not None:
+            runner = CampaignManager.create_runner(ns_path, script,
+                                                   runner_type, optimized)
 
         return cls(db, runner)
+
+    def create_runner(ns_path, script, runner_type='SimulationRunner',
+                      optimized=True):
+        # locals() contains a dictionary pairing class names with class
+        # objects: we can create the object using the desired class starting
+        # from its name.
+        return locals().get(runner_type,
+                            globals().get(runner_type))(
+                                ns_path, script, optimized=optimized)
 
     ######################
     # Simulation running #
@@ -259,14 +256,15 @@ class CampaignManager(object):
     def check_repo_ok(self):
         # Check that git is at the expected commit and that the repo is not
         # dirty
-        path = self.db.get_path()
-        repo = Repo(path)
-        current_commit = repo.head.commit.hexsha
-        campaign_commit = self.db.get_commit()
+        if self.runner is not None:
+            path = self.runner.path
+            repo = Repo(path)
+            current_commit = repo.head.commit.hexsha
+            campaign_commit = self.db.get_commit()
 
-        if repo.is_dirty(untracked_files=True):
-            raise Exception("ns-3 repository is not clean")
+            if repo.is_dirty(untracked_files=True):
+                raise Exception("ns-3 repository is not clean")
 
-        if current_commit != campaign_commit:
-            raise Exception("ns-3 repository is on a different commit from the"
-                            "one specified in the campaign")
+            if current_commit != campaign_commit:
+                raise Exception("ns-3 repository is on a different commit from "
+                                "the one specified in the campaign")
