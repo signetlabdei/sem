@@ -1,15 +1,18 @@
 import os
 from functools import reduce
+import itertools
 from operator import and_, or_
 from pathlib import Path
+from copy import deepcopy
 import shutil
-
-from tinydb import Query, TinyDB
+import glob
+from pprint import pformat
+from tinydb import TinyDB, where
 
 
 class DatabaseManager(object):
     """
-    This class is tasked with interfacing to the simulation campaign database.
+    This serves as an interface with the simulation campaign database.
 
     A database can either be created from scratch or loaded, via the new and
     load @classmethods.
@@ -23,7 +26,7 @@ class DatabaseManager(object):
         """
         Initialize the DatabaseManager with a TinyDB instance.
 
-        This function assumes that the db is already complete with a config
+        This function assumes that the DB is already complete with a config
         entry, as created by the new and load classmethods, and should not be
         called directly. Use the CampaignManager.new() and
         CampaignManager.load() facilities instead.
@@ -44,11 +47,13 @@ class DatabaseManager(object):
             commit (str): the commit of the ns-3 installation that is used to
                 run the simulations.
             params (list): a list of the parameters that can be used on the
-            campaign_dir (str): The path of the file where to save the db.
-            overwrite (bool): Whether or not existing filenames should be
+                script.
+            campaign_dir (str): The path of the file where to save the DB.
+            overwrite (bool): Whether or not existing directories should be
                 overwritten.
 
         """
+
         # We only accept absolute paths
         if not Path(campaign_dir).is_absolute():
             raise ValueError("Path is not absolute")
@@ -59,9 +64,9 @@ class DatabaseManager(object):
         elif Path(campaign_dir).exists() and overwrite:
             shutil.rmtree(campaign_dir)
 
-        # Create the directory
+        # Create the directory and database file in it
+        # The indent and separators ensure the database is human readable.
         os.makedirs(campaign_dir)
-
         tinydb = TinyDB(os.path.join(campaign_dir, "%s.json" %
                                      os.path.basename(campaign_dir)),
                         sort_keys=True, indent=4, separators=(',', ': '))
@@ -80,7 +85,14 @@ class DatabaseManager(object):
     def load(cls, campaign_dir):
         """
         Initialize from an existing database.
+
+        It is assumed that the database json file has the same name as its
+        containing folder.
+
+        Args:
+            campaign_dir (str): The path to the campaign directory.
         """
+
         # We only accept absolute paths
         if not Path(campaign_dir).is_absolute():
             raise ValueError("Path is not absolute")
@@ -104,23 +116,20 @@ class DatabaseManager(object):
 
         return cls(tinydb, campaign_dir)
 
-    #############
-    # Utilities #
-    #############
-
-    def __str__(self):
-        configuration = self.get_config()
-        return "ns-3: %s\nscript: %s\nparams: %s\ncommit: %s" % (
-            configuration['script'], configuration['params'],
-            configuration['commit'])
-
     ###################
     # Database access #
     ###################
 
     def get_config(self):
         """
-        Return the configuration dictionary of this DatabaseManager's campaign
+        Return the configuration dictionary of this DatabaseManager's campaign.
+
+        This is a dictionary containing the following keys:
+
+        * script: the name of the script that is executed in the campaign.
+        * params: a list of the command line parameters that can be used on the
+          script.
+        * commit: the commit at which the campaign is operating.
         """
 
         # Read from self.db and return the config entry of the database
@@ -133,70 +142,115 @@ class DatabaseManager(object):
         return os.path.join(self.campaign_dir, 'data')
 
     def get_commit(self):
+        """
+        Return the commit at which the campaign is operating.
+        """
         return self.get_config()['commit']
 
     def get_script(self):
+        """
+        Return the ns-3 script that is run in the campaign.
+        """
         return self.get_config()['script']
 
     def get_params(self):
+        """
+        Return a list containing the parameters that can be toggled.
+        """
         return self.get_config()['params']
 
-    def get_next_rngrun(self):
-        if len(self.get_results()):
-            return 1+max([result['RngRun'] for result in self.get_results()])
-        else:
-            return 1
+    def get_next_rngruns(self, n=1):
+        """
+        Return a list containing the next RngRun values that can be used in
+        this campaign.
+
+        Args:
+            n (int): number of desired RngRun values.
+        """
+        available_runs = [result['params']['RngRun'] for result in
+                          self.get_results()]
+        return DatabaseManager.get_next_n_values(available_runs, n)
 
     def insert_result(self, result):
         """
         Insert a new result in the database.
 
         This function also verifies that the result dictionaries saved in the
-        database have the following fields:
+        database have the following structure (with {'a': 1} representing a
+        dictionary, 'a' a key and 1 its value)::
 
-        * One key for each available script parameter
-        * A RngRun key (with the employed RngRun as a value)
-        * A stdout key (with the output of the script as a value)
+            {
+                'params': {
+                            'param1': value1,
+                            'param2': value2,
+                            ...
+                            'RngRun': value3
+                           },
+                'meta': {
+                          'elapsed_time': value4,
+                          'id': value5
+                        }
+            }
+
+        Where elapsed time is a float representing the seconds the simulation
+        execution took, and id is a UUID uniquely identifying the result, and
+        which is used to locate the output files in the campaign_dir/data
+        folder.
         """
 
+        # This dictionary serves as a model for how the keys in the newly
+        # inserted result should be structured.
+        example_result = {
+            'params': {k: ['...'] for k in [*self.get_params(), 'RngRun']},
+            'meta': {k: ['...'] for k in ['elapsed_time', 'id']},
+        }
+
         # Verify result format is correct
-        expected = set(result.keys())
-        got = (set(self.get_params()) | set(['RngRun', 'elapsed_time', 'id']))
-        if (expected != got):
+        if not(DatabaseManager.have_same_structure(result, example_result)):
             raise ValueError(
                 '%s:\nExpected: %s\nGot: %s' % (
                     "Result dictionary does not correspond to database format",
-                    expected,
-                    got))
+                    pformat(example_result, depth=1),
+                    pformat(result, depth=1)))
 
         # Insert result
         self.db.table('results').insert(result)
 
     def get_results(self, params=None):
         """
-        Get a list of all results corresponding to the specified parameter
-        combination.
+        Return all the results available from the database that fulfill some
+        parameter combinations.
 
-        If params is not specified or None, return all results.
+        If params is None (or not specified), return all results.
+
         If params is specified, it must be a dictionary specifying the result
         values we are interested in, with multiple values specified as lists.
 
-        For example, if the following params value is used the database will be
-        queried for results having key1 equal to value1, and key2 equal to
-        value2 or value3::
+        For example, if the following params value is used::
 
             params = {
-            'key1': 'value1',
-            'key2': ['value2', 'value3']
+            'param1': 'value1',
+            'param2': ['value2', 'value3']
             }
 
+        the database will be queried for results having param1 equal to value1,
+        and param2 equal to value2 or value3.
+
+        Not specifying a value for all the available parameters is allowed:
+        unspecified parameters are assumed to be 'free', and can take any
+        value.
+
         Returns:
-            A list of database results matching the query.
+            A list of results matching the query. Returned results have the
+            same structure as results inserted with the insert_result method.
         """
 
         # In this case, return all results
+        # A cast to dict is necessary, since self.db.table() contains TinyDB's
+        # Document object (which is simply a wrapper for a dictionary, thus the
+        # simple cast).
         if params is None:
-            return self.db.table('results').all()
+            return [dict(i) for i in self.db.table('results').all()]
 
         # Verify parameter format is correct
         all_params = set(self.get_params())
@@ -219,28 +273,160 @@ class DatabaseManager(object):
                 query_params[key] = params[key]
 
         # Create the TinyDB query
-        query = reduce(and_, [reduce(or_, [Query()[key] == v for v in value])
-                              for key, value in query_params.items()])
+        # In the docstring example above, this is equivalent to:
+        # AND(OR(param1 == value1), OR(param2 == value2, param2 == value3))
+        query = reduce(and_, [reduce(or_, [
+            where('params')[key] == v for v in value]) for key, value in
+                              query_params.items()])
 
-        return self.db.table('results').search(query)
+        return [dict(i) for i in self.db.table('results').search(query)]
 
-    def get_result_files(self, result_id):
-        # Return a dictionary containing filename: filepath
-        return {k: v for k, v in [(f, os.path.join(self.get_data_dir(),
-                                  result_id, f)) for f in
-                                  next(os.walk(os.path.join(
-                                      self.get_data_dir(),
-                                      result_id)))[2]]}
+    def get_result_files(self, result):
+        """
+        Return a dictionary containing filename: filepath values for each
+        output file associated with an id.
+
+        Result can be either a result dictionary (e.g., obtained with the
+        get_results() method) or a result id.
+        """
+        if isinstance(result, dict):
+            result_id = result['meta']['id']
+        elif isinstance(result, str):
+            result_id = result
+
+        result_data_dir = os.path.join(self.get_data_dir(), result_id)
+
+        filenames = next(os.walk(result_data_dir))[2]
+
+        filename_path_pairs = [
+            (f, os.path.join(self.get_data_dir(), result_id, f))
+            for f in filenames]
+
+        return {k: v for k, v in filename_path_pairs}
 
     def get_complete_results(self, params=None):
-        results = self.get_results(params)
+        """
+        Return available results, analogously to what get_results does, but
+        also read the corresponding output files for each result, and
+        incorporate them in the result dictionary under the output key, as a
+        dictionary of filename: file_contents.
+
+        Args:
+          params (dict): parameter specification of the desired parameter
+            values, as described in the get_results documentation.
+
+        In other words, results returned by this function will be in the form::
+
+            {
+                'params': {
+                            'param1': value1,
+                            'param2': value2,
+                            ...
+                            'RngRun': value3
+                           },
+                'meta': {
+                          'elapsed_time': value4,
+                          'id': value5
+                        }
+                'output': {
+                            'stdout': stdout_as_string,
+                            'stderr': stderr_as_string,
+                            'file1': file1_as_string,
+                            ...
+                          }
+            }
+
+        Note that the stdout and stderr entries are always included, even if
+        they are empty.
+        """
+
+        results = deepcopy(self.get_results(params))
+
         for r in results:
-            available_files = self.get_result_files(r['id'])
+            r['output'] = {}
+            available_files = self.get_result_files(r['meta']['id'])
             for name, filepath in available_files.items():
                 with open(filepath, 'r') as file_contents:
-                    r[name] = file_contents.read()
+                    r['output'][name] = file_contents.read()
+
         return results
 
     def wipe_results(self):
-        """ Removes all results from the database. """
+        """
+        Remove all results from the database.
+
+        This also removes all output files, and cannot be undone.
+        """
+        # Clean results table
         self.db.purge_table('results')
+
+        # Get rid of contents of data dir
+        map(shutil.rmtree, glob.glob(os.path.join(self.get_data_dir(), '*.*')))
+
+    #############
+    # Utilities #
+    #############
+
+    def __str__(self):
+        """
+        Represent the database object as a human-readable string.
+        """
+        configuration = self.get_config()
+        return "script: %s\nparams: %s\ncommit: %s" % (
+            configuration['script'], configuration['params'],
+            configuration['commit'])
+
+    def get_next_n_values(values_list, n):
+        """
+        Given a list of integers and a value n, this method returns the n
+        lowest integers that do not appear in the list.
+
+        >>> import sem
+        >>> v = [0, 1, 3, 4]
+        >>> sem.DatabaseManager.get_next_n_values(v, 1)
+        [2]
+        >>> sem.DatabaseManager.get_next_n_values(v, 3)
+        [2, 5, 6]
+        """
+        return list(itertools.islice(filter(lambda x: x not in values_list,
+                                            itertools.count()), n))
+
+    def have_same_structure(d1, d2):
+        """
+        Given two dictionaries (possibly with other nested dictionaries as
+        values), this function checks whether they have the same key structure.
+
+        >>> from sem import DatabaseManager
+        >>> d1 = {'a': 1, 'b': 2}
+        >>> d2 = {'a': [], 'b': 3}
+        >>> d3 = {'a': 4, 'c': 5}
+        >>> DatabaseManager.have_same_structure(d1, d2)
+        True
+        >>> DatabaseManager.have_same_structure(d1, d3)
+        False
+
+        >>> d4 = {'a': {'c': 1}, 'b': 2}
+        >>> d5 = {'a': {'c': 3}, 'b': 4}
+        >>> d6 = {'a': {'c': 5, 'd': 6}, 'b': 7}
+        >>> DatabaseManager.have_same_structure(d1, d4)
+        False
+        >>> DatabaseManager.have_same_structure(d4, d5)
+        True
+        >>> DatabaseManager.have_same_structure(d4, d6)
+        False
+        """
+        # Keys of this level are the same
+        if set(d1.keys()) != set(d2.keys()):
+            return False
+
+        # Check nested dictionaries
+        for k1, k2 in zip(sorted(d1.keys()), sorted(d2.keys())):
+            # If one of the values is a dictionary and the other is not
+            if isinstance(d1[k1], dict) != isinstance(d2[k2], dict):
+                return False
+            # If both are dictionaries, recur
+            elif isinstance(d1[k1], dict) and isinstance(d2[k2], dict):
+                if not DatabaseManager.have_same_structure(d1[k1], d2[k2]):
+                    return False
+
+        return True

@@ -7,9 +7,10 @@ import drmaa
 
 class GridRunner(SimulationRunner):
     """
-    A Runner which can perform simulations in parallel on a Sun Grid Engine.
+    A Runner which can perform simulations in parallel on a DRMAA-compatible
+    cluster architecture.
     """
-    def run_simulations(self, parameter_list, data_folder, verbose=False):
+    def run_simulations(self, parameter_list, data_folder):
         """
         This function runs multiple simulations in parallel.
         """
@@ -92,7 +93,8 @@ class GridRunner(SimulationRunner):
             except(drmaa.errors.NoActiveSessionException):
                 pass
 
-    def configure_and_build(self, path, verbose=False, progress=True, clean=False):
+    def configure_and_build(self, path, verbose=False, progress=True,
+                            clean=False, optimized=True):
 
         clean = True
         if clean:
