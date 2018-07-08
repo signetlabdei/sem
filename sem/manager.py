@@ -8,6 +8,7 @@ from tqdm import tqdm
 from random import shuffle
 import numpy as np
 import xarray as xr
+import os
 from pathlib import Path
 if DRMAA_AVAILABLE:
     from .gridrunner import GridRunner
@@ -84,6 +85,10 @@ class CampaignManager(object):
             optimized (bool): whether to configure the runner to employ an
                 optimized ns-3 build.
         """
+        # Convert paths to be absolute
+        ns_path = os.path.abspath(ns_path)
+        campaign_dir = os.path.abspath(campaign_dir)
+
         # Verify if the specified campaign is already available
         if Path(campaign_dir).exists() and not overwrite:
             try:
