@@ -15,6 +15,7 @@ with open(path.join(here, 'LICENSE'), encoding='utf-8') as f:
 
 setup(
     name='sem',
+    url='https://github.com/DvdMgr/sem',
     version='0.1.0',
     description='A simulation execution manager for ns-3',
     long_description=readme,
@@ -23,7 +24,8 @@ setup(
     author_email='magrinda@dei.unipd.it',
     keywords='ns-3 simulation execution',
     packages=find_packages(exclude=['contrib', 'docs', 'tests', 'examples']),
-    install_requires=['tinydb', 'gitpython', 'sphinxcontrib-napoleon'],
+    install_requires=['tinydb', 'tqdm', 'numpy', 'xarray', 'drmaa',
+                      'gitpython', 'sphinxcontrib-napoleon', 'click'],
     extras_require={
         'dev': ['check-manifest'],
         'test': ['pytest'],

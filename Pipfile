@@ -18,9 +18,7 @@ pygments = "*"
 importmagic = "*"
 sphinxcontrib-napoleon = "*"
 matplotlib = "*"
-xarray = "*"
 pytest = "*"
 scipy = "*"
-
-[requires]
-python_version = "3.6"
+pytest-cov = "*"
+pytest-xdist = "*"
