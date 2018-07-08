@@ -9,7 +9,9 @@ gitpython = "*"
 tqdm = "*"
 drmaa = "*"
 numpy = "*"
+xarray = "*"
 "e1839a8" = {path = ".", editable = true}
+click = "*"
 
 [dev-packages]
 "flake8" = "*"
