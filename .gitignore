@@ -15,5 +15,12 @@ lib64
 __pycache__
 _build
 /tests/ns-3-compiled/
-/tests/ns-3
 .pytest_cache
+/.coverage
+/.dir-locals.el
+/coverage_report
+/.coverage.*
+examples/figures
+tests/ns-3
+examples/figures
+Pipfile.lock
