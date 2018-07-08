@@ -18,3 +18,9 @@ DatabaseManager
 
 .. autoclass:: sem.DatabaseManager
    :members:
+
+Utils
+---------------
+
+.. autoclass:: sem.utils
+   :members:
