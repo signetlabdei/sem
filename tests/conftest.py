@@ -41,7 +41,7 @@ def ns_3_compiled(tmpdir):
 def config(tmpdir, ns_3_compiled):
     return {
         'script': 'hash-example',
-        'commit': '221c011a73bb04265a7447a8457990fc5a928d16',
+        'commit': 'cbcf4a24343c43bccec0af4c440ee27a1eec2796',
         'params': ['dict', 'time'],
         'campaign_dir': str(tmpdir.join('test_campaign')),
     }
