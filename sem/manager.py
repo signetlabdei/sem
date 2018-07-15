@@ -116,14 +116,11 @@ class CampaignManager(object):
         commit = Repo(ns_path).head.commit.hexsha
 
         # Create a database manager from the configuration
-        config = {
-            'script': script,
-            'params': params,
-            'commit': commit,
-            'campaign_dir': campaign_dir,
-        }
-
-        db = DatabaseManager.new(**config, overwrite=overwrite)
+        db = DatabaseManager.new(script=script,
+                                 params=params,
+                                 commit=commit,
+                                 campaign_dir=campaign_dir,
+                                 overwrite=overwrite)
 
         return cls(db, runner)
 

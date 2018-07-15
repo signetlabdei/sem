@@ -15,24 +15,24 @@ ns_3_test_compiled = os.path.join(os.path.dirname(os.path.realpath(__file__)),
 @pytest.fixture(scope='function')
 def ns_3(tmpdir):
     # Copy the test ns-3 installation in the temporary directory
-    ns_3_tempdir = os.path.join(tmpdir, 'ns-3')
-    shutil.copytree(ns_3_test, ns_3_tempdir)
+    ns_3_tempdir = tmpdir.join('ns-3')
+    shutil.copytree(ns_3_test, str(ns_3_tempdir), symlinks=True)
     return ns_3_tempdir
 
 
 @pytest.fixture(scope='function')
 def ns_3_compiled(tmpdir):
     # Copy the test ns-3 installation in the temporary directory
-    ns_3_tempdir = os.path.join(tmpdir, 'ns-3-compiled')
+    ns_3_tempdir = str(tmpdir.join('ns-3-compiled'))
     shutil.copytree(ns_3_test_compiled, ns_3_tempdir, symlinks=True)
 
     # Relocate build by running the same command in the new directory
-    if subprocess.run(['./waf', 'configure', '--disable-gtk',
-                       '--disable-python', '--build-profile=optimized',
-                       '--out=build/optimized', 'build'],
-                      cwd=ns_3_tempdir,
-                      stdout=subprocess.PIPE,
-                      stderr=subprocess.PIPE).returncode > 0:
+    if subprocess.call(['./waf', 'configure', '--disable-gtk',
+                        '--disable-python', '--build-profile=optimized',
+                        '--out=build/optimized', 'build'],
+                       cwd=ns_3_tempdir,
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL) > 0:
         raise Exception("Build failed")
     return ns_3_tempdir
 
@@ -43,7 +43,7 @@ def config(tmpdir, ns_3_compiled):
         'script': 'hash-example',
         'commit': '221c011a73bb04265a7447a8457990fc5a928d16',
         'params': ['dict', 'time'],
-        'campaign_dir': os.path.join(tmpdir, 'test_campaign'),
+        'campaign_dir': str(tmpdir.join('test_campaign')),
     }
 
 
@@ -87,20 +87,20 @@ def get_and_compile_ns_3():
     if not os.path.exists(ns_3_test_compiled):
         shutil.copytree(ns_3_test, ns_3_test_compiled, symlinks=True)
 
-    if subprocess.run(['./waf', 'configure', '--disable-gtk',
-                       '--disable-python', '--build-profile=optimized',
-                       '--out=build/optimized', 'build'],
-                      cwd=ns_3_test_compiled,
-                      stdout=subprocess.PIPE,
-                      stderr=subprocess.PIPE).returncode > 0:
+    if subprocess.call(['./waf', 'configure', '--disable-gtk',
+                        '--disable-python', '--build-profile=optimized',
+                        '--out=build/optimized', 'build'],
+                       cwd=ns_3_test_compiled,
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL) > 0:
         raise Exception("Test build failed")
 
-    if subprocess.run(['./waf', 'configure', '--disable-gtk',
-                       '--disable-python', '--build-profile=optimized',
-                       '--out=build/optimized', 'build'],
-                      cwd=ns_3_examples,
-                      stdout=subprocess.PIPE,
-                      stderr=subprocess.PIPE).returncode > 0:
+    if subprocess.call(['./waf', 'configure', '--disable-gtk',
+                        '--disable-python', '--build-profile=optimized',
+                        '--out=build/optimized', 'build'],
+                       cwd=ns_3_examples,
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL) > 0:
         raise Exception("Examples build failed")
 
 #########################################################################
@@ -112,7 +112,7 @@ def get_and_compile_ns_3():
 @pytest.yield_fixture(autouse=True, scope='function')
 def setup_and_cleanup(tmpdir):
     yield
-    shutil.rmtree(tmpdir)
+    shutil.rmtree(str(tmpdir))
 
 
 def pytest_configure(config):

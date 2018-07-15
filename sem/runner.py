@@ -63,11 +63,16 @@ class SimulationRunner(object):
         else:
             build_status_path = os.path.join(path,
                                              'build/build-status.py')
+
         # By importing the file, we can naturally get the dictionary
-        spec = importlib.util.spec_from_file_location('build_status',
-                                                      build_status_path)
-        build_status = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(build_status)
+        try:  # This only works on Python >= 3.5
+            spec = importlib.util.spec_from_file_location('build_status',
+                                                          build_status_path)
+            build_status = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(build_status)
+        except (AttributeError):  # This happens in Python <= 3.4
+            import imp
+            build_status = imp.load_source('build_status', build_status_path)
 
         # Search is simple: we look for the script name in the program field.
         # Note that this could yield multiple matches, in case the script name
@@ -119,12 +124,14 @@ class SimulationRunner(object):
                 configuration_command += ['--build-profile=optimized',
                                           '--out=build/optimized']
                 # Check whether path points to a valid installation
-                subprocess.run(configuration_command, cwd=self.path,
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                subprocess.call(configuration_command, cwd=self.path,
+                                stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL)
             else:
                 # Check whether path points to a valid installation
-                subprocess.run(configuration_command, cwd=self.path,
-                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                subprocess.call(configuration_command, cwd=self.path,
+                                stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL)
 
         # Build ns-3
         build_process = subprocess.Popen(['./waf', 'build'], cwd=self.path,
@@ -239,13 +246,13 @@ class SimulationRunner(object):
             stderr_file_path = os.path.join(temp_dir, 'stderr')
             with open(stdout_file_path, 'w') as stdout_file, open(
                     stderr_file_path, 'w') as stderr_file:
-                execution = subprocess.run(command, cwd=temp_dir,
-                                           env=self.environment,
-                                           stdout=stdout_file,
-                                           stderr=stderr_file)
+                return_code = subprocess.call(command, cwd=temp_dir,
+                                              env=self.environment,
+                                              stdout=stdout_file,
+                                              stderr=stderr_file)
             end = time.time()  # Time execution
 
-            if execution.returncode > 0:
+            if return_code > 0:
                 complete_command = [self.script]
                 complete_command.extend(command[1:])
                 complete_command = "./waf --run \"%s\"" % (

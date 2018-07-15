@@ -7,4 +7,4 @@ def test_examples():
     for f in python_files:
         if f.endswith('.py'):
             print("Executing %s" % f)
-            subprocess.check_output(['python', "examples/%s" % f])
+            subprocess.call(['python', "examples/%s" % f])

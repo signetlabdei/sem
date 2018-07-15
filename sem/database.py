@@ -201,7 +201,7 @@ class DatabaseManager(object):
         # This dictionary serves as a model for how the keys in the newly
         # inserted result should be structured.
         example_result = {
-            'params': {k: ['...'] for k in [*self.get_params(), 'RngRun']},
+            'params': {k: ['...'] for k in self.get_params() + ['RngRun']},
             'meta': {k: ['...'] for k in ['elapsed_time', 'id']},
         }
 

@@ -27,7 +27,8 @@ def test_db_creation_from_scratch(tmpdir, config, ns_3):
     with pytest.raises(FileExistsError):
         DatabaseManager.new(**config)
     # This should execute no problem because we overwrite the database
-    DatabaseManager.new(**config, overwrite=True)
+    config['overwrite'] = True
+    DatabaseManager.new(**config)
 
 
 def test_db_loading(config, db, tmpdir):
@@ -52,7 +53,7 @@ def test_getters(db, tmpdir, config):
     # Saved configuration should not include the campaign directory
     del config['campaign_dir']
     assert db.get_config() == config
-    assert db.get_data_dir() == os.path.join(tmpdir, 'test_campaign', 'data')
+    assert db.get_data_dir() == str(tmpdir.join('test_campaign', 'data'))
 
 
 def test_get_next_rngruns(db, result):
