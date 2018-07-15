@@ -35,5 +35,5 @@ install:
   - pipenv run python setup.py bdist_egg
   - pipenv install --dev
 script:
-  - pipenv run pytest -x --doctest-modules --cov=./
+  - pipenv run pytest -x --doctest-modules --cov=sem/
   - codecov
