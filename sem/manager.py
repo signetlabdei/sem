@@ -2,7 +2,7 @@ from .database import DatabaseManager
 from .runner import SimulationRunner
 from .parallelrunner import ParallelRunner
 from .utils import DRMAA_AVAILABLE, list_param_combinations
-from git import Repo
+from git import Repo, exc
 from copy import deepcopy
 from tqdm import tqdm
 from random import shuffle
@@ -448,7 +448,13 @@ class CampaignManager(object):
         # dirty
         if self.runner is not None:
             path = self.runner.path
-            repo = Repo(path)
+            try:
+                repo = Repo(path)
+            except(exc.InvalidGitRepositoryError):
+                raise Exception("No git repository detected.\nIn order to "
+                                "use SEM and its reproducibility enforcing "
+                                "features, please create a git repository at "
+                                "the root of your ns-3 project.")
             current_commit = repo.head.commit.hexsha
             campaign_commit = self.db.get_commit()
 
