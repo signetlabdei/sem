@@ -52,6 +52,17 @@ Once this is done, the scripts in `examples/` can be directly run:
 python examples/one-shot.py
 ```
 
+## Troubleshooting ##
+
+In case there are problems with the pandas installation (this will happen in
+macos, for which no binaries are provide), use the following command for
+installation (and see [this pandas
+issue](https://github.com/pandas-dev/pandas/issues/20775) as a reference):
+
+```bash
+PIP_NO_BUILD_ISOLATION=false pipenv install
+```
+
 ## Documentation ##
 
 Documentation can be built locally using the makefile's `docs` target.
