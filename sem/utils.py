@@ -1,4 +1,7 @@
 from itertools import product
+import io
+import numpy as np
+import warnings
 
 try:
     import drmaa
@@ -30,3 +33,44 @@ def list_param_combinations(param_ranges):
 
     return [dict(zip(param_ranges, v)) for v in
             product(*param_ranges.values())]
+
+
+def get_command_from_result(script, result, debug=False):
+    """
+    Return the command that is needed to obtain a certain result.
+
+    Args:
+        params (dict): Dictionary containing parameter: value pairs.
+        debug (bool): Whether the command should include the debugging
+            template.
+    """
+    if not debug:
+        command = "./waf --run \"" + script + " " + " ".join(['--%s=%s' % (param, value)
+                                                        for param, value in
+                                                        result['params'].items()]) + "\""
+    else:
+        command = "./waf --run " + script + " --command-template=\"gdb --args %s " + " ".join(
+            ['--%s=%s' % (param, value) for param, value in result['params'].items()]) + "\""
+    return command
+
+
+def constant_array_parser(result):
+    """
+    Dummy parser, used for testing purposes.
+    """
+    return [0, 1, 2, 3]
+
+
+def automatic_parser(result):
+    """
+    Try and automatically convert strings formatted as tables into nested
+    list structures.
+    """
+    np.seterr(all='raise')
+    parsed = {}
+    for filename, contents in result['output'].items():
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            parsed[filename] = np.genfromtxt(io.StringIO(contents)).tolist()
+
+    return parsed
