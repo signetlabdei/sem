@@ -123,15 +123,10 @@ class SimulationRunner(object):
             if optimized:
                 configuration_command += ['--build-profile=optimized',
                                           '--out=build/optimized']
-                # Check whether path points to a valid installation
-                subprocess.call(configuration_command, cwd=self.path,
-                                stdout=subprocess.DEVNULL,
-                                stderr=subprocess.DEVNULL)
-            else:
-                # Check whether path points to a valid installation
-                subprocess.call(configuration_command, cwd=self.path,
-                                stdout=subprocess.DEVNULL,
-                                stderr=subprocess.DEVNULL)
+
+            # Check whether path points to a valid installation
+            subprocess.call(configuration_command, cwd=self.path,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         # Build ns-3
         build_process = subprocess.Popen(['./waf', 'build'], cwd=self.path,
@@ -203,7 +198,7 @@ class SimulationRunner(object):
         # Get the single parameter names
         if len(options):
             args = re.findall('.*--(.*?):.*', options[0], re.MULTILINE)
-            return args
+            return sorted(args)  # Return a sorted list
         else:
             return []
 
