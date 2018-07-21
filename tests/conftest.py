@@ -2,6 +2,7 @@ import pytest
 import shutil
 import os
 import subprocess
+import collections
 from git import Repo
 from sem import CampaignManager
 
@@ -50,11 +51,10 @@ def config(tmpdir, ns_3_compiled):
 @pytest.fixture(scope='function')
 def result(config):
     r = {
-        'params': {
-            'dict': '/usr/share/dict/web2',
-            'time': 'false',
-            'RngRun': 10,
-        },
+        'params': collections.OrderedDict(
+            [('dict', '/usr/share/dict/web2'),
+             ('time', 'false'),
+             ('RngRun', 10)]),
         'meta': {
             'elapsed_time': 10,
             'id': '98f89356-3682-4cb4-b6c3-3c792979a8fc',
@@ -66,11 +66,22 @@ def result(config):
 
 @pytest.fixture(scope='function')
 def parameter_combination():
-    return {
-        'dict': '/usr/share/dict/web2',
-        'time': 'false'
-    }
+    # We need to explicitly state we want an OrderedDict here in order to
+    # support Python < 3.6 - since Python 3.6, dicts are ordered by default
+    return collections.OrderedDict ([('dict', '/usr/share/dict/web2'),
+                                     ('time', 'false')])
 
+@pytest.fixture(scope='function')
+def parameter_combination_2():
+    return collections.OrderedDict ([('dict', '/usr/share/dict/web2a'),
+                                     ('time', 'true')])
+
+@pytest.fixture(scope='function')
+def parameter_combination_range():
+    return collections.OrderedDict ([('dict', ['/usr/share/dict/web2',
+                                               '/usr/share/dict/web2a']),
+                                     ('time', ['false',
+                                               'true'])])
 
 @pytest.fixture(scope='function')
 def manager(ns_3_compiled, config):
