@@ -23,8 +23,11 @@ class GridRunner(SimulationRunner):
         jobs = {}
         for parameter in parameter_list:
             # Initialize result
-            current_result = {}
-            current_result.update(parameter)
+            current_result = {
+                'params': {},
+                'meta': {}
+            }
+            current_result['params'].update(parameter)
 
             command = " ".join([self.script_executable] + ['--%s=%s' % (param,
                                                                         value)
@@ -32,8 +35,8 @@ class GridRunner(SimulationRunner):
                                                            parameter.items()])
 
             # Run from dedicated temporary folder
-            current_result['id'] = str(uuid.uuid4())
-            temp_dir = os.path.join(data_folder, current_result['id'])
+            current_result['meta']['id'] = str(uuid.uuid4())
+            temp_dir = os.path.join(data_folder, current_result['meta']['id'])
             if not os.path.exists(temp_dir):
                 os.makedirs(temp_dir)
 
@@ -43,6 +46,7 @@ class GridRunner(SimulationRunner):
             jt.args = [command]
             jt.jobEnvironment = self.environment
             jt.workingDirectory = temp_dir
+            jt.nativeSpecification = "-l cputype=intel"
             output_filename = os.path.join(temp_dir, 'stdout')
             error_filename = os.path.join(temp_dir, 'stderr')
             jt.outputPath = ':' + output_filename
@@ -93,18 +97,22 @@ class GridRunner(SimulationRunner):
             except(drmaa.errors.NoActiveSessionException):
                 pass
 
-    def configure_and_build(self, path, verbose=False, progress=True,
-                            clean=False, optimized=True):
+    def configure_and_build(self, show_progress=True, optimized=True,
+                            skip_configuration=False):
 
-        clean = True
-        if clean:
-            clean_command = ('./waf distclean')
-            print(self.run_program(clean_command, path))
+        clean_before = False
+        if clean_before:
+            clean_command = './waf distclean'
+            self.run_program((clean_command), self.path)
 
-        command = ('./waf configure --enable-examples --disable-gtk '
-                   '--disable-python --build-profile=optimized '
-                   '--out=build/optimized build')
-        print(self.run_program(command, path))
+        if not skip_configuration:
+            configuration_command = './waf configure --enable-examples --disable-gtk --disable-python'
+            if optimized:
+                configuration_command += '--build-profile=optimized --out=build/optimized'
+
+            self.run_program((configuration_command), self.path)
+
+        self.run_program(('./waf build'), self.path)
 
     def get_available_parameters(self):
         """
@@ -119,7 +127,7 @@ class GridRunner(SimulationRunner):
                                              '--PrintHelp'),
                                   environment=self.environment)
 
-        options = re.findall('.*Program\sArguments:(.*)General\sArguments.*',
+        options = re.findall('.*Program\s(?:Arguments|Options):(.*)General\sArguments.*',
                              stdout, re.DOTALL)
 
         if len(options):
@@ -133,33 +141,41 @@ class GridRunner(SimulationRunner):
         """
         Run a program through the grid, capturing the standard output.
         """
-        s = drmaa.Session()
-        s.initialize()
-        jt = s.createJobTemplate()
-        jt.remoteCommand = os.path.dirname(
-            os.path.abspath(__file__)) + '/run_program.sh'
-        jt.args = [command]
+        try:
+            s = drmaa.Session()
+            s.initialize()
+            jt = s.createJobTemplate()
+            jt.remoteCommand = os.path.dirname(
+                os.path.abspath(__file__)) + '/run_program.sh'
+            jt.args = [command]
 
-        if environment is not None:
-            jt.jobEnvironment = environment
+            if environment is not None:
+                jt.jobEnvironment = environment
 
-        jt.workingDirectory = working_directory
-        output_filename = os.path.join(working_directory, 'output.txt')
-        jt.outputPath = ':' + output_filename
-        jt.joinFiles = True
+            jt.workingDirectory = working_directory
+            jt.nativeSpecification = "-l cputype=intel"
+            output_filename = os.path.join(working_directory, 'output.txt')
+            jt.outputPath = ':' + output_filename
+            jt.joinFiles = True
 
-        jobid = s.runJob(jt)
+            jobid = s.runJob(jt)
 
-        s.wait(jobid, drmaa.Session.TIMEOUT_WAIT_FOREVER)
+            s.wait(jobid, drmaa.Session.TIMEOUT_WAIT_FOREVER)
 
-        with open(output_filename, 'r') as output:
-            stdout = output.read()
+            with open(output_filename, 'r') as output:
+                stdout = output.read()
 
-        # Clean up
-        if cleanup_files:
-            os.remove(output_filename)
+            # Clean up
+            if cleanup_files:
+                os.remove(output_filename)
 
-        s.deleteJobTemplate(jt)
-        s.exit()
+        finally:
+            try:
+                s.control(drmaa.JOB_IDS_SESSION_ALL,
+                          drmaa.JobControlAction.TERMINATE)
+                s.synchronize([drmaa.JOB_IDS_SESSION_ALL], dispose=True)
+                s.exit()
+            except(drmaa.errors.NoActiveSessionException):
+                pass
 
         return stdout
