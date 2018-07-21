@@ -32,6 +32,7 @@ User's guide
    :maxdepth: 2
 
    installation
+   cli
    getting-started
 
 API Reference
