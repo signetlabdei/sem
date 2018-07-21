@@ -34,5 +34,6 @@ install:
   - pipenv run python setup.py bdist_egg
   - pipenv install --dev
 script:
-  - pipenv run pytest -x --doctest-modules --cov=sem/
+  - pipenv run pytest --doctest-glob='*.rst' # Check .rst documentation
+  - pipenv run pytest -x --doctest-modules --cov=sem/ # Check code and docstrings
   - codecov
