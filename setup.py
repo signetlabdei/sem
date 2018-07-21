@@ -32,7 +32,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'sem=sem:main',
+            'sem=sem:cli',
         ],
     },
     license=license
