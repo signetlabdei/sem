@@ -209,6 +209,8 @@ structure::
 Finally, we can easily plot the obtained results by appropriately slicing the
 `DataArray`::
 
+  >>> import matplotlib
+  >>> matplotlib.use('Agg')
   >>> import matplotlib.pyplot as plt
   >>> import numpy as np
   >>> # Iterate over all possible parameter values
