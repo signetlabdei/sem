@@ -5,6 +5,7 @@ from operator import and_, or_
 from pathlib import Path
 from copy import deepcopy
 import shutil
+import collections
 import glob
 from pprint import pformat
 from tinydb import TinyDB, where
@@ -62,6 +63,19 @@ class DatabaseManager(object):
         if Path(campaign_dir).exists() and not overwrite:
             raise FileExistsError("The specified directory already exists")
         elif Path(campaign_dir).exists() and overwrite:
+            # Verify we are not deleting files belonging to the user
+            campaign_dir_name = os.path.basename(campaign_dir)
+            folder_contents = set(os.listdir(campaign_dir))
+            allowed_files = set(
+                ['data', '%s.json' % campaign_dir_name] +
+                # Allow hidden files (like .DS_STORE in macos)
+                [os.path.basename(os.path.normpath(f)) for f in
+                 glob.glob(os.path.join(campaign_dir, ".*"))])
+
+            if(not folder_contents.issubset(allowed_files)):
+                raise ValueError("The specified directory cannot be overwritten"
+                                 " because it contains user files.")
+            # This operation destroys data.
             shutil.rmtree(campaign_dir)
 
         # Create the directory and database file in it
@@ -75,7 +89,7 @@ class DatabaseManager(object):
         config = {
             'script': script,
             'commit': commit,
-            'params': params
+            'params': sorted(params)
         }
         tinydb.table('config').insert(config)
 
@@ -99,20 +113,25 @@ class DatabaseManager(object):
 
         # Verify file exists
         if not Path(campaign_dir).exists():
-            raise ValueError("File does not exist")
+            raise ValueError("Directory does not exist")
 
         # Extract filename from campaign dir
         filename = "%s.json" % os.path.split(campaign_dir)[1]
         filepath = os.path.join(campaign_dir, filename)
 
-        # Read TinyDB instance from file
-        tinydb = TinyDB(filepath)
+        try:
+            # Read TinyDB instance from file
+            tinydb = TinyDB(filepath)
 
-        # Make sure the configuration is a valid dictionary
-        if set(tinydb.table('config').all()[0].keys()) != set(['script',
-                                                               'params',
-                                                               'commit']):
-            raise ValueError("Existing database is corrupt")
+            # Make sure the configuration is a valid dictionary
+            assert set(
+                tinydb.table('config').all()[0].keys()) == set(['script',
+                                                                'params',
+                                                                'commit'])
+        except:
+            # Remove the database instance created by tinydb
+            os.remove(filepath)
+            raise ValueError("Specified campaign directory seems corrupt")
 
         return cls(tinydb, campaign_dir)
 
@@ -216,7 +235,7 @@ class DatabaseManager(object):
         # Insert result
         self.db.table('results').insert(result)
 
-    def get_results(self, params=None):
+    def get_results(self, params=None, result_id=None):
         """
         Return all the results available from the database that fulfill some
         parameter combinations.
@@ -249,6 +268,10 @@ class DatabaseManager(object):
         # A cast to dict is necessary, since self.db.table() contains TinyDB's
         # Document object (which is simply a wrapper for a dictionary, thus the
         # simple cast).
+        if result_id is not None:
+            return [dict(i) for i in self.db.table('results').all() if
+                    i['meta']['id'] == result_id]
+
         if params is None:
             return [dict(i) for i in self.db.table('results').all()]
 
@@ -267,10 +290,16 @@ class DatabaseManager(object):
         # dictionary not to modify the original copy.
         query_params = {}
         for key in params:
+            if params[key] is None:
+                continue
             if not isinstance(params[key], list):
                 query_params[key] = [params[key]]
             else:
                 query_params[key] = params[key]
+
+        # Handle case where query params has no keys
+        if not query_params.keys():
+            return [dict(i) for i in self.db.table('results').all()]
 
         # Create the TinyDB query
         # In the docstring example above, this is equivalent to:
@@ -304,7 +333,7 @@ class DatabaseManager(object):
 
         return {k: v for k, v in filename_path_pairs}
 
-    def get_complete_results(self, params=None):
+    def get_complete_results(self, params=None, result_id=None):
         """
         Return available results, analogously to what get_results does, but
         also read the corresponding output files for each result, and
@@ -340,7 +369,10 @@ class DatabaseManager(object):
         they are empty.
         """
 
-        results = deepcopy(self.get_results(params))
+        if result_id is not None:
+            results = deepcopy(self.get_results(result_id=result_id))
+        else:
+            results = deepcopy(self.get_results(params))
 
         for r in results:
             r['output'] = {}
@@ -430,3 +462,28 @@ class DatabaseManager(object):
                     return False
 
         return True
+
+    def get_all_values_of_all_params(self):
+        """
+        Return a dictionary containing all values that are taken by all
+        available parameters.
+
+        Always returns the parameter list in alphabetical order.
+        """
+
+        values = collections.OrderedDict([[p, []] for p in
+                                          sorted(self.get_params())])
+
+        for result in self.get_results():
+            for param in self.get_params():
+                values[param] += [result['params'][param]]
+
+        sorted_values = collections.OrderedDict([[k,
+                                                 sorted(list(set(values[k])))]
+                                                 for k in values.keys()])
+
+        for k in sorted_values.keys():
+            if sorted_values[k] == []:
+                sorted_values[k] = None
+
+        return sorted_values
