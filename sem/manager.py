@@ -8,8 +8,10 @@ from tqdm import tqdm
 from random import shuffle
 import numpy as np
 import xarray as xr
+from scipy.io import savemat
 import os
 from pathlib import Path
+import collections
 if DRMAA_AVAILABLE:
     from .gridrunner import GridRunner
 
@@ -81,7 +83,8 @@ class CampaignManager(object):
                 simulations locally), GridRunner (for running simulations using
                 a DRMAA-compatible parallel task scheduler)
             overwrite (bool): whether to overwrite already existing
-                campaign_dir folders
+                campaign_dir folders. This deletes the directory if and only if
+                it only contains files that were detected to be created by sem.
             optimized (bool): whether to configure the runner to employ an
                 optimized ns-3 build.
         """
@@ -91,23 +94,20 @@ class CampaignManager(object):
 
         # Verify if the specified campaign is already available
         if Path(campaign_dir).exists() and not overwrite:
-            try:
-                manager = CampaignManager.load(campaign_dir, ns_path,
-                                               runner_type=runner_type,
-                                               optimized=optimized)
+            # Try loading
+            manager = CampaignManager.load(campaign_dir, ns_path,
+                                            runner_type=runner_type,
+                                            optimized=optimized)
 
-                if manager.db.get_script() == script:
-                    return manager
-                else:
-                    del manager
-
-            except ValueError:
-                pass  # Go on with the database creation
+            if manager.db.get_script() == script:
+                return manager
+            else:
+                del manager
 
         # Initialize runner
         runner = CampaignManager.create_runner(ns_path, script,
-                                               runner_type=runner_type,
-                                               optimized=optimized)
+                                            runner_type=runner_type,
+                                            optimized=optimized)
 
         # Get list of parameters to save in the DB
         params = runner.get_available_parameters()
@@ -117,10 +117,10 @@ class CampaignManager(object):
 
         # Create a database manager from the configuration
         db = DatabaseManager.new(script=script,
-                                 params=params,
-                                 commit=commit,
-                                 campaign_dir=campaign_dir,
-                                 overwrite=overwrite)
+                                params=params,
+                                commit=commit,
+                                campaign_dir=campaign_dir,
+                                overwrite=overwrite)
 
         return cls(db, runner)
 
@@ -310,7 +310,7 @@ class CampaignManager(object):
     #####################
 
     def get_results_as_numpy_array(self, parameter_space,
-                                   result_parsing_function):
+                                   result_parsing_function, runs):
         """
         Return the results relative to the desired parameter space in the form
         of a numpy array.
@@ -325,10 +325,65 @@ class CampaignManager(object):
             result_parsing_function (function): user-defined function, taking a
                 result dictionary as argument, that can be used to parse the
                 result files and return a list of values.
+            runs (int): number of runs to gather for each parameter
+                combination.
         """
         return np.squeeze(np.array(self.get_space({},
                                                   parameter_space,
+                                                  runs,
                                                   result_parsing_function)))
+
+    def save_to_mat_file(self, parameter_space,
+                         result_parsing_function,
+                         filename, runs):
+        """
+        Return the results relative to the desired parameter space in the form
+        of a .mat file.
+
+        Note that the input parameter space can contain lists of any length,
+        but any single-element list will have the corresponding dimension
+        collapsed via the numpy.squeeze function.
+
+        Args:
+            parameter_space (dict): dictionary containing
+                parameter/list-of-values pairs.
+            result_parsing_function (function): user-defined function, taking a
+                result dictionary as argument, that can be used to parse the
+                result files and return a list of values.
+            filename (path): name of output .mat file.
+            runs (int): number of runs to gather for each parameter
+                combination.
+        """
+
+        # Make sure all values are lists
+        for key in parameter_space:
+            if not isinstance(parameter_space[key], list):
+                parameter_space[key] = [parameter_space[key]]
+
+        # Add a dimension label for each non-singular dimension
+        dimension_labels = [{key: str(parameter_space[key])} for key in
+                            parameter_space.keys() if len(parameter_space[key])
+                            > 1] + [{'runs': range(runs)}]
+
+        # Create a list of the parameter names
+
+        return savemat(
+            filename,
+            {'results':
+             self.get_results_as_numpy_array(parameter_space,
+                                             result_parsing_function,
+                                             runs=runs),
+             'dimension_labels': dimension_labels})
+
+    def save_to_npy_file(self, parameter_space,
+                         result_parsing_function,
+                         filename, runs):
+        """
+        Save results to a numpy array file format.
+        """
+        np.save(filename, self.get_results_as_numpy_array(parameter_space,
+                                                          result_parsing_function,
+                                                          runs=runs))
 
     def get_results_as_xarray(self, parameter_space,
                               result_parsing_function,
@@ -347,12 +402,17 @@ class CampaignManager(object):
             runs (int): the number of runs to export for each parameter
                 combination.
         """
-        np_array = np.squeeze(np.array(self.get_space({}, parameter_space,
-                                                      result_parsing_function,
-                                                      runs)))
+        np_array = np.squeeze(
+            np.array(
+                self.get_space(
+                    {},
+                    collections.OrderedDict(
+                        [(k, v) for k, v in parameter_space.items()]),
+                    runs,
+                    result_parsing_function)))
 
         # Create a parameter space only containing the variable parameters
-        clean_parameter_space = {}
+        clean_parameter_space = collections.OrderedDict()
         for key, value in parameter_space.items():
             if isinstance(value, list) and len(value) > 1:
                 clean_parameter_space[key] = value
@@ -367,8 +427,15 @@ class CampaignManager(object):
 
         return xr_array
 
-    def get_space(self, current_query, param_space, result_parsing_function,
-                  runs):
+    def files_in_dictionary(result):
+        """
+        Parsing function that returns a dictionary containing one entry for
+        each file. Typically used to perform parsing externally.
+        """
+        return result['output']
+
+    def get_space(self, current_query, param_space, runs,
+                  result_parsing_function):
         """
         Convert a parameter space specification to a nested array structure
         representing the space. In other words, if the parameter space is::
@@ -404,6 +471,8 @@ class CampaignManager(object):
             runs (int): the number of runs to query for each parameter
                 combination.
         """
+        if result_parsing_function is None:
+            result_parsing_function = CampaignManager.files_in_dictionary
         # Note that this function operates recursively.
 
         # Base case
@@ -425,7 +494,7 @@ class CampaignManager(object):
             next_param_space = deepcopy(param_space)
             del(next_param_space[key])
             space.append(self.get_space(next_query, next_param_space,
-                                        result_parsing_function, runs))
+                                        runs, result_parsing_function))
         return space
 
     #############
