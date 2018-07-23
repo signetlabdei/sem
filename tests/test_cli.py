@@ -72,3 +72,8 @@ def test_cli_workflow(tmpdir, ns_3_compiled, config):
                             'numpy_output.npy'],
                   input="\n\n1\n",
                   catch_exceptions=False)
+    runner.invoke(sem.cli, ['export', '--results-dir=%s' %
+                            tmpdir.join('results'), '--do-not-try-parsing',
+                            'folder_output'],
+                  input="\n\n1\n",
+                  catch_exceptions=False)

@@ -27,12 +27,13 @@ def export(results_dir, filename, do_not_try_parsing):
     """
     Export results to file.
 
-    An extension in filename is required to deduce the file type. This command
-    automatically tries to parse the simulation output.
+    An extension in output is required to deduce the file type. If no extension
+    is specified, a directory tree export will be used.
+    Note that this command automatically tries to parse the simulation output.
 
     Supported extensions:
 
-    .mat (Matlab file), .npy (Numpy file)
+    .mat (Matlab file), .npy (Numpy file), no extension (Directory tree)
     """
 
     _, extension = os.path.splitext(filename)
@@ -57,6 +58,10 @@ def export(results_dir, filename, do_not_try_parsing):
         campaign.save_to_npy_file(query_parameters(params, string_defaults),
                                   parsing_function, filename,
                                   runs=click.prompt("Runs to export", type=int))
+    elif extension == "":
+        campaign.save_to_folders(query_parameters(params, string_defaults),
+                                 filename, runs=click.prompt("Runs to export",
+                                                             type=int))
 
 
 @cli.command()
