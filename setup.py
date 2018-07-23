@@ -25,7 +25,7 @@ setup(
     keywords='ns-3 simulation execution',
     packages=find_packages(exclude=['contrib', 'docs', 'tests', 'examples']),
     install_requires=['tinydb', 'tqdm', 'numpy', 'xarray', 'drmaa',
-                      'gitpython', 'sphinxcontrib-napoleon', 'click'],
+                      'gitpython', 'sphinxcontrib-napoleon', 'click', 'scipy'],
     extras_require={
         'dev': ['check-manifest'],
         'test': ['pytest'],
