@@ -85,3 +85,10 @@ def test_save_to_mat_file(tmpdir, manager, result, parameter_combination):
                              mat_file, 1)
     # Just check the file was created
     assert os.path.exists(mat_file)
+
+
+def test_save_to_folders(tmpdir, manager, result, parameter_combination_range):
+    manager.run_missing_simulations(parameter_combination_range, 3)
+    manager.save_to_folders(parameter_combination_range,
+                            str(tmpdir.join('folder_export')),
+                            2)

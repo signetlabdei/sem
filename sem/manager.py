@@ -10,6 +10,7 @@ import numpy as np
 import xarray as xr
 from scipy.io import savemat
 import os
+import shutil
 from pathlib import Path
 import collections
 if DRMAA_AVAILABLE:
@@ -381,9 +382,50 @@ class CampaignManager(object):
         """
         Save results to a numpy array file format.
         """
-        np.save(filename, self.get_results_as_numpy_array(parameter_space,
-                                                          result_parsing_function,
-                                                          runs=runs))
+        np.save(filename, self.get_results_as_numpy_array(
+            parameter_space, result_parsing_function, runs=runs))
+
+    def save_to_folders(self, parameter_space, folder_name, runs):
+        """
+        Save results to a folder structure.
+        """
+        self.space_to_folders({}, parameter_space, runs, folder_name)
+
+    def space_to_folders(self, current_query, param_space, runs,
+                         current_directory):
+        """
+        Convert a parameter space specification to a directory tree with a
+        nested structure.
+        """
+        # Base case: we iterate over the runs and copy files in the final
+        # directory.
+        if not param_space:
+            results = self.db.get_complete_results(current_query)
+            for run, r in enumerate(results[:runs]):
+                files = self.db.get_result_files(r)
+                new_dir = os.path.join(current_directory, "run=%s" % run)
+                os.makedirs(new_dir)
+                for filename, filepath in files.items():
+                    shutil.copyfile(filepath, os.path.join(new_dir, filename))
+            return
+
+        [key, value] = list(param_space.items())[0]
+        # Iterate over dictionary values
+        for v in value:
+            next_query = deepcopy(current_query)
+
+            # For each list, recur 'fixing' that dimension.
+            next_query[key] = v  # Update query
+
+            # Create folder
+            folder_name = ("%s=%s" % (key, v)).replace('/', '_')
+            new_dir = os.path.join(current_directory, folder_name)
+            os.makedirs(new_dir)
+
+            next_param_space = deepcopy(param_space)
+            del(next_param_space[key])
+
+            self.space_to_folders(next_query, next_param_space, runs, new_dir)
 
     def get_results_as_xarray(self, parameter_space,
                               result_parsing_function,
