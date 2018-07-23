@@ -2,6 +2,7 @@ import sem
 # For testing the command line we leverage click facilities
 from click.testing import CliRunner
 import re
+import pytest
 
 
 def test_cli_help():
@@ -56,6 +57,12 @@ def test_cli_workflow(tmpdir, ns_3_compiled, config):
     # Get result id to test id-based options
     result_id = re.findall('.*id\':\s\'(.*)\'', result.output)[0]
 
+    # Show results from a single simulation
+    result = runner.invoke(sem.cli, ['view', '--results-dir=%s' %
+                                     tmpdir.join('results'),
+                                     '--show-simulation-output',
+                                     '--result-id=%s' % result_id])
+
     # Test command printing sub-command
     runner.invoke(sem.cli, ['command', '--results-dir=%s' %
                             tmpdir.join('results'),
@@ -77,3 +84,11 @@ def test_cli_workflow(tmpdir, ns_3_compiled, config):
                             'folder_output'],
                   input="\n\n1\n",
                   catch_exceptions=False)
+
+    # Try using a non-existent file format
+    with pytest.raises(Exception):
+        runner.invoke(sem.cli, ['export', '--results-dir=%s' %
+                                tmpdir.join('results'), '--do-not-try-parsing',
+                                'output.fake_format'],
+                      input="\n\n1\n",
+                      catch_exceptions=False)

@@ -68,13 +68,14 @@ def test_db_does_not_delete_user_data(config, db, tmpdir):
         DatabaseManager.new(**config)
 
 
-def test_exception_throwing(db):
+def test_exception_throwing(config, db):
     with pytest.raises(ValueError):
         DatabaseManager.load('./non_absolute_path')
+    with pytest.raises(ValueError):
         DatabaseManager.load('/abs/path/to/non/existing/file')
-        DatabaseManager.new('./non_absolute_path')
-
-
+    with pytest.raises(ValueError):
+        config['campaign_dir'] = './non_absolute_path'
+        DatabaseManager.new(**config)
 
 #####################
 # Utility functions #
@@ -131,6 +132,13 @@ def test_results(db, result):
 
     assert db.get_results() == [result, result, result, result]
 
+    # Ask for a non-existing parameter
+    with pytest.raises(ValueError):
+        db.get_results({'non-existing': 0})
+
+    # An empty dictionary returns all results
+    assert db.get_results({}) == [result, result, result, result]
+
     # wipe_results actually empties result list
     db.wipe_results()
     assert db.get_results() == []
@@ -169,6 +177,20 @@ def test_results_queries(db, result):
                                                                           1))
 
 
+def test_get_complete_results(manager, parameter_combination):
+    manager.run_simulations([parameter_combination], show_progress=False)
+    assert manager.db.get_complete_results(
+        )[0].get('output').get('stdout') is not None
+    # Try getting complete results via id
+    result = manager.db.get_complete_results()[0]
+    result_id = result['meta']['id']
+    assert manager.db.get_complete_results(
+        result_id=result_id)[0].get('output').get('stdout') is not None
+
+
 def test_get_result_files(manager, parameter_combination):
     manager.run_simulations([parameter_combination], show_progress=False)
-    assert manager.db.get_complete_results()[0].get('output').get('stdout') is not None
+    # Try querying result files via id
+    result = manager.db.get_complete_results()[0]
+    result_id = result['meta']['id']
+    assert manager.db.get_result_files(result_id) is not None

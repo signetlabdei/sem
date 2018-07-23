@@ -290,8 +290,6 @@ class DatabaseManager(object):
         # dictionary not to modify the original copy.
         query_params = {}
         for key in params:
-            if params[key] is None:
-                continue
             if not isinstance(params[key], list):
                 query_params[key] = [params[key]]
             else:

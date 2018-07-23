@@ -62,6 +62,9 @@ def export(results_dir, filename, do_not_try_parsing):
         campaign.save_to_folders(query_parameters(params, string_defaults),
                                  filename, runs=click.prompt("Runs to export",
                                                              type=int))
+    else:  # Unrecognized format
+        raise ValueError("Format not recognized")
+
 
 
 @cli.command()
@@ -181,15 +184,25 @@ def run(ns_3_path, results_dir, script, no_optimization):
 
 
 def get_params_and_defaults(param_list, db):
+    """
+    Retrieve [parameter, default] pairs from simulations available in the db.
+    """
     return [[p, d] for p, d in db.get_all_values_of_all_params().items()]
 
 
 def query_parameters(param_list, defaults=None):
+    """
+    Asks the user for parameters. If available, proposes some defaults.
+
+    Args:
+        param_list (list): List of parameters to ask the user for values.
+        defaults (list): A list of proposed defaults. It must be a list of the
+            same length as param_list. A value of None in one element of the
+            list means that no default will be proposed for the corresponding
+            parameter.
+    """
 
     script_params = collections.OrderedDict([k, []] for k in param_list)
-
-    if defaults is None:
-        defaults = [None for i in param_list]
 
     for param, default in zip(list(script_params.keys()), defaults):
         user_input = click.prompt("%s" % param, default=default)

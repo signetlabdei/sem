@@ -404,7 +404,7 @@ class CampaignManager(object):
             for run, r in enumerate(results[:runs]):
                 files = self.db.get_result_files(r)
                 new_dir = os.path.join(current_directory, "run=%s" % run)
-                os.makedirs(new_dir)
+                os.makedirs(new_dir, exist_ok=True)
                 for filename, filepath in files.items():
                     shutil.copyfile(filepath, os.path.join(new_dir, filename))
             return
@@ -420,7 +420,7 @@ class CampaignManager(object):
             # Create folder
             folder_name = ("%s=%s" % (key, v)).replace('/', '_')
             new_dir = os.path.join(current_directory, folder_name)
-            os.makedirs(new_dir)
+            os.makedirs(new_dir, exist_ok=True)
 
             next_param_space = deepcopy(param_space)
             del(next_param_space[key])
