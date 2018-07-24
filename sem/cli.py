@@ -4,6 +4,7 @@ import ast
 import pprint
 import collections
 import os
+import re
 
 
 @click.group()
@@ -18,12 +19,17 @@ def cli():
 @click.option("--results-dir",
               type=click.Path(dir_okay=True, resolve_path=True),
               prompt='Directory containing results',
-              help='Directory containing the simulation results.')
+              help="Directory containing the simulation results.")
 @click.option("--do-not-try-parsing", default=False, is_flag=True,
               help='Whether to try and automatically parse contents'
               ' of simulation output.')
+@click.option("--parameters", type=click.Path(exists=True, readable=True,
+                                              resolve_path=True),
+              default=None,
+              help="File containing the parameter specification,"
+                   " in form of a python dictionary")
 @click.argument('filename', type=click.Path(resolve_path=True))
-def export(results_dir, filename, do_not_try_parsing):
+def export(results_dir, filename, do_not_try_parsing, parameters):
     """
     Export results to file.
 
@@ -50,18 +56,21 @@ def export(results_dir, filename, do_not_try_parsing):
 
     parsing_function = None if do_not_try_parsing else sem.utils.automatic_parser
 
+    if not parameters:
+        parameter_query = query_parameters(params, string_defaults)
+    else:
+        # Import specified parameter file
+        parameter_query = import_parameters_from_file(parameters)
+
     if extension == ".mat":
-        campaign.save_to_mat_file(query_parameters(params, string_defaults),
-                                  parsing_function, filename,
+        campaign.save_to_mat_file(parameter_query, parsing_function, filename,
                                   runs=click.prompt("Runs to export", type=int))
     elif extension == ".npy":
-        campaign.save_to_npy_file(query_parameters(params, string_defaults),
-                                  parsing_function, filename,
+        campaign.save_to_npy_file(parameter_query, parsing_function, filename,
                                   runs=click.prompt("Runs to export", type=int))
     elif extension == "":
-        campaign.save_to_folders(query_parameters(params, string_defaults),
-                                 filename, runs=click.prompt("Runs to export",
-                                                             type=int))
+        campaign.save_to_folders(parameter_query, filename,
+                                 runs=click.prompt("Runs to export", type=int))
     else:  # Unrecognized format
         raise ValueError("Format not recognized")
 
@@ -76,7 +85,12 @@ def export(results_dir, filename, do_not_try_parsing):
               help='Id of the result to view')
 @click.option("--hide-simulation-output", default=False, prompt=False,
               is_flag=True, help='Whether to hide the simulation output')
-def view(results_dir, result_id, hide_simulation_output):
+@click.option("--parameters", type=click.Path(exists=True, readable=True,
+                                              resolve_path=True),
+              default=None,
+              help="File containing the parameter specification,"
+                   " in form of a python dictionary")
+def view(results_dir, result_id, hide_simulation_output, parameters):
     """
     View results of simulations.
     """
@@ -100,7 +114,10 @@ def view(results_dir, result_id, hide_simulation_output):
         for idx, d in enumerate(defaults):
             string_defaults.append(str(d))
 
-        script_params = query_parameters(params, string_defaults)
+        if not parameters:
+            script_params = query_parameters(params, string_defaults)
+        else:
+            script_params = import_parameters_from_file(parameters)
 
         # Perform the search
         output = '\n\n\n'.join([pprint.pformat(item) for item in
@@ -146,7 +163,12 @@ def command(results_dir, result_id):
               help='Simulation script to run')
 @click.option("--no-optimization", default=False, is_flag=True,
               help="Whether to avoid optimization of the build")
-def run(ns_3_path, results_dir, script, no_optimization):
+@click.option("--parameters", type=click.Path(exists=True, readable=True,
+                                              resolve_path=True),
+              default=None,
+              help="File containing the parameter specification,"
+                   " in form of a python dictionary")
+def run(ns_3_path, results_dir, script, no_optimization, parameters):
     """
     Run simulations.
     """
@@ -171,7 +193,11 @@ def run(ns_3_path, results_dir, script, no_optimization):
         else:
             string_defaults.append(d)
 
-    script_params = query_parameters(params, defaults=string_defaults)
+    if not parameters:
+        script_params = query_parameters(params, defaults=string_defaults)
+    else:
+        script_params = import_parameters_from_file(parameters)
+
     campaign.run_missing_simulations(script_params,
                                      runs=click.prompt("Runs", type=int))
 
@@ -202,3 +228,20 @@ def query_parameters(param_list, defaults=None):
         script_params[param] = ast.literal_eval(user_input)
 
     return script_params
+
+def import_parameters_from_file(parameters_file):
+    """
+    Try importing a parameter dictionary from file.
+
+    We expect values in parameters_file to be defined as follows:
+    param1: value1
+    param2: [value2, value3]
+    """
+    params = {}
+    with open(parameters_file, 'r') as f:
+        matches = re.findall('(.*): (.*)', f.read())
+
+    for m in matches:
+        params[m[0]] = ast.literal_eval(m[1])
+
+    return params
