@@ -74,18 +74,18 @@ def export(results_dir, filename, do_not_try_parsing):
               help='Directory containing the simulation results.')
 @click.option("--result-id", default=None, prompt=False,
               help='Id of the result to view')
-@click.option("--show-simulation-output", default=False, prompt=False,
+@click.option("--hide-simulation-output", default=False, prompt=False,
               is_flag=True, help='Whether to show the simulation output')
-def view(results_dir, result_id, show_simulation_output):
+def view(results_dir, result_id, hide_simulation_output):
     """
     View results of simulations.
     """
     campaign = sem.CampaignManager.load(results_dir)
 
-    if show_simulation_output:
-        get_results_function = campaign.db.get_complete_results
-    else:
+    if hide_simulation_output:
         get_results_function = campaign.db.get_results
+    else:
+        get_results_function = campaign.db.get_complete_results
 
     if result_id:
         output = '\n\n\n'.join([pprint.pformat(item) for item in
