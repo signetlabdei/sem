@@ -225,6 +225,14 @@ class CampaignManager(object):
         if param_list == []:
             return
 
+        # Check all parameter combinations fully specify the desired simulation
+        for p in param_list:
+            if set(list(p.keys())) != set(self.db.get_params()):
+                raise ValueError("Specified parameter combination does not match"
+                                 " the supported parameters:\n"
+                                 "Passed: %s\nSupported: %s" %
+                                 (sorted(list(p.keys())), self.db.get_params()))
+
         # Check that the current repo commit corresponds to the one specified
         # in the campaign
         self.check_repo_ok()
