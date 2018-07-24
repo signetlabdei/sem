@@ -106,7 +106,7 @@ def view(results_dir, result_id, hide_simulation_output):
         output = '\n\n\n'.join([pprint.pformat(item) for item in
                                 get_results_function(script_params)])
 
-    click.echo_via_pager(output)
+    click.echo(output)
 
 
 @cli.command()
