@@ -49,7 +49,7 @@ class CampaignManager(object):
         self.runner = campaign_runner
 
     @classmethod
-    def new(cls, ns_path, script, campaign_dir, runner_type='ParallelRunner',
+    def new(cls, ns_path, script, campaign_dir, runner_type=None,
             overwrite=False, optimized=True):
         """
         Create a new campaign from an ns-3 installation and a campaign
@@ -82,7 +82,8 @@ class CampaignManager(object):
                 Value can be: SimulationRunner (for running sequential
                 simulations locally), ParallelRunner (for running parallel
                 simulations locally), GridRunner (for running simulations using
-                a DRMAA-compatible parallel task scheduler)
+                a DRMAA-compatible parallel task scheduler). Use None to
+                automatically pick the best runner.
             overwrite (bool): whether to overwrite already existing
                 campaign_dir folders. This deletes the directory if and only if
                 it only contains files that were detected to be created by sem.
@@ -126,7 +127,7 @@ class CampaignManager(object):
         return cls(db, runner)
 
     @classmethod
-    def load(cls, campaign_dir, ns_path=None, runner_type='ParallelRunner',
+    def load(cls, campaign_dir, ns_path=None, runner_type=None,
              optimized=True):
         """
         Load an existing simulation campaign.
@@ -160,7 +161,7 @@ class CampaignManager(object):
 
         return cls(db, runner)
 
-    def create_runner(ns_path, script, runner_type='ParallelRunner',
+    def create_runner(ns_path, script, runner_type=None,
                       optimized=True):
         """
         Create a SimulationRunner from a string containing the desired
@@ -174,13 +175,20 @@ class CampaignManager(object):
                 Value can be: SimulationRunner (for running sequential
                 simulations locally), ParallelRunner (for running parallel
                 simulations locally), GridRunner (for running simulations using
-                a DRMAA-compatible parallel task scheduler)
+                a DRMAA-compatible parallel task scheduler). If None,
+                automatically pick the best available runner (GridRunner if
+                DRMAA is available, ParallelRunner otherwise).
             optimized (bool): whether to configure the runner to employ an
                 optimized ns-3 build.
         """
         # locals() contains a dictionary pairing class names with class
         # objects: we can create the object using the desired class starting
         # from its name.
+        if runner_type is None and DRMAA_AVAILABLE:
+            runner_type = 'GridRunner'
+        elif runner_type is None:
+            runner_type = 'ParallelRunner'
+
         return locals().get(runner_type,
                             globals().get(runner_type))(
                                 ns_path, script, optimized=optimized)

@@ -150,17 +150,10 @@ def run(ns_3_path, results_dir, script, no_optimization):
     """
     Run simulations.
     """
-    if sem.utils.DRMAA_AVAILABLE:
-        click.echo("Detected available DRMAA cluster: using GridRunner.")
-        runner_type = "GridRunner"
-    else:
-        runner_type = "ParallelRunner"
-
     # Create a campaign
     campaign = sem.CampaignManager.new(ns_3_path,
                                        script,
                                        results_dir,
-                                       runner_type=runner_type,
                                        overwrite=False,
                                        optimized=not no_optimization)
 
