@@ -2,6 +2,8 @@ import sem
 import os
 import pytest
 import numpy as np
+import shutil
+import git
 
 
 ##################################
@@ -27,23 +29,48 @@ def test_new_campaign_reload(ns_3_compiled, config, manager, result):
     assert new_campaign.db.get_results()[0] == result
 
 
+def test_new_campaign_reload_fail(ns_3_compiled, config, manager, result):
+    # Insert a result in the already available sem.CampaignManager
+    manager.db.insert_result(result)
+
+    # Try creating a new sem.CampaignManager with the same settings and
+    # different script. This should fail.
+    with pytest.raises(FileExistsError):
+        sem.CampaignManager.new(ns_3_compiled,
+                                'hello-simulator',
+                                config['campaign_dir'],
+                                overwrite=False)
+
+
 def test_new_campaign_reload_overwrite(ns_3_compiled, config, manager, result):
     # Insert a result in the already available sem.CampaignManager
     manager.db.insert_result(result)
 
     # Try creating a new sem.CampaignManager with the same settings
-    new_campaign = sem.CampaignManager.new(ns_3_compiled, config['script'],
-                                           config['campaign_dir'], overwrite=True)
+    new_campaign = sem.CampaignManager.new(ns_3_compiled,
+                                           config['script'],
+                                           config['campaign_dir'],
+                                           overwrite=True)
 
     # There should be no results
     assert len(new_campaign.db.get_results()) == 0
 
 
-def test_load_campaign(manager, config):
+def test_load_campaign(manager, config, parameter_combination):
     # Try loading the campaign that was created as fixture
     loaded_manager = sem.CampaignManager.load(config['campaign_dir'])
     del config['campaign_dir']
     assert loaded_manager.db.get_config() == config
+    # This campaign should not be able to run simulations
+    with pytest.raises(Exception):
+        loaded_manager.run_simulations([parameter_combination])
+
+
+def test_wrong_parameter_combination(manager, parameter_combination):
+    # Try running a parameter combination for which a parameter is missing
+    del parameter_combination['time']
+    with pytest.raises(ValueError):
+        manager.run_simulations([parameter_combination])
 
 
 def test_check_repo_ok(manager, config, ns_3_compiled):
@@ -56,6 +83,28 @@ def test_check_repo_ok(manager, config, ns_3_compiled):
         # Now the same method should raise an exception
     with pytest.raises(Exception):
         manager.check_repo_ok()
+
+
+def test_non_existing_repo(manager, config, ns_3_compiled,
+                           parameter_combination):
+    # Remove git directory
+    shutil.rmtree(os.path.join(ns_3_compiled, '.git'))
+
+    # Try running simulations
+    with pytest.raises(Exception):
+        manager.run_simulations([parameter_combination])
+
+
+def test_repo_on_wrong_commit(manager, config, ns_3_compiled,
+                              parameter_combination):
+    # Check out the previous commit (in detached HEAD state)
+    repo = git.Repo(ns_3_compiled)
+    repo.create_head('past_branch', 'HEAD~1')
+    repo.heads.past_branch.checkout()
+
+    # Try running simulations
+    with pytest.raises(Exception):
+        manager.run_simulations([parameter_combination])
 
 
 def test_get_results_as_numpy_array(tmpdir, manager, parameter_combination,

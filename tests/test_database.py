@@ -194,3 +194,22 @@ def test_get_result_files(manager, parameter_combination):
     result = manager.db.get_complete_results()[0]
     result_id = result['meta']['id']
     assert manager.db.get_result_files(result_id) is not None
+
+    # Try querying with a wrong data structure
+    with pytest.raises(Exception):
+        manager.db.get_result_files(['stuff', 'other_stuff'])
+
+
+def test_have_same_structure():
+    d1 = {'a': 1, 'b': 2}
+    d2 = {'a': [], 'b': 3}
+    d3 = {'a': 4, 'c': 5}
+    assert DatabaseManager.have_same_structure(d1, d2) is True
+    assert DatabaseManager.have_same_structure(d1, d3) is False
+
+    d4 = {'a': {'c': 1}, 'b': 2}
+    d5 = {'a': {'c': 3}, 'b': 4}
+    d6 = {'a': {'c': 5, 'd': 6}, 'b': 7}
+    assert DatabaseManager.have_same_structure(d1, d4) is False
+    assert DatabaseManager.have_same_structure(d4, d5) is True
+    assert DatabaseManager.have_same_structure(d4, d6) is False

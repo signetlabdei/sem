@@ -35,5 +35,5 @@ install:
   - pipenv install --dev
 script:
   - travis_wait 30 pipenv run pytest --doctest-glob='*.rst' docs/ # Check .rst documentation
-  - pipenv run pytest -x --doctest-modules --cov=sem/ # Check code and docstrings
+  - travis_wait 30 pipenv run pytest -x --doctest-modules --cov=sem/ # Check code and docstrings
   - codecov

@@ -19,6 +19,36 @@ def test_cli_run(tmpdir, ns_3_compiled, config):
                   catch_exceptions=False)
 
 
+def test_parameters_from_file(tmpdir, ns_3_compiled, config):
+    runner = CliRunner()
+
+    # Write parameter specification to file
+    param_file = str(tmpdir.join("parameters.txt"))
+    with open(param_file, 'w') as f:
+        lines = [
+            "dict: '/usr/share/dict/web2'\n",
+            "time: [False, True]"
+        ]
+        f.writelines(lines)
+
+    # Run some simulations
+    runner.invoke(sem.cli,
+                  ['run',
+                   '--ns-3-path=%s' % ns_3_compiled,
+                   '--results-dir=%s' % tmpdir.join('results'),
+                   '--script=%s' % config['script'],
+                   '--parameters=%s' % param_file],
+                  input='1\n',  # Specify the runs
+                  catch_exceptions=False)
+
+    # View results
+    runner.invoke(sem.cli,
+                  ['view',
+                   '--results-dir=%s' % tmpdir.join('results'),
+                   '--parameters=%s' % param_file],
+                  catch_exceptions=False)
+
+
 def test_cli_workflow(tmpdir, ns_3_compiled, config):
     runner = CliRunner()
 
@@ -40,6 +70,15 @@ def test_cli_workflow(tmpdir, ns_3_compiled, config):
     # View all results
     runner.invoke(sem.cli, ['view', '--results-dir=%s' %
                             tmpdir.join('results'), '--show-all'],
+                  input="q",
+                  catch_exceptions=False)
+
+    # Without the simulation output
+    runner.invoke(sem.cli,
+                  ['view',
+                   '--results-dir=%s' % tmpdir.join('results'),
+                   '--show-all',
+                   '--hide-simulation-output'],
                   input="q",
                   catch_exceptions=False)
 

@@ -1,8 +1,14 @@
-Welcome to SEM
-==============
+A Simulation Execution Manager for ns-3
+=======================================
 
-Efficiently perform multiple ns-3 simulations, easily manage the results and
-export them for processing with a few lines of Python code::
+Efficiently perform multiple ns-3 simulations and export the results for
+processing in only two shell commands::
+
+  sem run
+  sem export output.mat
+
+Alternatively, achieve finer control and go from simulation running to plotting
+results in a few lines of Python code::
 
   # Create a simulation campaign
   >>> import sem

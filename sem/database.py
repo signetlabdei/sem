@@ -318,7 +318,7 @@ class DatabaseManager(object):
         """
         if isinstance(result, dict):
             result_id = result['meta']['id']
-        elif isinstance(result, str):
+        else:  # Should already be a string containing the id
             result_id = result
 
         result_data_dir = os.path.join(self.get_data_dir(), result_id)
