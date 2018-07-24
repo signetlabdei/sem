@@ -75,7 +75,7 @@ def export(results_dir, filename, do_not_try_parsing):
 @click.option("--result-id", default=None, prompt=False,
               help='Id of the result to view')
 @click.option("--hide-simulation-output", default=False, prompt=False,
-              is_flag=True, help='Whether to show the simulation output')
+              is_flag=True, help='Whether to hide the simulation output')
 def view(results_dir, result_id, hide_simulation_output):
     """
     View results of simulations.

@@ -51,8 +51,7 @@ def test_cli_workflow(tmpdir, ns_3_compiled, config):
 
     # Show results including simulation output
     result = runner.invoke(sem.cli, ['view', '--results-dir=%s' %
-                                     tmpdir.join('results'),
-                                     '--show-simulation-output'])
+                                     tmpdir.join('results')])
 
     # Get result id to test id-based options
     result_id = re.findall('.*id\':\s\'(.*)\'', result.output)[0]
@@ -60,7 +59,6 @@ def test_cli_workflow(tmpdir, ns_3_compiled, config):
     # Show results from a single simulation
     result = runner.invoke(sem.cli, ['view', '--results-dir=%s' %
                                      tmpdir.join('results'),
-                                     '--show-simulation-output',
                                      '--result-id=%s' % result_id])
 
     # Test command printing sub-command
