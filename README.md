@@ -43,14 +43,14 @@ In order to execute the scripts in the `examples/` folder, it's possible to
 populate the `ns-3-dev` git submodule:
 
 ```bash
-git submodule init
-git submodule update
+git submodule update --init --recursive
 ```
 
 Once this is done, the scripts in `examples/` can be directly run:
 
 ```bash
-python examples/one-shot.py
+python examples/wifi_plotting_xarray.py
+python examples/lorawan_parsing_xarray.py
 ```
 
 ## Troubleshooting ##
