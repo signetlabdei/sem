@@ -197,14 +197,15 @@ def run(ns_3_path, results_dir, script, no_optimization, parameters):
         if len(options):
             args = re.findall('.*--(.*?):.*', options[0], re.MULTILINE)
             values = re.findall('.*\[(.*?)\].*', options[0], re.MULTILINE)
-            for i in range(0, len(args)):
-                try:
-                    dic[args[i]] = int(values[i])
-                except:
-                    dic[args[i]] = values[i]
-            defaults = []
-            for param in params:
-                defaults.append([dic[param]])
+            if values != ['false']:
+                for i in range(0, len(args)):
+                    try:
+                        dic[args[i]] = int(values[i])
+                    except:
+                        dic[args[i]] = values[i]
+                defaults = []
+                for param in params:
+                    defaults.append([dic[param]])
 
 
     string_defaults = list()
