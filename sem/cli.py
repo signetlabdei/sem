@@ -5,6 +5,7 @@ import pprint
 import collections
 import os
 import re
+import subprocess
 
 
 @click.group()
@@ -185,6 +186,26 @@ def run(ns_3_path, results_dir, script, no_optimization, parameters):
     # Run the simulations
     [params, defaults] = zip(*get_params_and_defaults(campaign.db.get_params(),
                                                       campaign.db))
+    if None in defaults:
+        result = subprocess.check_output([campaign.runner.script_executable,
+                                      '--PrintHelp'], env=campaign.runner.environment,
+                                     cwd=campaign.runner.path).decode('utf-8')
+        options = re.findall('.*Program\s(?:Options|Arguments):'
+                         '(.*)General\sArguments.*',
+                         result, re.DOTALL)
+        dic = {}
+        if len(options):
+            args = re.findall('.*--(.*?):.*', options[0], re.MULTILINE)
+            values = re.findall('.*\[(.*?)\].*', options[0], re.MULTILINE)
+            for i in range(0, len(args)):
+                try:
+                    dic[args[i]] = int(values[i])
+                except:
+                    dic[args[i]] = values[i]
+            defaults = []
+            for param in params:
+                defaults.append([dic[param]])
+
 
     string_defaults = list()
     for idx, d in enumerate(defaults):
