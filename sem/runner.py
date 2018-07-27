@@ -102,7 +102,7 @@ class SimulationRunner(object):
         if optimized and "scratch" in self.script_executable:
             self.script_executable = self.path + "/build/optimized/scratch/" + self.script
 
-        print("%s" % self.script_executable)
+        
 
     #############
     # Utilities #
