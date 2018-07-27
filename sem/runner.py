@@ -97,6 +97,13 @@ class SimulationRunner(object):
         self.script_executable = max(match_percentages,
                                      key=lambda x: x['percentage'])['path']
 
+        
+
+        if optimized and "scratch" in self.script_executable:
+            self.script_executable = self.path + "/build/optimized/scratch/" + self.script
+
+        print("%s" % self.script_executable)
+
     #############
     # Utilities #
     #############

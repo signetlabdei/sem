@@ -177,7 +177,7 @@ def run(ns_3_path, results_dir, script, no_optimization, parameters):
                                        script,
                                        results_dir,
                                        overwrite=False,
-                                       optimized=not no_optimization)
+                                       optimized= not no_optimization) 
 
     # Print campaign info
     click.echo(campaign)
