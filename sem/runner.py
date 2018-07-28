@@ -195,12 +195,21 @@ class SimulationRunner(object):
                              '(.*)General\sArguments.*',
                              result, re.DOTALL)
 
+        global_options = subprocess.check_output([self.script_executable,
+                                                  '--PrintGlobals'],
+                                                 env=self.environment,
+                                                 cwd=self.path).decode('utf-8')
+
         # Get the single parameter names
+        args = []
         if len(options):
-            args = re.findall('.*--(.*?):.*', options[0], re.MULTILINE)
-            return sorted(args)  # Return a sorted list
-        else:
-            return []
+            args += re.findall('.*--(.*?)[?::|=].*', options[0], re.MULTILINE)
+        if len(global_options):
+            args += [k for k in re.findall('.*--(.*?)[?::|=].*',
+                                           global_options, re.MULTILINE) if k
+                     not in ['RngRun', 'RngSeed', 'SchedulerType',
+                             'SimulatorImplementationType', 'ChecksumEnabled']]
+        return sorted(args)  # Return a sorted list
 
     ######################
     # Simulation running #
