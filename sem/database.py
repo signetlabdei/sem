@@ -290,8 +290,6 @@ class DatabaseManager(object):
         # dictionary not to modify the original copy.
         query_params = {}
         for key in params:
-            if params[key] is None:
-                continue
             if not isinstance(params[key], list):
                 query_params[key] = [params[key]]
             else:
@@ -320,7 +318,7 @@ class DatabaseManager(object):
         """
         if isinstance(result, dict):
             result_id = result['meta']['id']
-        elif isinstance(result, str):
+        else:  # Should already be a string containing the id
             result_id = result
 
         result_data_dir = os.path.join(self.get_data_dir(), result_id)

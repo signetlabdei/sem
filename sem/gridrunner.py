@@ -77,7 +77,7 @@ class GridRunner(SimulationRunner):
 
                         # TODO Actually compute time elapsed in the running
                         # state
-                        current_result['elapsed_time'] = 0
+                        current_result['meta']['elapsed_time'] = 0
 
                         s.deleteJobTemplate(jobs[curjob]['template'])
                         del jobs[curjob]

@@ -10,6 +10,7 @@ import numpy as np
 import xarray as xr
 from scipy.io import savemat
 import os
+import shutil
 from pathlib import Path
 import collections
 if DRMAA_AVAILABLE:
@@ -48,7 +49,7 @@ class CampaignManager(object):
         self.runner = campaign_runner
 
     @classmethod
-    def new(cls, ns_path, script, campaign_dir, runner_type='ParallelRunner',
+    def new(cls, ns_path, script, campaign_dir, runner_type=None,
             overwrite=False, optimized=True):
         """
         Create a new campaign from an ns-3 installation and a campaign
@@ -81,7 +82,8 @@ class CampaignManager(object):
                 Value can be: SimulationRunner (for running sequential
                 simulations locally), ParallelRunner (for running parallel
                 simulations locally), GridRunner (for running simulations using
-                a DRMAA-compatible parallel task scheduler)
+                a DRMAA-compatible parallel task scheduler). Use None to
+                automatically pick the best runner.
             overwrite (bool): whether to overwrite already existing
                 campaign_dir folders. This deletes the directory if and only if
                 it only contains files that were detected to be created by sem.
@@ -96,8 +98,8 @@ class CampaignManager(object):
         if Path(campaign_dir).exists() and not overwrite:
             # Try loading
             manager = CampaignManager.load(campaign_dir, ns_path,
-                                            runner_type=runner_type,
-                                            optimized=optimized)
+                                           runner_type=runner_type,
+                                           optimized=optimized)
 
             if manager.db.get_script() == script:
                 return manager
@@ -106,8 +108,8 @@ class CampaignManager(object):
 
         # Initialize runner
         runner = CampaignManager.create_runner(ns_path, script,
-                                            runner_type=runner_type,
-                                            optimized=optimized)
+                                               runner_type=runner_type,
+                                               optimized=optimized)
 
         # Get list of parameters to save in the DB
         params = runner.get_available_parameters()
@@ -117,15 +119,15 @@ class CampaignManager(object):
 
         # Create a database manager from the configuration
         db = DatabaseManager.new(script=script,
-                                params=params,
-                                commit=commit,
-                                campaign_dir=campaign_dir,
-                                overwrite=overwrite)
+                                 params=params,
+                                 commit=commit,
+                                 campaign_dir=campaign_dir,
+                                 overwrite=overwrite)
 
         return cls(db, runner)
 
     @classmethod
-    def load(cls, campaign_dir, ns_path=None, runner_type='ParallelRunner',
+    def load(cls, campaign_dir, ns_path=None, runner_type=None,
              optimized=True):
         """
         Load an existing simulation campaign.
@@ -159,7 +161,7 @@ class CampaignManager(object):
 
         return cls(db, runner)
 
-    def create_runner(ns_path, script, runner_type='ParallelRunner',
+    def create_runner(ns_path, script, runner_type=None,
                       optimized=True):
         """
         Create a SimulationRunner from a string containing the desired
@@ -173,13 +175,20 @@ class CampaignManager(object):
                 Value can be: SimulationRunner (for running sequential
                 simulations locally), ParallelRunner (for running parallel
                 simulations locally), GridRunner (for running simulations using
-                a DRMAA-compatible parallel task scheduler)
+                a DRMAA-compatible parallel task scheduler). If None,
+                automatically pick the best available runner (GridRunner if
+                DRMAA is available, ParallelRunner otherwise).
             optimized (bool): whether to configure the runner to employ an
                 optimized ns-3 build.
         """
         # locals() contains a dictionary pairing class names with class
         # objects: we can create the object using the desired class starting
         # from its name.
+        if runner_type is None and DRMAA_AVAILABLE:
+            runner_type = 'GridRunner'
+        elif runner_type is None:
+            runner_type = 'ParallelRunner'
+
         return locals().get(runner_type,
                             globals().get(runner_type))(
                                 ns_path, script, optimized=optimized)
@@ -215,6 +224,18 @@ class CampaignManager(object):
         # Return if the list is empty
         if param_list == []:
             return
+
+        # Check all parameter combinations fully specify the desired simulation
+        for p in param_list:
+            # Besides the parameters that were actually passed, we add the ones
+            # that are always available in every script
+            passed = list(p.keys())
+            available = self.db.get_params()
+            if set(passed) != set(available):
+                raise ValueError("Specified parameter combination does not "
+                                 "match the supported parameters:\n"
+                                 "Passed: %s\nSupported: %s" %
+                                 (sorted(passed), sorted(available)))
 
         # Check that the current repo commit corresponds to the one specified
         # in the campaign
@@ -381,9 +402,50 @@ class CampaignManager(object):
         """
         Save results to a numpy array file format.
         """
-        np.save(filename, self.get_results_as_numpy_array(parameter_space,
-                                                          result_parsing_function,
-                                                          runs=runs))
+        np.save(filename, self.get_results_as_numpy_array(
+            parameter_space, result_parsing_function, runs=runs))
+
+    def save_to_folders(self, parameter_space, folder_name, runs):
+        """
+        Save results to a folder structure.
+        """
+        self.space_to_folders({}, parameter_space, runs, folder_name)
+
+    def space_to_folders(self, current_query, param_space, runs,
+                         current_directory):
+        """
+        Convert a parameter space specification to a directory tree with a
+        nested structure.
+        """
+        # Base case: we iterate over the runs and copy files in the final
+        # directory.
+        if not param_space:
+            results = self.db.get_complete_results(current_query)
+            for run, r in enumerate(results[:runs]):
+                files = self.db.get_result_files(r)
+                new_dir = os.path.join(current_directory, "run=%s" % run)
+                os.makedirs(new_dir, exist_ok=True)
+                for filename, filepath in files.items():
+                    shutil.copyfile(filepath, os.path.join(new_dir, filename))
+            return
+
+        [key, value] = list(param_space.items())[0]
+        # Iterate over dictionary values
+        for v in value:
+            next_query = deepcopy(current_query)
+
+            # For each list, recur 'fixing' that dimension.
+            next_query[key] = v  # Update query
+
+            # Create folder
+            folder_name = ("%s=%s" % (key, v)).replace('/', '_')
+            new_dir = os.path.join(current_directory, folder_name)
+            os.makedirs(new_dir, exist_ok=True)
+
+            next_param_space = deepcopy(param_space)
+            del(next_param_space[key])
+
+            self.space_to_folders(next_query, next_param_space, runs, new_dir)
 
     def get_results_as_xarray(self, parameter_space,
                               result_parsing_function,
@@ -473,7 +535,7 @@ class CampaignManager(object):
         """
         if result_parsing_function is None:
             result_parsing_function = CampaignManager.files_in_dictionary
-        # Note that this function operates recursively.
+            # Note that this function operates recursively.
 
         # Base case
         if not param_space:

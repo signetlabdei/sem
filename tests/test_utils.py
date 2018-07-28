@@ -1,4 +1,4 @@
-from sem import list_param_combinations
+from sem import list_param_combinations, automatic_parser
 import json
 from operator import getitem
 
@@ -23,3 +23,16 @@ def test_list_param_combinations():
                           map(lambda x: json.dumps(x, sort_keys=True),
                               [{'d': 6, 'e': 8}, {'d': 7, 'e': 8},
                                {'d': 6, 'e': 9}, {'d': 7, 'e': 9}]))
+
+
+def test_automatic_parser(result):
+    # Create a dummy result
+    result['output'] = {}
+    result['output']['stderr'] = ''
+    result['output']['stdout'] = '1 2 3 4 5\n6 7 8 9 10'
+
+    parsed = automatic_parser(result)
+
+    assert parsed['stdout'] == [[1, 2, 3, 4, 5],
+                                [6, 7, 8, 9, 10]]
+    assert parsed['stderr'] == []
