@@ -24,7 +24,7 @@ setup(
     author_email='magrinda@dei.unipd.it',
     keywords='ns-3 simulation execution',
     packages=find_packages(exclude=['contrib', 'docs', 'tests', 'examples']),
-    python_requires='>=3.5.0',
+    python_requires='>=3.5',
     install_requires=['tinydb', 'tqdm', 'numpy', 'xarray', 'drmaa',
                       'gitpython', 'click', 'scipy'],
     extras_require={
