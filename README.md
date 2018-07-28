@@ -37,20 +37,38 @@ pipenv shell
 
 Now, a python REPL can be started to use the library interactively.
 
+## Running tests ##
+
+Tests can be run, from the project root, using:
+
+```bash
+pytest --doctest-glob='*.rst' docs/
+pytest -x -n 3 --doctest-modules --cov-report term --cov=sem/ ./tests
+```
+
+These two commands will run, respectively, all code contained in the `docs/`
+folder and all tests, also measuring coverage and outputting it to the terminal.
+
+Since we are mainly testing integration with ns-3, tests require frequent
+copy+paste of folders, ns-3 compilations and simulation running. Because of
+this, full tests may need up to 30 minutes to complete. Single test files can be
+targeted, to achieve faster testing, by substituting `./tests` in the second
+command with the path to the test file that needs to be run.
+
 ## ns-3-dev submodule ##
 
 In order to execute the scripts in the `examples/` folder, it's possible to
 populate the `ns-3-dev` git submodule:
 
 ```bash
-git submodule init
-git submodule update
+git submodule update --init --recursive
 ```
 
 Once this is done, the scripts in `examples/` can be directly run:
 
 ```bash
-python examples/one-shot.py
+python examples/wifi_plotting_xarray.py
+python examples/lorawan_parsing_xarray.py
 ```
 
 ## Troubleshooting ##

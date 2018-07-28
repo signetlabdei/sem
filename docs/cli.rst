@@ -116,7 +116,7 @@ it's possible to use the `view` command::
   Options:
     --results-dir PATH        Directory containing the simulation results.
     --result-id TEXT          Id of the result to view
-    --show-simulation-output  Whether to show the simulation output
+    --hide-simulation-output  Whether to hide the simulation output
     --help                    Show this message and exit.
 
 Note that, by default, the simulation output is hidden to avoid printing very

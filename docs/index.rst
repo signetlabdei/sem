@@ -1,8 +1,14 @@
-Welcome to SEM
-==============
+The ns-3 Simulation Execution Manager
+=====================================
 
-Efficiently perform multiple ns-3 simulations, easily manage the results and
-export them for processing with a few lines of Python code::
+Efficiently perform multiple ns-3 simulations and export the results for
+processing in two shell commands::
+
+  sem run
+  sem export output.mat
+
+Alternatively, achieve finer control and go from simulation running to plotting
+results in a few lines of Python code::
 
   # Create a simulation campaign
   >>> import sem
@@ -20,6 +26,17 @@ export them for processing with a few lines of Python code::
 
   # Access results (stdout, stderr and generated files)
   >>> results = campaign.db.get_complete_results()
+
+Feature highlights
+------------------
+
+* Supports Python 3.5+;
+* Runs multiple simulations in parallel;
+* Automatically leverages DRMAA_-compatible computing clusters when available;
+* Can export results to MATLAB .mat, Numpy .npy and directory tree formats;
+* Enforces simulation reproducibility by requiring git-based codebase tracking.
+
+  .. _DRMAA: https://en.wikipedia.org/wiki/DRMAA
 
 User's guide
 ------------
