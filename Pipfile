@@ -10,8 +10,8 @@ tqdm = "*"
 drmaa = "*"
 numpy = "*"
 xarray = "*"
-"e1839a8" = {path = ".", editable = true}
 click = "*"
+sem = {path = ".", editable = true}
 
 [dev-packages]
 "flake8" = "*"
