@@ -34,11 +34,11 @@ def main():
 
     # Parameter space
     #################
-    nDevices_values = [100, 500, 1000]
+    nDevices_values = [100, 500, 1000, 2000, 4000]
     radius_values = [5500]
     simulationTime_values = [600]
     appPeriod_values = [600]
-    runs = 5
+    runs = 3
 
     param_combinations = {
         'nDevices': nDevices_values,
@@ -79,7 +79,7 @@ def main():
         # Plot network topology
         plt.figure()
         positions = parse_string_as_numpy_array(
-            result['output']['endDevices.dat'])
+            result['output']['endDevices'])
         plt.scatter(positions[:, 0], positions[:, 1], s=2, c=positions[:, 2])
         plt.scatter(0, 0, s=20, marker='^', c='black')
         plt.xlim([-radius_values[0], radius_values[0]])
@@ -90,12 +90,12 @@ def main():
         # Plot gateway occupation metrics
         plt.figure()
         path_occupancy = parse_string_as_numpy_array(
-            result['output']['occupiedReceptionPaths.dat'])
+            result['output']['occupiedReceptionPaths'])
         t = np.linspace(path_occupancy[0, 0], 5, num=1001, endpoint=True)
         plt.plot(t, interp1d(
             path_occupancy[:, 0], path_occupancy[:, 1], kind='previous')(t))
 
-        packets = parse_string_as_numpy_array(result['output']['packets.dat'],
+        packets = parse_string_as_numpy_array(result['output']['packets'],
                                               converters={5: outcome_to_number}
                                               )
         successful_packets = packets[:, 5] == 0
@@ -114,6 +114,37 @@ def main():
 
         plt.savefig(os.path.join(figure_path, 'receptionPaths.png'))
 
+    # Create some plots showing how to output multiple metrics
+    def get_outcome_probabilities(result):
+        lines = result['output']['packets'].splitlines()
+        successful = under_sensitivity = no_more_receivers = interfered = 0
+        total = 0
+        for line in lines:
+            outcome = line.split()[5]
+            total += 1
+            if outcome == 'R':
+                successful += 1
+            elif outcome == 'U':
+                under_sensitivity += 1
+            elif outcome == 'N':
+                no_more_receivers += 1
+            elif outcome == 'I':
+                interfered += 1
+
+        return [successful/total, interfered/total,
+                no_more_receivers/total, under_sensitivity/total]
+
+    metrics = ['successful', 'interfered', 'no_more_receivers',
+               'under_sensitivity']
+    results = campaign.get_results_as_xarray(param_combinations,
+                                             get_outcome_probabilities,
+                                             metrics,
+                                             runs)
+    plt.figure()
+    for metric in metrics:
+        plt.plot(param_combinations['nDevices'],
+                 results.reduce(np.mean, 'runs').sel(metrics=metric))
+    plt.savefig(os.path.join(figure_path, 'outcomes.png'))
 
 if __name__ == '__main__':
     main()
