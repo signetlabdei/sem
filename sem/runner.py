@@ -233,8 +233,7 @@ class SimulationRunner(object):
             # Run from dedicated temporary folder
             current_result['meta']['id'] = str(uuid.uuid4())
             temp_dir = os.path.join(data_folder, current_result['meta']['id'])
-            if not os.path.exists(temp_dir):
-                os.makedirs(temp_dir)
+            os.makedirs(temp_dir)
 
             start = time.time()  # Time execution
             stdout_file_path = os.path.join(temp_dir, 'stdout')

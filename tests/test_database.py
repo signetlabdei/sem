@@ -68,13 +68,14 @@ def test_db_does_not_delete_user_data(config, db, tmpdir):
         DatabaseManager.new(**config)
 
 
-def test_exception_throwing(db):
+def test_exception_throwing(config, db):
     with pytest.raises(ValueError):
         DatabaseManager.load('./non_absolute_path')
+    with pytest.raises(ValueError):
         DatabaseManager.load('/abs/path/to/non/existing/file')
-        DatabaseManager.new('./non_absolute_path')
-
-
+    with pytest.raises(ValueError):
+        config['campaign_dir'] = './non_absolute_path'
+        DatabaseManager.new(**config)
 
 #####################
 # Utility functions #
@@ -131,6 +132,13 @@ def test_results(db, result):
 
     assert db.get_results() == [result, result, result, result]
 
+    # Ask for a non-existing parameter
+    with pytest.raises(ValueError):
+        db.get_results({'non-existing': 0})
+
+    # An empty dictionary returns all results
+    assert db.get_results({}) == [result, result, result, result]
+
     # wipe_results actually empties result list
     db.wipe_results()
     assert db.get_results() == []
@@ -169,6 +177,39 @@ def test_results_queries(db, result):
                                                                           1))
 
 
+def test_get_complete_results(manager, parameter_combination):
+    manager.run_simulations([parameter_combination], show_progress=False)
+    assert manager.db.get_complete_results(
+        )[0].get('output').get('stdout') is not None
+    # Try getting complete results via id
+    result = manager.db.get_complete_results()[0]
+    result_id = result['meta']['id']
+    assert manager.db.get_complete_results(
+        result_id=result_id)[0].get('output').get('stdout') is not None
+
+
 def test_get_result_files(manager, parameter_combination):
     manager.run_simulations([parameter_combination], show_progress=False)
-    assert manager.db.get_complete_results()[0].get('output').get('stdout') is not None
+    # Try querying result files via id
+    result = manager.db.get_complete_results()[0]
+    result_id = result['meta']['id']
+    assert manager.db.get_result_files(result_id) is not None
+
+    # Try querying with a wrong data structure
+    with pytest.raises(Exception):
+        manager.db.get_result_files(['stuff', 'other_stuff'])
+
+
+def test_have_same_structure():
+    d1 = {'a': 1, 'b': 2}
+    d2 = {'a': [], 'b': 3}
+    d3 = {'a': 4, 'c': 5}
+    assert DatabaseManager.have_same_structure(d1, d2) is True
+    assert DatabaseManager.have_same_structure(d1, d3) is False
+
+    d4 = {'a': {'c': 1}, 'b': 2}
+    d5 = {'a': {'c': 3}, 'b': 4}
+    d6 = {'a': {'c': 5, 'd': 6}, 'b': 7}
+    assert DatabaseManager.have_same_structure(d1, d4) is False
+    assert DatabaseManager.have_same_structure(d4, d5) is True
+    assert DatabaseManager.have_same_structure(d4, d6) is False

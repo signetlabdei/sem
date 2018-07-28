@@ -18,7 +18,7 @@ def runner(ns_3_compiled, config, request):
 
 
 def test_get_available_parameters(runner, config):
-    # Try getting the available parameters of the wifi-tcp script
+    # Try getting the available parameters of the script
     assert runner.get_available_parameters() == config['params']
 
 
@@ -40,6 +40,10 @@ def test_run_simulations(runner, config,
 def test_non_existent_script(ns_3_compiled):
     with pytest.raises(ValueError):
         ParallelRunner(ns_3_compiled, 'non_existing_script')
+
+
+def test_script_without_args(ns_3_compiled):
+    ParallelRunner(ns_3_compiled, 'sample-random-variable')
 
 
 def test_empty_param_list(ns_3_compiled, config, parameter_combination):
