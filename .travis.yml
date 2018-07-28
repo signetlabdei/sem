@@ -12,7 +12,6 @@ sudo: required
 dist: trusty
 
 python:
-  - "3.4"
   - "3.5"
   - "3.6"
 
@@ -34,6 +33,6 @@ install:
   - pipenv run python setup.py bdist_egg
   - pipenv install --dev
 script:
-  - pipenv run pytest --doctest-glob='*.rst' # Check .rst documentation
-  - pipenv run pytest -x --doctest-modules --cov=sem/ # Check code and docstrings
+  - travis_wait 30 pipenv run pytest --doctest-glob='*.rst' docs/ # Check .rst documentation
+  - travis_wait 30 pipenv run pytest -x --doctest-modules --cov=sem/ # Check code and docstrings
   - codecov

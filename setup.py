@@ -24,8 +24,9 @@ setup(
     author_email='magrinda@dei.unipd.it',
     keywords='ns-3 simulation execution',
     packages=find_packages(exclude=['contrib', 'docs', 'tests', 'examples']),
+    python_requires='>=3.5.0',
     install_requires=['tinydb', 'tqdm', 'numpy', 'xarray', 'drmaa',
-                      'gitpython', 'sphinxcontrib-napoleon', 'click'],
+                      'gitpython', 'click', 'scipy'],
     extras_require={
         'dev': ['check-manifest'],
         'test': ['pytest'],
