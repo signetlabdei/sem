@@ -32,6 +32,13 @@ of ns-3 to the ns-3-dev folder:
 
   git clone https://github.com/nsnam/ns-3-dev-git ns-3-dev
 
+Optionally, from the `ns-3-dev` folder, one can then checkout a precise ns-3
+release with the following command:
+
+.. code:: bash
+
+  git checkout ns-3.28
+
 SEM installation for contributors
 ---------------------------------
 

@@ -39,7 +39,8 @@ Now, a python REPL can be started to use the library interactively.
 
 ## Running tests ##
 
-Tests can be run, from the project root, using:
+This project uses the pytest framework for running tests. Tests can be run, from
+the project root, using:
 
 ```bash
 pytest --doctest-glob='*.rst' docs/
@@ -50,8 +51,8 @@ These two commands will run, respectively, all code contained in the `docs/`
 folder and all tests, also measuring coverage and outputting it to the terminal.
 
 Since we are mainly testing integration with ns-3, tests require frequent
-copy+paste of folders, ns-3 compilations and simulation running. Because of
-this, full tests may need up to 30 minutes to complete. Single test files can be
+copying and pasting of folders, ns-3 compilations and simulation running.
+Because of this, full tests are not instantaneous. Single test files can be
 targeted, to achieve faster testing, by substituting `./tests` in the second
 command with the path to the test file that needs to be run.
 
