@@ -58,7 +58,7 @@ command with the path to the test file that needs to be run.
 
 ## ns-3-dev submodule ##
 
-In order to execute the scripts in the `examples/` folder, it's possible to
+In order to execute the scripts in the `examples/` folder, it's necessary to
 populate the `ns-3-dev` git submodule:
 
 ```bash

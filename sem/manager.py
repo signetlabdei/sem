@@ -48,6 +48,10 @@ class CampaignManager(object):
         self.db = campaign_db
         self.runner = campaign_runner
 
+        # Check that the current repo commit corresponds to the one specified
+        # in the campaign
+        self.check_repo_ok()
+
     @classmethod
     def new(cls, ns_path, script, campaign_dir, runner_type='Auto',
             overwrite=False, optimized=True):

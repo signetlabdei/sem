@@ -11,7 +11,6 @@ def main():
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     from scipy.interpolate import interp1d
-    from io import StringIO
 
     # Define campaign parameters
     ############################
@@ -25,7 +24,7 @@ def main():
 
     campaign = sem.CampaignManager.new(ns_path, script, campaign_dir,
                                        runner_type='ParallelRunner',
-                                       overwrite=True)
+                                       overwrite=False)
 
     print(campaign)
 
@@ -61,25 +60,22 @@ def main():
     if not os.path.isdir(figure_path):
         os.makedirs(figure_path)
 
-    def parse_string_as_numpy_array(string, **kwargs):
-        return np.loadtxt(StringIO(string), **kwargs)
+    for result in [campaign.db.get_complete_results({'nDevices': 4000})[0]]:
 
-    def outcome_to_number(string):
-        string = string.decode('UTF-8')
-        if string == 'R':
-            return 0
-        if string == 'U':
-            return 1
-        if string == 'N':
-            return 2
-        if string == 'I':
-            return 3
+        dtypes = {'endDevices': (float, float, int),
+                  'occupiedReceptionPaths': (float, int),
+                  'packets': (float, int, float, int, float, int)}
 
-    for result in [campaign.db.get_complete_results({'nDevices': 1000})[0]]:
+        string_to_number = {'R': 0, 'U': 1, 'N': 2, 'I': 3}
+
+        converters = {'packets': {5: lambda x:
+                                  string_to_number[x.decode('UTF-8')]}}
+
+        parsed_result = sem.utils.automatic_parser(result, dtypes, converters)
+
         # Plot network topology
-        plt.figure()
-        positions = parse_string_as_numpy_array(
-            result['output']['endDevices'])
+        plt.figure(figsize=[6, 6], dpi=300)
+        positions = np.array(parsed_result['endDevices'])
         plt.scatter(positions[:, 0], positions[:, 1], s=2, c=positions[:, 2])
         plt.scatter(0, 0, s=20, marker='^', c='black')
         plt.xlim([-radius_values[0], radius_values[0]])
@@ -88,48 +84,46 @@ def main():
         plt.savefig(os.path.join(figure_path, 'networkTopology.png'))
 
         # Plot gateway occupation metrics
-        plt.figure()
-        path_occupancy = parse_string_as_numpy_array(
-            result['output']['occupiedReceptionPaths'])
+        plt.figure(figsize=[6, 6], dpi=300)
+        path_occupancy = np.array(parsed_result['occupiedReceptionPaths'])
         t = np.linspace(path_occupancy[0, 0], 5, num=1001, endpoint=True)
         plt.plot(t, interp1d(
             path_occupancy[:, 0], path_occupancy[:, 1], kind='previous')(t))
 
-        packets = parse_string_as_numpy_array(result['output']['packets'],
-                                              converters={5: outcome_to_number}
-                                              )
+        packets = np.array(parsed_result['packets'])
+
+        # Plot successful packets
         successful_packets = packets[:, 5] == 0
-        failed_packets = packets[:, 5] != 0
         plt.scatter(packets[successful_packets, 0],
                     np.zeros([sum(successful_packets)]), s=40, c='green',
                     marker='^')
-        plt.scatter(
-            packets[failed_packets, 0],
-            np.zeros([sum(failed_packets)]),
-            s=40, c='red', marker='^')
+        # Plot failed packets
+        failed_packets = packets[:, 5] != 0
+        plt.scatter(packets[failed_packets, 0],
+                    np.zeros([sum(failed_packets)]),
+                    s=40, c='red', marker='^')
 
         plt.xlim([0, 5])
-
         plt.title("Occupied reception paths")
-
         plt.savefig(os.path.join(figure_path, 'receptionPaths.png'))
 
-    # Create some plots showing how to output multiple metrics
+    #################################
+    # Plot probabilities of success #
+    #################################
+
+    # This is the function that we will pass to the export function
     def get_outcome_probabilities(result):
-        lines = result['output']['packets'].splitlines()
-        successful = under_sensitivity = no_more_receivers = interfered = 0
-        total = 0
-        for line in lines:
-            outcome = line.split()[5]
-            total += 1
-            if outcome == 'R':
-                successful += 1
-            elif outcome == 'U':
-                under_sensitivity += 1
-            elif outcome == 'N':
-                no_more_receivers += 1
-            elif outcome == 'I':
-                interfered += 1
+
+        # Parse all files into lists
+        parsed_result = sem.utils.automatic_parser(result, dtypes, converters)
+
+        # Get the file we are interested in
+        outcomes = np.array(parsed_result['packets'])[:, 5]
+        successful = sum(outcomes == 0)
+        interfered = sum(outcomes == 1)
+        no_more_receivers = sum(outcomes == 2)
+        under_sensitivity = sum(outcomes == 3)
+        total = outcomes.shape[0]
 
         return [successful/total, interfered/total,
                 no_more_receivers/total, under_sensitivity/total]
@@ -140,11 +134,17 @@ def main():
                                              get_outcome_probabilities,
                                              metrics,
                                              runs)
-    plt.figure()
+
+    plt.figure(figsize=[6, 6], dpi=300)
     for metric in metrics:
         plt.plot(param_combinations['nDevices'],
                  results.reduce(np.mean, 'runs').sel(metrics=metric))
+    plt.xlabel("Number of End Devices")
+    plt.ylabel("Probability")
+    plt.legend(["Success", "Interfered", "No more receivers",
+                "Under sensitivity"])
     plt.savefig(os.path.join(figure_path, 'outcomes.png'))
+
 
 if __name__ == '__main__':
     main()

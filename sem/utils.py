@@ -4,8 +4,8 @@ import numpy as np
 import warnings
 
 try:
-    import drmaa
     DRMAA_AVAILABLE = True
+    import drmaa
 except(RuntimeError):
     DRMAA_AVAILABLE = False
 
@@ -16,14 +16,17 @@ def list_param_combinations(param_ranges):
     desired parameter values as lists.
 
     Example:
-    >>> param_ranges = {'a': [1], 'b': [2, 3]}
-    >>> list_param_combinations(param_ranges)
-    [{'a': 1, 'b': 2}, {'a': 1, 'b': 3}]
+
+        >>> param_ranges = {'a': [1], 'b': [2, 3]}
+        >>> list_param_combinations(param_ranges)
+        [{'a': 1, 'b': 2}, {'a': 1, 'b': 3}]
 
     Additionally, this function is robust in case values are not lists:
-    >>> param_ranges = {'a': 1, 'b': [2, 3]}
-    >>> list_param_combinations(param_ranges)
-    [{'a': 1, 'b': 2}, {'a': 1, 'b': 3}]
+
+        >>> param_ranges = {'a': 1, 'b': [2, 3]}
+        >>> list_param_combinations(param_ranges)
+        [{'a': 1, 'b': 2}, {'a': 1, 'b': 3}]
+
     """
     # Convert non-list values to single-element lists
     # This is required to make sure product work.
@@ -45,12 +48,14 @@ def get_command_from_result(script, result, debug=False):
             template.
     """
     if not debug:
-        command = "./waf --run \"" + script + " " + " ".join(['--%s=%s' % (param, value)
-                                                        for param, value in
-                                                        result['params'].items()]) + "\""
+        command = "./waf --run \"" + script + " " + " ".join(
+            ['--%s=%s' % (param, value) for param, value in
+             result['params'].items()]) + "\""
     else:
-        command = "./waf --run " + script + " --command-template=\"gdb --args %s " + " ".join(
-            ['--%s=%s' % (param, value) for param, value in result['params'].items()]) + "\""
+        command = "./waf --run " + script + " --command-template=\""
+        "gdb --args %s " + " ".join(['--%s=%s' % (param, value) for
+                                     param, value in
+                                     result['params'].items()]) + "\""
     return command
 
 
@@ -61,16 +66,34 @@ def constant_array_parser(result):
     return [0, 1, 2, 3]
 
 
-def automatic_parser(result):
+def automatic_parser(result, dtypes={}, converters={}):
     """
     Try and automatically convert strings formatted as tables into nested
     list structures.
+
+    Under the hood, this function essentially applies the genfromtxt function
+    to all files in the output, and passes it the additional kwargs.
+
+    Args:
+      result (dict): the result to parse.
+      dtypes (dict): a dictionary containing the dtype specification to perform
+        parsing for each available filename. See the numpy genfromtxt
+        documentation for more details on how to format these.
     """
     np.seterr(all='raise')
     parsed = {}
+
     for filename, contents in result['output'].items():
+        if dtypes.get(filename) is None:
+            dtypes[filename] = None
+        if converters.get(filename) is None:
+            converters[filename] = None
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            parsed[filename] = np.genfromtxt(io.StringIO(contents)).tolist()
+            parsed[filename] = np.genfromtxt(io.StringIO(contents),
+                                             dtype=dtypes[filename],
+                                             converters=converters[filename]
+                                             ).tolist()
 
     return parsed

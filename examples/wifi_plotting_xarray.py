@@ -81,7 +81,8 @@ def main():
     results_std = results.reduce(np.std, 'runs')
 
     # Plot lines with error bars
-    plt.figure()
+    plt.figure(figsize=[6, 6], dpi=100)
+    legend_entries = []
     for useShortGuardInterval in params['useShortGuardInterval']:
         for useRts in params['useRts']:
             avg = results_average.sel(nWifi=1, distance=1,
@@ -91,12 +92,15 @@ def main():
                                   useShortGuardInterval=useShortGuardInterval,
                                   useRts=useRts)
             plt.errorbar(x=params['mcs'], y=avg, yerr=6*std)
-            plt.xlabel('MCS')
-            plt.ylabel('Throughput [Mbit/s]')
-            plt.savefig(os.path.join(figure_path, 'throughput.png'))
+            legend_entries += ['SGI = %s, RTS = %s' %
+                               (useShortGuardInterval, useRts)]
+    plt.legend(legend_entries)
+    plt.xlabel('MCS')
+    plt.ylabel('Throughput [Mbit/s]')
+    plt.savefig(os.path.join(figure_path, 'throughput.png'))
 
     # Assess the influence of nWifi and distance parameters
-    plt.figure()
+    plt.figure(figsize=[8, 8], dpi=300)
     subplot_idx = 1
     for nWifi in params['nWifi']:
         for distance in params['distance']:
@@ -106,10 +110,8 @@ def main():
                 ).reduce(np.mean, 'runs')
             plt.subplot(2, 2, subplot_idx)
             stacked_params.plot.line(x='mcs', add_legend=True)
-            plt.xlabel('MCS')
-            plt.ylabel('Throughput [Mbit/s]')
             subplot_idx += 1
-            plt.savefig(os.path.join(figure_path, 'throughputComparison.png'))
+    plt.savefig(os.path.join(figure_path, 'throughputComparison.png'))
 
 
 if __name__ == "__main__":

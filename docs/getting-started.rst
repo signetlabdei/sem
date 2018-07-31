@@ -15,6 +15,10 @@ installation (assumed to be available at `/tmp/ns-3`) to plots visualizing the
 results, in as few commands as possible. A script containing the commands of
 this section is available at `examples/wifi_plotting_xarray.py`.
 
+This page only provides an initial guide that illustrates the SEM workflow. For
+a more comprehensive documentation, refer to the :ref:`advanced-functionality`
+page.
+
 Creating and loading a simulation campaign
 ------------------------------------------
 

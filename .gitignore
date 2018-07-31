@@ -20,7 +20,5 @@ _build
 /.dir-locals.el
 /coverage_report
 /.coverage.*
-examples/figures
 tests/ns-3
-examples/figures
 Pipfile.lock
