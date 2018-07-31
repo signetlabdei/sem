@@ -2,7 +2,9 @@ The ns-3 Simulation Execution Manager
 =====================================
 
 Efficiently perform multiple ns-3 simulations and export the results for
-processing in two shell commands::
+processing in two shell commands:
+
+.. code:: bash
 
   sem run
   sem export output.mat
@@ -49,8 +51,11 @@ User's guide
    :maxdepth: 2
 
    installation
-   cli
    getting-started
+   cli
+   advanced-functionality
+   examples
+   contributing
 
 API Reference
 -------------

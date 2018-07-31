@@ -106,9 +106,11 @@ class GridRunner(SimulationRunner):
             self.run_program((clean_command), self.path)
 
         if not skip_configuration:
-            configuration_command = './waf configure --enable-examples --disable-gtk --disable-python'
+            configuration_command = './waf configure --enable-examples '
+            '--disable-gtk --disable-python'
             if optimized:
-                configuration_command += '--build-profile=optimized --out=build/optimized'
+                configuration_command += '--build-profile=optimized '
+                '--out=build/optimized'
 
             self.run_program((configuration_command), self.path)
 
@@ -127,7 +129,8 @@ class GridRunner(SimulationRunner):
                                              '--PrintHelp'),
                                   environment=self.environment)
 
-        options = re.findall('.*Program\s(?:Arguments|Options):(.*)General\sArguments.*',
+        options = re.findall('.*Program\s(?:Arguments|Options):(.*)'
+                             'General\sArguments.*',
                              stdout, re.DOTALL)
 
         if len(options):

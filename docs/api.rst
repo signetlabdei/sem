@@ -22,5 +22,5 @@ DatabaseManager
 Utils
 ---------------
 
-.. autoclass:: sem.utils
+.. automodule:: sem.utils
    :members:
