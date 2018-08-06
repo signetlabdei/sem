@@ -1,6 +1,6 @@
-.. _advanced-functionality:
+.. _detailed-functionality:
 
-Advanced Functionality
+Detailed Functionality
 ======================
 
 This document details the functionality provided by the SEM Python library,
@@ -172,3 +172,12 @@ the results to an output format.
 
 User-defined processing can be specified by passing a result-parsing function to
 the export functions, as shown in the scripts in the `examples/` folder.
+
+Class diagram
+-------------
+
+.. figure:: classes_sem.png
+    :width: 100%
+    :figclass: align-center
+
+    Class diagram for the SEM module.

@@ -62,7 +62,7 @@ A choice for the required options will be prompted if they are not specified::
   --- Campaign info ---
   script: wifi-multi-tos
   params: ['channelWidth', 'distance', 'mcs', 'nWifi', 'simulationTime', 'useRts', 'useShortGuardInterval']
-  commit: c19d291f35f2a394d03c3fc7c74377b65666e1a4
+  HEAD: c19d291f35f2a394d03c3fc7c74377b65666e1a4
   ------------
 
 After the ns-3 installation path, a directory where to save (or load, in case
@@ -82,13 +82,23 @@ lists, in the `[value1, value2, value3]` format::
   Runs: 5
   Running simulations: 100%|████████| 80/80 [02:43<00:00,  2.05s/simulation]
 
+Note that SEM performed 80 simulations: this is indeed correct, since we
+specified 3 parameters with multiple values (respectively, mcs with 4 possible
+values, useRts with 2 and useShortGuardInterval with 2 possible values). The
+exploration of this parameter space requires us to perform 4 * 2 * 2 = 16
+simulations. If, then, we are interested in 5 repetitions for each parameter
+combination, this means we need 16 * 5 = 80 simulations.
+
 At this point, say we realize we also interested in the effect of the `nWifi`
-variable: it will suffice to run `sem run` again with the same parameters as
-before, and the previously ran simulations will be loaded and taken into account
-when the new parameter space is defined, leading to another batch of 80
-simulations instead of the 160 that would be necessary to cover the entire
-parameter space. Additionally, sem will detect the already available results in
-the database, and propose defaults (which can be accepted by pressing enter)::
+variable, and additionally to the already used parameter value of 1 we are also
+interested in seeing what happens when the value is 5: it will suffice to run
+`sem run` again with the same parameters as before, and the previously ran
+simulations will be loaded and taken into account when the new parameter space
+is defined. This will lead to another batch of 80 simulations instead of the 160
+that would be necessary to cover the entire parameter space, since we have
+already performed the 80 that correspond to the parameter value of 1.
+Additionally, sem will detect the already available results in the database, and
+propose defaults (which can be accepted by pressing enter)::
 
   sem run
   ...

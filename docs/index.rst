@@ -53,7 +53,7 @@ User's guide
    installation
    getting-started
    cli
-   advanced-functionality
+   detailed-functionality
    examples
    contributing
 

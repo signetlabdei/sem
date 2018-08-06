@@ -1,6 +1,10 @@
 Getting started
 ===============
 
+This page only provides an initial guide that illustrates the SEM workflow. For
+a more comprehensive documentation, refer to the :ref:`detailed-functionality`
+page.
+
 `SEM` operates on simulation campaigns, which consist in a collection of results
 obtained from running a specific `ns-3` simulation script with possibly varying
 command line parameters.
@@ -11,13 +15,12 @@ to create new campaigns, load existing ones, run simulations and export results
 to a variety of formats for analysis and plotting.
 
 In the following sections we will use `SEM` to go from a vanilla ns-3
-installation (assumed to be available at `/tmp/ns-3`) to plots visualizing the
-results, in as few commands as possible. A script containing the commands of
-this section is available at `examples/wifi_plotting_xarray.py`.
+installation (assumed to be available at `./examples/ns-3`) to plots visualizing
+the results, in as few commands as possible. A script containing many commands
+of this section is available at the sem project github_, under
+`examples/wifi_plotting_xarray.py`.
 
-This page only provides an initial guide that illustrates the SEM workflow. For
-a more comprehensive documentation, refer to the :ref:`advanced-functionality`
-page.
+.. _github: https://github.com/dvdmgr/sem
 
 Creating and loading a simulation campaign
 ------------------------------------------
@@ -40,7 +43,8 @@ Internally, `SEM` also checks whether the path points to a valid ns-3
 installation, and whether the script is actually available for execution or not.
 If a simulation campaign already exists at the specified `campaign_dir`, and if
 it points to the same `ns_path` and `script` values, that campaign is loaded
-instead.
+instead. Otherwise, the `campaign_dir` folder is created from scratch and a new
+campaign is created.
 
 `CampaignManager` objects can also be directly printed to inspect the status of
 the campaign:
@@ -52,7 +56,7 @@ the campaign:
    script: wifi-multi-tos
    params: ['nWifi', 'distance', 'simulationTime', 'useRts', 'mcs',
             'channelWidth', 'useShortGuardInterval']
-   commit: 9386dc7d106fd9241ff151195a0e6e5cb954d363
+   HEAD: 9386dc7d106fd9241ff151195a0e6e5cb954d363
    ---------------------
 
 Note that, additionally to the path and script we specified in the campaign
@@ -79,12 +83,14 @@ Simulations can be run by specifying a list of parameter combinations.
 
   Running simulations: 100% 1/1 [00:10<00:00, 10.81s/simulation]
 
-The `run_simulations` method automatically queries the database looking for an
-appropriate `RngRun` value that has not yet been used, and runs the requested
-simulations. After the simulation finishes, the results (i.e., any generated
-output files and the standard output) are added to the database and can be
-retrieved later on. A progress bar is displayed to indicate progress and give an
-estimate of the remaining time.
+As simulations are run, the results are also saved in the campaign database, at
+the previously specified `campaign_dir` path. The `run_simulations` method
+automatically queries the database looking for a seed that has not yet been used
+to ensure the randomness of simulations, and runs the requested simulations.
+After the simulation finishes, the results (i.e., any generated output files and
+the standard output) are added to the database and can be retrieved later on. A
+progress bar is displayed to indicate progress and give an estimate of the
+remaining time.
 
 Multiple simulations corresponding to the exploration of a parameter space can
 be easily run by employing the `list_param_combinations` function, which can
@@ -116,7 +122,13 @@ in the database, found the previously executed simulation, and only performed
 the simulation for which no result employing the requested parameter combination
 was already available. Additionally, the `run_missing_simulations` function
 requires a `runs` parameter, specifying how many runs should be performed for
-each parameter combination.
+each parameter combination. Note the difference with `run_simulations`:
+`run_simulations` will run all the simulations in the specified list, regardless
+of the number of already available reproductions we have.
+`run_missing_simulations`, instead, will only run the simulations that are
+needed to obtain `runs` repetitions of a set parameter combination (hence the
+need for the `runs` parameter, which is not required by `run_simulations`).
+
 
 Finally, let's make `SEM` run multiple simulations so that we have something to
 plot. In order to do this, first we define a new `param_combinations`
@@ -142,6 +154,10 @@ dictionary, ranging the `mcs` parameter from 0 to 7 and turning on and off the
 Exporting results
 -----------------
 
+Results can be exported to the `numpy` and `xarray` formats for Python
+elaboration, and to a directory tree, `.mat` and `.npy` file formats for
+processing outside Python.
+
 Available results can be inspected using the `DatabaseManager` object associated
 to the `CampaignManager`, and available as the `db` attribute of the campaign.
 For instance, let's check out the first result::
@@ -166,12 +182,11 @@ For instance, let's check out the first result::
 Results are returned as dictionaries, with a key-value pair for each available
 script parameter, and the following additional fields:
 
-  * `RngRun`: the `--RngRun` value that was used for this simulation;
+  * `RngRun`: the `--RngRun` value that was used for this simulation (used to
+    set the "`seed`" of the simulator's random number generator);
   * `id`: an unique identifier for the simulation;
   * `elapsed_time`: the required time, in seconds, to run the simulation;
   * `stdout`: the output of the simulation script.
-
-Finally, results can be exported to the `numpy` or `xarray` formats.
 
 At its current state, the `SEM` library supports automatic parsing of the
 `stdout` result field: in the following lines we will define a

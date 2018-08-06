@@ -402,7 +402,7 @@ class DatabaseManager(object):
         Represent the database object as a human-readable string.
         """
         configuration = self.get_config()
-        return "script: %s\nparams: %s\ncommit: %s" % (
+        return "script: %s\nparams: %s\nHEAD: %s" % (
             configuration['script'], configuration['params'],
             configuration['commit'])
 

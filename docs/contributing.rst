@@ -57,7 +57,16 @@ extensions, allowing to perform parallel testing and coverage.
 .. _pytest: https://docs.pytest.org/en/latest/
 
 Tests are contained in the `tests/` folder. Here, different files prefixed with
-`test_` contain test cases for the various components of the library.
+`test_` contain test cases for the various components of the library:
+
+* `test_cli.py` uses `click` facilities to test the command line interface;
+* `test_database.py` tests result insertion, querying and generally the
+  `DatabaseManager` class;
+* `test_examples.py` runs the examples contained in the `examples/` folder;
+* `test_manager.py` tests the `CampaignManager` object, from creation to
+  simulation running and exporting results;
+* `test_runner.py` tests the `SimulationRunner` objects;
+* `test_utils.py` tests the utilities provided in `sem/utils.py`
 
 The `conftest` file, on the other hand, contains code that must be run before
 each test execution (i.e., downloading and compiling ns-3) and fixtures_ (i.e.,
@@ -67,7 +76,7 @@ installations) that are shared between test files.
 .. _fixtures: https://docs.pytest.org/en/latest/fixture.html
 
 From the `pipenv` shell, at the project root, one can run the following command
-to tun tests for the whole library:
+to run tests for the whole library:
 
 .. code:: bash
 

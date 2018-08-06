@@ -34,10 +34,12 @@ def cli():
 @click.option("--no-optimization",
               default=False,
               is_flag=True,
+              show_default=True,
               help="Whether to avoid optimization of the build")
 @click.option("--parameters",
               type=click.Path(exists=True, readable=True, resolve_path=True),
               default=None,
+              show_default=True,
               help="File containing the parameter specification,"
               " in the following format\n"
               "param1: value1\nparam2: value2\n...")
@@ -91,19 +93,23 @@ def run(ns_3_path, results_dir, script, no_optimization, parameters):
 @click.option("--result-id",
               default=None,
               prompt=False,
+              show_default=True,
               help='Id of the result to view')
 @click.option("--hide-simulation-output",
               default=False,
               prompt=False,
+              show_default=True,
               is_flag=True,
               help='Whether to hide the simulation output')
 @click.option("--parameters",
               type=click.Path(exists=True, readable=True, resolve_path=True),
               default=None,
+              show_default=True,
               help="File containing the parameter specification,"
                    " in form of a python dictionary")
 @click.option("--no-pager",
               is_flag=True,
+              show_default=True,
               help="If used, directly print the results without passing"
               " through a pager.")
 def view(results_dir, result_id, hide_simulation_output, parameters, no_pager):
@@ -188,11 +194,13 @@ def command(results_dir, result_id):
 @click.option("--do-not-try-parsing",
               default=False,
               is_flag=True,
+              show_default=True,
               help='Whether to try and automatically parse contents'
               ' of simulation output.')
 @click.option("--parameters",
               type=click.Path(exists=True, readable=True, resolve_path=True),
               default=None,
+              show_default=True,
               help="File containing the parameter specification,"
                    " in form of a python dictionary")
 @click.argument('filename', type=click.Path(resolve_path=True))
