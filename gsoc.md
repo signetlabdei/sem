@@ -69,6 +69,11 @@ of the library) were converted to [Github
 Issues](https://github.com/DvdMgr/sem/issues) and tagged with the enhancement
 label. I plan to keep working on these items in my spare time.
 
+Finally, I want to note that, since the developed code has already become part
+of my workflow when using ns-3, I plan to keep developing the library as main
+contributor as long as I will work with ns-3 (at least a couple more years,
+until completion of my PhD, and maybe beyond that point).
+
 ### Things I've learned ###
 
 Technologies and workflows I got to learn more about during the GSoC period
