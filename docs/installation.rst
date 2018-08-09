@@ -10,13 +10,22 @@ Github repository:
 
 .. code:: bash
 
-  pip install git+https://github.com/DvdMgr/sem.git@develop
+  pip3 install git+https://github.com/DvdMgr/sem.git@develop
+
+This will install the sem package and its dependencies in your current python
+library path. This same command can also be re-issued to update the library.
 
 Alternatively, the master branch is more stable but also offers fewer features:
 
 .. code:: bash
 
-  pip install git+https://github.com/DvdMgr/sem.git@master
+  pip3 install git+https://github.com/DvdMgr/sem.git@master
+
+In any case, SEM can be removed from the system by issuing:
+
+.. code:: bash
+
+  pip3 uninstall sem
 
 Installing ns-3
 ---------------
