@@ -39,7 +39,9 @@ Aside from a [pull request](https://github.com/DvdMgr/sem/pull/15) merged in
 week 12, all code in the repository was written by Davide Magrin.
 
 Documentation for the project is hosted at
-[ReadTheDocs](https://simulationexecutionmanager.readthedocs.io).
+[ReadTheDocs](https://simulationexecutionmanager.readthedocs.io). Examples
+including a showcase of the obtainable results are described in the [examples
+page](https://simulationexecutionmanager.readthedocs.io/en/develop/examples.html).
 
 Build status can be checked through [Travis CI](https://travis-ci.org/DvdMgr/sem).
 
