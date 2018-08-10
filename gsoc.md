@@ -50,10 +50,11 @@ Build status can be checked through [Travis CI](https://travis-ci.org/DvdMgr/sem
 The developed program can be installed through pip:
 
 ```
+pip3 install -U pip setuptools
 pip3 install https://github.com/DvdMgr/sem/archive/gsoc-final.zip
 ```
 
-To get started using the command line interface, just run:
+To get started using the command line interface, run:
 
 ```
 sem --help
