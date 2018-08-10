@@ -1,4 +1,14 @@
 # -*- coding: utf-8 -*-
+import sys
+
+if sys.version_info < (3, 5):
+
+    error = """
+    SEM only supports Python 3.5 and above.\n\nPlease upgrade your Python and try again,\nor make sure you are using the pip3 command!
+    """.format(py='.'.join([str(v) for v in sys.version_info[:3]]))
+
+    print(error)
+    sys.exit(1)
 
 from setuptools import setup, find_packages
 from codecs import open
@@ -25,6 +35,11 @@ setup(
     keywords='ns-3 simulation execution',
     packages=find_packages(exclude=['contrib', 'docs', 'tests', 'examples']),
     python_requires='>=3.5',
+    classifiers = [
+        'Programming Language :: Python :: 3 :: Only'
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        ],
     install_requires=['tinydb', 'tqdm', 'numpy', 'xarray', 'drmaa',
                       'gitpython', 'click', 'scipy'],
     extras_require={
@@ -35,6 +50,11 @@ setup(
         'console_scripts': [
             'sem=sem:cli',
         ],
+    },
+    options={
+        'build_scripts': {
+            'executable': 'python3',
+        },
     },
     license=license
 )
