@@ -571,7 +571,11 @@ class CampaignManager(object):
         """
         Return a human-readable representation of the campaign.
         """
-        return "--- Campaign info ---\n%s\n------------" % self.db
+        if self.runner:
+            return "--- Campaign info ---\n%s\nRunner type: %s\n-----------" %\
+                (self.db, type(self.runner))
+        else:
+            return "--- Campaign info ---\n%s\n-----------" % self.db
 
     def check_repo_ok(self):
         """
