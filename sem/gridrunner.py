@@ -10,6 +10,7 @@ class GridRunner(SimulationRunner):
     A Runner which can perform simulations in parallel on a DRMAA-compatible
     cluster architecture.
     """
+
     def run_simulations(self, parameter_list, data_folder):
         """
         This function runs multiple simulations in parallel.
@@ -46,7 +47,7 @@ class GridRunner(SimulationRunner):
             jt.args = [command]
             jt.jobEnvironment = self.environment
             jt.workingDirectory = temp_dir
-            jt.nativeSpecification = "-l cputype=intel"
+            jt.nativeSpecification = self.gridParam
             output_filename = os.path.join(temp_dir, 'stdout')
             error_filename = os.path.join(temp_dir, 'stderr')
             jt.outputPath = ':' + output_filename
@@ -138,6 +139,15 @@ class GridRunner(SimulationRunner):
         else:
             return []
 
+    def set_grid_parameters(self, param_string="-l cputype=intel"):
+        """
+        Set the relevant parameters for the jobs
+
+        Args:
+            param_string (str): a string with the parameters
+        """
+        self.gridParam = param_string
+
     def run_program(self, command, working_directory=os.getcwd(),
                     environment=None, cleanup_files=True):
         """
@@ -155,7 +165,7 @@ class GridRunner(SimulationRunner):
                 jt.jobEnvironment = environment
 
             jt.workingDirectory = working_directory
-            jt.nativeSpecification = "-l cputype=intel"
+            jt.nativeSpecification = self.gridParam
             output_filename = os.path.join(working_directory, 'output.txt')
             jt.outputPath = ':' + output_filename
             jt.joinFiles = True
