@@ -12,6 +12,19 @@ class GridRunner(SimulationRunner):
     """
 
     def __init__(self, path, script, optimized=True, param_string="-l cputype=intel"):
+        """
+        Initialization function, which also calls the initialization of
+        SimulationRunner.
+
+        Args:
+            path (str): absolute path to the ns-3 installation this Runner
+                should lock on.
+            script (str): ns-3 script that will be used by this Runner.
+            optimized (bool): whether this Runner should build ns-3 with the
+                optimized profile.
+            param_string (str): a string with the parameters of the jobs for the
+                cluster
+        """
         self.gridParam = param_string
         SimulationRunner.__init__(self, path, script, optimized)
 
