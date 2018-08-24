@@ -11,6 +11,10 @@ class GridRunner(SimulationRunner):
     cluster architecture.
     """
 
+    def __init__(self, path, script, optimized=True, param_string="-l cputype=intel"):
+        self.gridParam = param_string
+        SimulationRunner.__init__(self, path, script, optimized)
+
     def run_simulations(self, parameter_list, data_folder):
         """
         This function runs multiple simulations in parallel.
