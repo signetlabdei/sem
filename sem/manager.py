@@ -572,9 +572,11 @@ class CampaignManager(object):
         Return a human-readable representation of the campaign.
         """
         if self.runner:
+            # if the campaign has a runner, print the db and the type of runner
             return "--- Campaign info ---\n%s\nRunner type: %s\n-----------" %\
                 (self.db, type(self.runner))
         else:
+            # the campaign has no runner, print only the db
             return "--- Campaign info ---\n%s\n-----------" % self.db
 
     def check_repo_ok(self):
