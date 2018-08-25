@@ -106,12 +106,11 @@ class GridRunner(SimulationRunner):
             self.run_program((clean_command), self.path)
 
         if not skip_configuration:
-            configuration_command = './waf configure --enable-examples '
-            '--disable-gtk --disable-python'
+            configuration_command = './waf configure --enable-examples ' +\
+                '--disable-gtk --disable-python '
             if optimized:
-                configuration_command += '--build-profile=optimized '
-                '--out=build/optimized'
-
+                configuration_command += '--build-profile=optimized ' +\
+                    '--out=build/optimized'
             self.run_program((configuration_command), self.path)
 
         self.run_program(('./waf build'), self.path)
