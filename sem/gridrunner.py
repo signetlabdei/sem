@@ -4,29 +4,16 @@ import re
 import uuid
 import drmaa
 
+# This variable can be modified to specify the jobs parameters
+# For example
+# sem.gridrunner.GRID_PARAM = "-l cputype=intel"
+GRID_PARAM = "-l cputype=intel"
 
 class GridRunner(SimulationRunner):
     """
     A Runner which can perform simulations in parallel on a DRMAA-compatible
     cluster architecture.
     """
-
-    def __init__(self, path, script, optimized=True, param_string="-l cputype=intel"):
-        """
-        Initialization function, which also calls the initialization of
-        SimulationRunner.
-
-        Args:
-            path (str): absolute path to the ns-3 installation this Runner
-                should lock on.
-            script (str): ns-3 script that will be used by this Runner.
-            optimized (bool): whether this Runner should build ns-3 with the
-                optimized profile.
-            param_string (str): a string with the parameters of the jobs for the
-                cluster
-        """
-        self.gridParam = param_string
-        SimulationRunner.__init__(self, path, script, optimized)
 
     def run_simulations(self, parameter_list, data_folder):
         """
@@ -64,7 +51,7 @@ class GridRunner(SimulationRunner):
             jt.args = [command]
             jt.jobEnvironment = self.environment
             jt.workingDirectory = temp_dir
-            jt.nativeSpecification = self.gridParam
+            jt.nativeSpecification = GRID_PARAM
             output_filename = os.path.join(temp_dir, 'stdout')
             error_filename = os.path.join(temp_dir, 'stderr')
             jt.outputPath = ':' + output_filename
@@ -157,15 +144,6 @@ class GridRunner(SimulationRunner):
         else:
             return []
 
-    def set_grid_parameters(self, param_string="-l cputype=intel"):
-        """
-        Set the relevant parameters for the jobs
-
-        Args:
-            param_string (str): a string with the parameters
-        """
-        self.gridParam = param_string
-
     def run_program(self, command, working_directory=os.getcwd(),
                     environment=None, cleanup_files=True):
         """
@@ -183,7 +161,7 @@ class GridRunner(SimulationRunner):
                 jt.jobEnvironment = environment
 
             jt.workingDirectory = working_directory
-            jt.nativeSpecification = self.gridParam
+            jt.nativeSpecification = GRID_PARAM
             output_filename = os.path.join(working_directory, 'output.txt')
             jt.outputPath = ':' + output_filename
             jt.joinFiles = True
