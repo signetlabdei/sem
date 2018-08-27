@@ -4,10 +4,13 @@ import re
 import uuid
 import drmaa
 
-# This variable can be modified to specify the jobs parameters
-# For example
-# sem.gridrunner.GRID_PARAM = "-l cputype=intel"
-GRID_PARAM = "-l cputype=intel"
+# These variables can be modified to specify the jobs parameters.
+# For example:
+# sem.gridrunner.BUILD_GRID_PARAM = "-l cputype=intel"
+# will use the specified parameters in the build phase.
+# SIMULATION_GRID_PARAMS does the same for when simulations are run.
+BUILD_GRID_PARAMS = "-l cputype=intel"
+SIMULATION_GRID_PARAMS = "-l cputype=intel"
 
 class GridRunner(SimulationRunner):
     """
@@ -51,7 +54,7 @@ class GridRunner(SimulationRunner):
             jt.args = [command]
             jt.jobEnvironment = self.environment
             jt.workingDirectory = temp_dir
-            jt.nativeSpecification = GRID_PARAM
+            jt.nativeSpecification = SIMULATION_GRID_PARAMS
             output_filename = os.path.join(temp_dir, 'stdout')
             error_filename = os.path.join(temp_dir, 'stderr')
             jt.outputPath = ':' + output_filename
@@ -108,7 +111,8 @@ class GridRunner(SimulationRunner):
         clean_before = False
         if clean_before:
             clean_command = './waf distclean'
-            self.run_program((clean_command), self.path)
+            self.run_program((clean_command), self.path,
+                             native_spec=BUILD_GRID_PARAMS)
 
         if not skip_configuration:
             configuration_command = './waf configure --enable-examples ' +\
@@ -116,9 +120,11 @@ class GridRunner(SimulationRunner):
             if optimized:
                 configuration_command += '--build-profile=optimized ' +\
                     '--out=build/optimized'
-            self.run_program((configuration_command), self.path)
+            self.run_program((configuration_command), self.path,
+                             native_spec=BUILD_GRID_PARAMS)
 
-        self.run_program(('./waf build'), self.path)
+        self.run_program(('./waf build'), self.path,
+                         native_spec=BUILD_GRID_PARAMS)
 
     def get_available_parameters(self):
         """
@@ -144,7 +150,8 @@ class GridRunner(SimulationRunner):
             return []
 
     def run_program(self, command, working_directory=os.getcwd(),
-                    environment=None, cleanup_files=True):
+                    environment=None, cleanup_files=True,
+                    native_spec=None):
         """
         Run a program through the grid, capturing the standard output.
         """
@@ -160,7 +167,7 @@ class GridRunner(SimulationRunner):
                 jt.jobEnvironment = environment
 
             jt.workingDirectory = working_directory
-            jt.nativeSpecification = GRID_PARAM
+            jt.nativeSpecification = native_spec
             output_filename = os.path.join(working_directory, 'output.txt')
             jt.outputPath = ':' + output_filename
             jt.joinFiles = True
