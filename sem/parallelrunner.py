@@ -1,8 +1,11 @@
 from .runner import SimulationRunner
 from multiprocessing import Pool
 
+MAX_PARALLEL_PROCESSES = None  # If None, the number of CPUs is used
+
 
 class ParallelRunner(SimulationRunner):
+
     """
     A Runner which can perform simulations in parallel on the current machine.
     """
@@ -15,7 +18,7 @@ class ParallelRunner(SimulationRunner):
             data_folder (str): folder in which to create output folders.
         """
         self.data_folder = data_folder
-        with Pool() as pool:
+        with Pool(processes=MAX_PARALLEL_PROCESSES) as pool:
             for result in pool.imap_unordered(self.launch_simulation,
                                               parameter_list):
                 yield result

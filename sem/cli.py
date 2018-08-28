@@ -40,13 +40,23 @@ def cli():
               type=click.Path(exists=True, readable=True, resolve_path=True),
               default=None,
               show_default=True,
-              help="File containing the parameter specification,"
-              " in the following format\n"
+              help="File containing the parameter specification," +
+              " in the following format\n" +
               "param1: value1\nparam2: value2\n...")
-def run(ns_3_path, results_dir, script, no_optimization, parameters):
+@click.option("--max-processes",
+              type=click.INT,
+              default=None,
+              show_default=True,
+              help="The maximum number of parallel simulations to spawn " +
+              "in simulations using ParallelRunner")
+def run(ns_3_path, results_dir, script, no_optimization, parameters,
+        max_processes):
     """
     Run multiple simulations.
     """
+
+    sem.parallelrunner.MAX_PARALLEL_PROCESSES = max_processes
+
     # Create a campaign
     campaign = sem.CampaignManager.new(ns_3_path,
                                        script,
