@@ -52,10 +52,10 @@ def get_command_from_result(script, result, debug=False):
             ['--%s=%s' % (param, value) for param, value in
              result['params'].items()]) + "\""
     else:
-        command = "./waf --run " + script + " --command-template=\""
-        "gdb --args %s " + " ".join(['--%s=%s' % (param, value) for
-                                     param, value in
-                                     result['params'].items()]) + "\""
+        command = "./waf --run " + script + " --command-template=\"" +\
+            "gdb --args %s " + " ".join(['--%s=%s' % (param, value) for
+                                         param, value in
+                                         result['params'].items()]) + "\""
     return command
 
 
