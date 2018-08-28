@@ -154,6 +154,11 @@ class CampaignManager(object):
             optimized (bool): whether to configure the runner to employ an
                 optimized ns-3 build.
         """
+        # Convert paths to be absolute
+        if ns_path is not None:
+            ns_path = os.path.abspath(ns_path)
+        campaign_dir = os.path.abspath(campaign_dir)
+
         # Read the existing configuration into the new DatabaseManager
         db = DatabaseManager.load(campaign_dir)
         script = db.get_script()
