@@ -51,10 +51,5 @@ setup(
             'sem=sem:cli',
         ],
     },
-    options={
-        'build_scripts': {
-            'executable': 'python3',
-        },
-    },
     license=license
 )
