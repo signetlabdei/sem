@@ -345,10 +345,6 @@ class CampaignManager(object):
         Return the results relative to the desired parameter space in the form
         of a numpy array.
 
-        Note that the input parameter space can contain lists of any length,
-        but any single-element list will have the corresponding dimension
-        collapsed via the numpy.squeeze function.
-
         Args:
             parameter_space (dict): dictionary containing
                 parameter/list-of-values pairs.
@@ -358,10 +354,8 @@ class CampaignManager(object):
             runs (int): number of runs to gather for each parameter
                 combination.
         """
-        return np.squeeze(np.array(self.get_space({},
-                                                  parameter_space,
-                                                  runs,
-                                                  result_parsing_function)))
+        return np.array(self.get_space({}, parameter_space, runs,
+                                       result_parsing_function))
 
     def save_to_mat_file(self, parameter_space,
                          result_parsing_function,
@@ -369,10 +363,6 @@ class CampaignManager(object):
         """
         Return the results relative to the desired parameter space in the form
         of a .mat file.
-
-        Note that the input parameter space can contain lists of any length,
-        but any single-element list will have the corresponding dimension
-        collapsed via the numpy.squeeze function.
 
         Args:
             parameter_space (dict): dictionary containing
@@ -473,14 +463,10 @@ class CampaignManager(object):
             runs (int): the number of runs to export for each parameter
                 combination.
         """
-        np_array = np.squeeze(
-            np.array(
-                self.get_space(
-                    {},
-                    collections.OrderedDict(
-                        [(k, v) for k, v in parameter_space.items()]),
-                    runs,
-                    result_parsing_function)))
+        np_array = np.array(self.get_space(
+            {}, collections.OrderedDict([(k, v) for k, v in
+                                         parameter_space.items()]),
+            runs, result_parsing_function))
 
         # Create a parameter space only containing the variable parameters
         clean_parameter_space = collections.OrderedDict()
