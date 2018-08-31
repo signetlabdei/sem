@@ -137,7 +137,8 @@ class GridRunner(SimulationRunner):
 
         stdout = self.run_program("%s %s" % (self.script_executable,
                                              '--PrintHelp'),
-                                  environment=self.environment)
+                                  environment=self.environment,
+                                  native_spec=BUILD_GRID_PARAMS)
 
         options = re.findall('.*Program\s(?:Arguments|Options):(.*)'
                              'General\sArguments.*',
@@ -151,7 +152,7 @@ class GridRunner(SimulationRunner):
 
     def run_program(self, command, working_directory=os.getcwd(),
                     environment=None, cleanup_files=True,
-                    native_spec=None):
+                    native_spec="-l cputype=intel"):
         """
         Run a program through the grid, capturing the standard output.
         """
