@@ -235,9 +235,17 @@ Finally, we can easily plot the obtained results by appropriately slicing the
   >>> # Iterate over all possible parameter values
   >>> for useShortGuardInterval in ['false', 'true']:
   ...   for useRts in ['false', 'true']:
-  ...       avg = results.sel(useShortGuardInterval=useShortGuardInterval,
+  ...       avg = results.sel(nWifi=1,
+  ...                         distance=1,
+  ...                         simulationTime=10,
+  ...                         channelWidth=20,
+  ...                         useShortGuardInterval=useShortGuardInterval,
   ...                         useRts=useRts).reduce(np.mean, 'runs')
-  ...       std = results.sel(useShortGuardInterval=useShortGuardInterval,
+  ...       std = results.sel(nWifi= 1,
+  ...                         distance= 1,
+  ...                         simulationTime= 10,
+  ...                         channelWidth= 20,
+  ...                         useShortGuardInterval=useShortGuardInterval,
   ...                         useRts=useRts).reduce(np.std, 'runs')
   ...       eb = plt.errorbar(x=param_combinations['mcs'], y=avg, yerr=6*std,
   ...                    label='SGI %s, RTS %s' % (useShortGuardInterval, useRts))

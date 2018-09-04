@@ -469,10 +469,8 @@ class CampaignManager(object):
             runs, result_parsing_function))
 
         # Create a parameter space only containing the variable parameters
-        clean_parameter_space = collections.OrderedDict()
-        for key, value in parameter_space.items():
-            if isinstance(value, list) and len(value) > 1:
-                clean_parameter_space[key] = value
+        clean_parameter_space = collections.OrderedDict(
+            [(k, v) for k, v in parameter_space.items()])
 
         clean_parameter_space['runs'] = range(runs)
 
