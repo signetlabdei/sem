@@ -239,7 +239,7 @@ class CampaignManager(object):
             # Besides the parameters that were actually passed, we add the ones
             # that are always available in every script
             passed = list(p.keys())
-            available = self.db.get_params()
+            available = ['RngRun'] + self.db.get_params()
             if set(passed) != set(available):
                 raise ValueError("Specified parameter combination does not "
                                  "match the supported parameters:\n"
@@ -253,11 +253,6 @@ class CampaignManager(object):
         # Build ns-3 before running any simulations
         # At this point, we can assume the project was already configured
         self.runner.configure_and_build(skip_configuration=True)
-
-        # Compute next RngRun values for the simulations we need to perform
-        next_runs = self.db.get_next_rngruns(len(param_list))
-        for r, param in zip(next_runs, param_list):
-            param['RngRun'] = r
 
         # Shuffle simulations
         # This mixes up long and short simulations, and gives better time
@@ -285,7 +280,7 @@ class CampaignManager(object):
         for result in result_generator:
             self.db.insert_result(result)
 
-    def get_missing_simulations(self, param_list, runs):
+    def get_missing_simulations(self, param_list, runs=None):
         """
         Return a list of the simulations among the required ones that are not
         available in the database.
@@ -294,24 +289,35 @@ class CampaignManager(object):
             param_list (list): a list of dictionaries containing all the
                 parameters combinations.
             runs (int): an integer representing how many repetitions are wanted
-                for each parameter combination.
+                for each parameter combination, None if the dictionaries in
+                param_list already feature the desired RngRun value.
         """
 
         params_to_simulate = []
 
-        for param_comb in param_list:
-            available_sims = self.db.get_results(param_comb)
-            needed_runs = runs - len(available_sims)
-            # Here it's important that we make copies of the dictionaries, so
-            # that if we modify one we don't modify the others. This is
-            # necessary because after this step, typically, we will add the
-            # RngRun key which must be different for each copy.
-            params_to_simulate += [deepcopy(param_comb) for i in
-                                   range(needed_runs)]
+        if runs is not None:  # Get next available runs from the database
+            next_runs = self.db.get_next_rngruns()
+            for param_comb in param_list:
+                available_sims = self.db.get_results(param_comb)
+                needed_runs = runs - len(available_sims)
+                new_param_combs = []
+                for needed_run in range(needed_runs):
+                    new_param = deepcopy(param_comb)
+                    new_param['RngRun'] = next(next_runs)
+                    new_param_combs += [new_param]
+                # Here it's important that we make copies of the dictionaries,
+                # so that if we modify one we don't modify the others. This is
+                # necessary because after this step, typically, we will add the
+                # RngRun key which must be different for each copy.
+                params_to_simulate += new_param_combs
+        else:
+            for param_comb in param_list:
+                if not self.db.get_results(param_comb):
+                    params_to_simulate += [param_comb]
 
         return params_to_simulate
 
-    def run_missing_simulations(self, param_list, runs):
+    def run_missing_simulations(self, param_list, runs=None):
         """
         Run the simulations from the parameter list that are not yet available
         in the database.
@@ -327,11 +333,15 @@ class CampaignManager(object):
             param_list (list, dict): either a list of parameter combinations or
                 a dictionary to be expanded into a list through the
                 list_param_combinations function.
-            runs (int): the number of runs to perform for each simulation.
+            runs (int): the number of runs to perform for each parameter
+                combination. This parameter is only allowed if the param_list
+                specification doesn't feature an 'RngRun' key already.
         """
+        # If we are passed a dictionary, we need to expand this
         if isinstance(param_list, dict):
             param_list = list_param_combinations(param_list)
 
+        # If we are passed a list already, just run the missing simulations
         self.run_simulations(
             self.get_missing_simulations(param_list, runs))
 

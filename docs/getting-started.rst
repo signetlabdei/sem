@@ -77,20 +77,18 @@ Simulations can be run by specifying a list of parameter combinations.
   ...    'useRts': 'false',
   ...    'mcs': 7,
   ...    'channelWidth': 20,
-  ...    'useShortGuardInterval': 'false'
+  ...    'useShortGuardInterval': 'false',
+  ...    'RngRun': 0
   ... }
   >>> campaign.run_simulations([param_combination])
 
   Running simulations: 100% 1/1 [00:10<00:00, 10.81s/simulation]
 
 As simulations are run, the results are also saved in the campaign database, at
-the previously specified `campaign_dir` path. The `run_simulations` method
-automatically queries the database looking for a seed that has not yet been used
-to ensure the randomness of simulations, and runs the requested simulations.
-After the simulation finishes, the results (i.e., any generated output files and
-the standard output) are added to the database and can be retrieved later on. A
-progress bar is displayed to indicate progress and give an estimate of the
-remaining time.
+the previously specified `campaign_dir` path. After the simulation finishes, the
+results (i.e., any generated output files and the standard output) are added to
+the database and can be retrieved later on. A progress bar is displayed to
+indicate progress and give an estimate of the remaining time.
 
 Multiple simulations corresponding to the exploration of a parameter space can
 be easily run by employing the `list_param_combinations` function, which can

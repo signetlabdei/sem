@@ -178,17 +178,13 @@ class DatabaseManager(object):
         """
         return self.get_config()['params']
 
-    def get_next_rngruns(self, n=1):
+    def get_next_rngruns(self):
         """
-        Return a list containing the next RngRun values that can be used in
-        this campaign.
-
-        Args:
-            n (int): number of desired RngRun values.
+        Yield the next RngRun values that can be used in this campaign.
         """
         available_runs = [result['params']['RngRun'] for result in
                           self.get_results()]
-        return DatabaseManager.get_next_n_values(available_runs, n)
+        yield from DatabaseManager.get_next_values(available_runs)
 
     def insert_result(self, result):
         """
@@ -276,7 +272,7 @@ class DatabaseManager(object):
             return [dict(i) for i in self.db.table('results').all()]
 
         # Verify parameter format is correct
-        all_params = set(self.get_params())
+        all_params = set(['RngRun'] + self.get_params())
         param_subset = set(params.keys())
         if (not all_params.issuperset(param_subset)):
             raise ValueError(
@@ -406,20 +402,18 @@ class DatabaseManager(object):
             configuration['script'], configuration['params'],
             configuration['commit'])
 
-    def get_next_n_values(values_list, n):
+    def get_next_values(values_list):
         """
-        Given a list of integers and a value n, this method returns the n
-        lowest integers that do not appear in the list.
+        Given a list of integers, this method yields the lowest integers that
+        do not appear in the list.
 
         >>> import sem
         >>> v = [0, 1, 3, 4]
-        >>> sem.DatabaseManager.get_next_n_values(v, 1)
-        [2]
-        >>> sem.DatabaseManager.get_next_n_values(v, 3)
-        [2, 5, 6]
+        >>> sem.DatabaseManager.get_next_values(v)
+
+        [2, 5, 6, ...]
         """
-        return list(itertools.islice(filter(lambda x: x not in values_list,
-                                            itertools.count()), n))
+        yield from filter(lambda x: x not in values_list, itertools.count())
 
     def have_same_structure(d1, d2):
         """

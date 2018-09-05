@@ -2,6 +2,7 @@ from sem import DatabaseManager
 import pytest
 import os
 from copy import deepcopy
+import itertools
 
 
 ############
@@ -91,21 +92,21 @@ def test_getters(db, tmpdir, config):
 
 def test_get_next_rngruns(db, result):
     # First rngrun of a new campaign should be 0
-    assert db.get_next_rngruns() == [0]
+    assert next(db.get_next_rngruns()) == 0
 
     # If we add a result with RngRun 2, this should still return 0
     result['params']['RngRun'] = 2
     db.insert_result(result)
-    assert db.get_next_rngruns() == [0]
+    assert next(db.get_next_rngruns()) == 0
 
     # After inserting a run with index 0, we expect a 1
     result['params']['RngRun'] = 0
     db.insert_result(result)
-    assert db.get_next_rngruns() == [1]
+    assert next(db.get_next_rngruns()) == 1
 
     # Finally, if we ask for three more available runs, this should return
     # [1, 3, 4]
-    assert db.get_next_rngruns(3) == [1, 3, 4]
+    assert list(itertools.islice(db.get_next_rngruns(), 3)) == [1, 3, 4]
 
 
 def test_results(db, result):

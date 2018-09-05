@@ -24,7 +24,7 @@ def main():
 
     campaign = sem.CampaignManager.new(ns_path, script, campaign_dir,
                                        runner_type='ParallelRunner',
-                                       overwrite=False)
+                                       overwrite=True)
 
     print(campaign)
 
@@ -138,7 +138,11 @@ def main():
     plt.figure(figsize=[6, 6], dpi=300)
     for metric in metrics:
         plt.plot(param_combinations['nDevices'],
-                 results.reduce(np.mean, 'runs').sel(metrics=metric))
+                 results.reduce(np.mean, 'runs').sel(
+                     radius=5500,
+                     simulationTime=600,
+                     appPeriod=600,
+                     metrics=metric))
     plt.xlabel("Number of End Devices")
     plt.ylabel("Probability")
     plt.legend(["Success", "Interfered", "No more receivers",

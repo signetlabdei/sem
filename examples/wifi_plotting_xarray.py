@@ -105,7 +105,10 @@ def main():
     for nWifi in params['nWifi']:
         for distance in params['distance']:
             stacked_params = results.sel(
-                nWifi=nWifi, distance=distance).stack(
+                nWifi=nWifi,
+                distance=distance,
+                channelWidth='20',
+                simulationTime=4).stack(
                     sgi_rts=('useShortGuardInterval', 'useRts')
                 ).reduce(np.mean, 'runs')
             plt.subplot(2, 2, subplot_idx)

@@ -107,13 +107,15 @@ def test_repo_on_wrong_commit(manager, config, ns_3_compiled,
         manager.run_simulations([parameter_combination])
 
 
-def test_get_results_as_numpy_array(tmpdir, manager, parameter_combination,
+def test_get_results_as_numpy_array(tmpdir, manager,
+                                    parameter_combination_no_rngrun,
+                                    parameter_combination,
                                     parameter_combination_2,
                                     parameter_combination_range):
     # Insert a first parameter combination
-    manager.run_missing_simulations(parameter_combination, 1)
+    manager.run_missing_simulations(parameter_combination_no_rngrun, 1)
     array = manager.get_results_as_numpy_array(
-        parameter_combination,
+        parameter_combination_no_rngrun,
         sem.utils.constant_array_parser, 1)  # Get one run per combination
     assert(np.all(array == sem.utils.constant_array_parser(None)))
 

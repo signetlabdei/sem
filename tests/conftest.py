@@ -65,23 +65,35 @@ def result(config):
 
 
 @pytest.fixture(scope='function')
+def parameter_combination_no_rngrun():
+    # We need to explicitly state we want an OrderedDict here in order to
+    # support Python < 3.6 - since Python 3.6, dicts are ordered by default
+    return collections.OrderedDict([('dict', '/usr/share/dict/web2'),
+                                    ('time', 'false')])
+
+@pytest.fixture(scope='function')
 def parameter_combination():
     # We need to explicitly state we want an OrderedDict here in order to
     # support Python < 3.6 - since Python 3.6, dicts are ordered by default
-    return collections.OrderedDict ([('dict', '/usr/share/dict/web2'),
-                                     ('time', 'false')])
+    return collections.OrderedDict([('dict', '/usr/share/dict/web2'),
+                                    ('time', 'false'),
+                                    ('RngRun', '0')])
+
 
 @pytest.fixture(scope='function')
 def parameter_combination_2():
-    return collections.OrderedDict ([('dict', '/usr/share/dict/web2a'),
-                                     ('time', 'true')])
+    return collections.OrderedDict([('dict', '/usr/share/dict/web2a'),
+                                    ('time', 'true'),
+                                    ('RngRun', '0')])
+
 
 @pytest.fixture(scope='function')
 def parameter_combination_range():
-    return collections.OrderedDict ([('dict', ['/usr/share/dict/web2',
-                                               '/usr/share/dict/web2a']),
-                                     ('time', ['false',
-                                               'true'])])
+    return collections.OrderedDict([('dict', ['/usr/share/dict/web2',
+                                              '/usr/share/dict/web2a']),
+                                    ('time', ['false',
+                                              'true'])])
+
 
 @pytest.fixture(scope='function')
 def manager(ns_3_compiled, config):
