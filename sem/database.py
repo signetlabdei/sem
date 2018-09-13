@@ -83,7 +83,7 @@ class DatabaseManager(object):
         os.makedirs(campaign_dir)
         tinydb = TinyDB(os.path.join(campaign_dir, "%s.json" %
                                      os.path.basename(campaign_dir)),
-                        sort_keys=True, indent=4, separators=(',', ': '))
+                        sort_keys=True)
 
         # Save the configuration in the database
         config = {

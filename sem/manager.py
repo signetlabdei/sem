@@ -364,7 +364,8 @@ class CampaignManager(object):
             runs (int): number of runs to gather for each parameter
                 combination.
         """
-        return np.array(self.get_space({}, parameter_space, runs,
+        return np.array(self.get_space(self.db.get_complete_results(), {},
+                                       parameter_space, runs,
                                        result_parsing_function))
 
     def save_to_mat_file(self, parameter_space,
@@ -473,10 +474,12 @@ class CampaignManager(object):
             runs (int): the number of runs to export for each parameter
                 combination.
         """
-        np_array = np.array(self.get_space(
-            {}, collections.OrderedDict([(k, v) for k, v in
+        np_array = np.array(
+            self.get_space(
+                self.db.get_complete_results(), {},
+                collections.OrderedDict([(k, v) for k, v in
                                          parameter_space.items()]),
-            runs, result_parsing_function))
+                runs, result_parsing_function))
 
         # Create a parameter space only containing the variable parameters
         clean_parameter_space = collections.OrderedDict(
@@ -499,7 +502,7 @@ class CampaignManager(object):
         """
         return result['output']
 
-    def get_space(self, current_query, param_space, runs,
+    def get_space(self, current_result_list, current_query, param_space, runs,
                   result_parsing_function):
         """
         Convert a parameter space specification to a nested array structure
@@ -542,7 +545,8 @@ class CampaignManager(object):
 
         # Base case
         if not param_space:
-            results = self.db.get_complete_results(current_query)
+            results = [r for r in current_result_list if
+                       self.satisfies_query(r, current_query)]
             parsed = []
             for r in results[:runs]:
                 parsed.append(result_parsing_function(r))
@@ -554,13 +558,24 @@ class CampaignManager(object):
         # Iterate over dictionary values
         for v in value:
             next_query = deepcopy(current_query)
+            temp_query = deepcopy(current_query)
             # For each list, recur 'fixing' that dimension.
             next_query[key] = v
             next_param_space = deepcopy(param_space)
             del(next_param_space[key])
-            space.append(self.get_space(next_query, next_param_space,
-                                        runs, result_parsing_function))
+            temp_query[key] = v
+            temp_result_list = [r for r in current_result_list if
+                                self.satisfies_query(r, temp_query)]
+            space.append(self.get_space(temp_result_list, next_query,
+                                        next_param_space, runs,
+                                        result_parsing_function))
         return space
+
+    def satisfies_query(self, result, query):
+        for current_param, current_value in query.items():
+            if result['params'][current_param] != current_value:
+                return False
+        return True
 
     #############
     # Utilities #
