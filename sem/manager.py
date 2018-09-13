@@ -235,11 +235,12 @@ class CampaignManager(object):
             return
 
         # Check all parameter combinations fully specify the desired simulation
+        desired_params = self.db.get_params()
         for p in param_list:
             # Besides the parameters that were actually passed, we add the ones
             # that are always available in every script
             passed = list(p.keys())
-            available = ['RngRun'] + self.db.get_params()
+            available = ['RngRun'] + desired_params
             if set(passed) != set(available):
                 raise ValueError("Specified parameter combination does not "
                                  "match the supported parameters:\n"
@@ -297,18 +298,21 @@ class CampaignManager(object):
 
         if runs is not None:  # Get next available runs from the database
             next_runs = self.db.get_next_rngruns()
+            available_params = [r['params'] for r in self.db.get_results()]
             for param_comb in param_list:
-                available_sims = self.db.get_results(param_comb)
-                needed_runs = runs - len(available_sims)
+                needed_runs = runs - len([p for p in available_params if
+                                          param_comb == {k: p[k] for k in
+                                                         p.keys() if k != "RngRun"}])
                 new_param_combs = []
                 for needed_run in range(needed_runs):
+                    # Here it's important that we make copies of the
+                    # dictionaries, so that if we modify one we don't modify
+                    # the others. This is necessary because after this step,
+                    # typically, we will add the RngRun key which must be
+                    # different for each copy.
                     new_param = deepcopy(param_comb)
                     new_param['RngRun'] = next(next_runs)
                     new_param_combs += [new_param]
-                # Here it's important that we make copies of the dictionaries,
-                # so that if we modify one we don't modify the others. This is
-                # necessary because after this step, typically, we will add the
-                # RngRun key which must be different for each copy.
                 params_to_simulate += new_param_combs
         else:
             for param_comb in param_list:
