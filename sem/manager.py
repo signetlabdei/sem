@@ -300,9 +300,14 @@ class CampaignManager(object):
             next_runs = self.db.get_next_rngruns()
             available_params = [r['params'] for r in self.db.get_results()]
             for param_comb in param_list:
-                needed_runs = runs - len([p for p in available_params if
-                                          param_comb == {k: p[k] for k in
-                                                         p.keys() if k != "RngRun"}])
+                # Count how many param combinations we found, and remove them
+                # from the list of available_params for faster searching in the
+                # future
+                needed_runs = runs
+                for i, p in enumerate(available_params):
+                    if param_comb == {k: p[k] for k in p.keys() if k != "RngRun"}:
+                        needed_runs -= 1
+                        del available_params[i]
                 new_param_combs = []
                 for needed_run in range(needed_runs):
                     # Here it's important that we make copies of the
