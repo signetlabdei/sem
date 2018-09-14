@@ -428,10 +428,11 @@ class CampaignManager(object):
         """
         Save results to a folder structure.
         """
-        self.space_to_folders({}, parameter_space, runs, folder_name)
+        self.space_to_folders(self.db.get_results(), {}, parameter_space, runs,
+                              folder_name)
 
-    def space_to_folders(self, current_query, param_space, runs,
-                         current_directory):
+    def space_to_folders(self, current_result_list, current_query, param_space,
+                         runs, current_directory):
         """
         Convert a parameter space specification to a directory tree with a
         nested structure.
@@ -439,8 +440,7 @@ class CampaignManager(object):
         # Base case: we iterate over the runs and copy files in the final
         # directory.
         if not param_space:
-            results = self.db.get_complete_results(current_query)
-            for run, r in enumerate(results[:runs]):
+            for run, r in enumerate(current_result_list[:runs]):
                 files = self.db.get_result_files(r)
                 new_dir = os.path.join(current_directory, "run=%s" % run)
                 os.makedirs(new_dir, exist_ok=True)
@@ -452,6 +452,7 @@ class CampaignManager(object):
         # Iterate over dictionary values
         for v in value:
             next_query = deepcopy(current_query)
+            temp_query = deepcopy(current_query)
 
             # For each list, recur 'fixing' that dimension.
             next_query[key] = v  # Update query
@@ -464,7 +465,12 @@ class CampaignManager(object):
             next_param_space = deepcopy(param_space)
             del(next_param_space[key])
 
-            self.space_to_folders(next_query, next_param_space, runs, new_dir)
+            temp_query[key] = v
+            temp_result_list = [r for r in current_result_list if
+                                self.satisfies_query(r, temp_query)]
+
+            self.space_to_folders(temp_result_list, next_query,
+                                  next_param_space, runs, new_dir)
 
     def get_results_as_xarray(self, parameter_space,
                               result_parsing_function,
