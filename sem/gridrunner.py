@@ -3,6 +3,7 @@ import os
 import re
 import uuid
 import drmaa
+import time
 
 # These variables can be modified to specify the jobs parameters.
 # For example:
@@ -73,11 +74,8 @@ class GridRunner(SimulationRunner):
         # Check for job completion, yield results when they are ready
         try:
 
-            while True:
-                if len(jobs) == 0:
-                    # Clean up
-                    raise StopIteration
-
+            while len(jobs):
+                found_done = False
                 for curjob in jobs.keys():
                     if s.jobStatus(curjob) is drmaa.JobState.DONE:
 
@@ -90,9 +88,14 @@ class GridRunner(SimulationRunner):
                         s.deleteJobTemplate(jobs[curjob]['template'])
                         del jobs[curjob]
 
+                        found_done = True
+
                         yield current_result
 
                         break
+                if not found_done:  # Sleep if we can't find a completed task
+                    time.sleep(6)
+
 
         finally:
             try:

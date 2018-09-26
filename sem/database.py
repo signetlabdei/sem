@@ -82,8 +82,7 @@ class DatabaseManager(object):
         # The indent and separators ensure the database is human readable.
         os.makedirs(campaign_dir)
         tinydb = TinyDB(os.path.join(campaign_dir, "%s.json" %
-                                     os.path.basename(campaign_dir)),
-                        sort_keys=True)
+                                     os.path.basename(campaign_dir)))
 
         # Save the configuration in the database
         config = {
