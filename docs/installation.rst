@@ -46,4 +46,4 @@ release with the following command:
 
 .. code:: bash
 
-  git checkout ns-3.28
+  git checkout ns-3.29
