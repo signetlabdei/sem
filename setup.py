@@ -35,6 +35,9 @@ setup(
     keywords='ns-3 simulation execution',
     packages=find_packages(exclude=['contrib', 'docs', 'tests', 'examples']),
     python_requires='>=3.5',
+    package_data={
+        '': ['*.sh'],
+    },
     classifiers = [
         'Programming Language :: Python :: 3 :: Only'
         'Programming Language :: Python :: 3.5',
