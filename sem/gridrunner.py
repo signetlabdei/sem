@@ -2,7 +2,9 @@ from .runner import SimulationRunner
 import os
 import re
 import uuid
-import drmaa
+from .utils import DRMAA_AVAILABLE
+if DRMAA_AVAILABLE:
+    import drmaa
 import time
 
 # These variables can be modified to specify the jobs parameters.
