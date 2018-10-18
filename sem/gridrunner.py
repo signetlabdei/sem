@@ -79,7 +79,11 @@ class GridRunner(SimulationRunner):
             while len(jobs):
                 found_done = False
                 for curjob in jobs.keys():
-                    if s.jobStatus(curjob) is drmaa.JobState.DONE:
+                    try:
+                        status = s.jobStatus(curjob)
+                    except drmaa.errors.DrmCommunicationException:
+                        pass
+                    if status is drmaa.JobState.DONE:
 
                         current_result = jobs[curjob]['result']
 
@@ -87,7 +91,11 @@ class GridRunner(SimulationRunner):
                         # state
                         current_result['meta']['elapsed_time'] = 0
 
-                        s.deleteJobTemplate(jobs[curjob]['template'])
+                        try:
+                            s.deleteJobTemplate(jobs[curjob]['template'])
+                        except drmaa.errors.DrmCommunicationException:
+                            pass
+
                         del jobs[curjob]
 
                         found_done = True
@@ -97,7 +105,6 @@ class GridRunner(SimulationRunner):
                         break
                 if not found_done:  # Sleep if we can't find a completed task
                     time.sleep(6)
-
 
         finally:
             try:
