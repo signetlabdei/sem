@@ -2,7 +2,6 @@ from .database import DatabaseManager
 from .runner import SimulationRunner
 from .parallelrunner import ParallelRunner
 from .utils import DRMAA_AVAILABLE, list_param_combinations
-from git import Repo, exc
 from copy import deepcopy
 from tqdm import tqdm
 from random import shuffle
@@ -31,7 +30,7 @@ class CampaignManager(object):
     # Campaign initialization and loading #
     #######################################
 
-    def __init__(self, campaign_db, campaign_runner):
+    def __init__(self, campaign_db, campaign_runner, check_repo=True):
         """
         Initialize the Simulation Execution Manager, using the provided
         CampaignManager and SimulationRunner instances.
@@ -47,14 +46,16 @@ class CampaignManager(object):
         """
         self.db = campaign_db
         self.runner = campaign_runner
+        self.check_repo = check_repo
 
         # Check that the current repo commit corresponds to the one specified
         # in the campaign
-        self.check_repo_ok()
+        if self.check_repo:
+            self.check_repo_ok()
 
     @classmethod
     def new(cls, ns_path, script, campaign_dir, runner_type='Auto',
-            overwrite=False, optimized=True):
+            overwrite=False, optimized=True, check_repo=True):
         """
         Create a new campaign from an ns-3 installation and a campaign
         directory.
@@ -103,7 +104,8 @@ class CampaignManager(object):
             # Try loading
             manager = CampaignManager.load(campaign_dir, ns_path,
                                            runner_type=runner_type,
-                                           optimized=optimized)
+                                           optimized=optimized,
+                                           check_repo=check_repo)
 
             if manager.db.get_script() == script:
                 return manager
@@ -119,7 +121,10 @@ class CampaignManager(object):
         params = runner.get_available_parameters()
 
         # Get current commit
-        commit = Repo(ns_path).head.commit.hexsha
+        commit = ""
+        if check_repo:
+            from git import Repo, exc
+            commit = Repo(ns_path).head.commit.hexsha
 
         # Create a database manager from the configuration
         db = DatabaseManager.new(script=script,
@@ -128,11 +133,11 @@ class CampaignManager(object):
                                  campaign_dir=campaign_dir,
                                  overwrite=overwrite)
 
-        return cls(db, runner)
+        return cls(db, runner, check_repo)
 
     @classmethod
     def load(cls, campaign_dir, ns_path=None, runner_type='Auto',
-             optimized=True):
+             optimized=True, check_repo=True):
         """
         Load an existing simulation campaign.
 
@@ -168,7 +173,7 @@ class CampaignManager(object):
             runner = CampaignManager.create_runner(ns_path, script,
                                                    runner_type, optimized)
 
-        return cls(db, runner)
+        return cls(db, runner, check_repo)
 
     def create_runner(ns_path, script, runner_type='Auto',
                       optimized=True):
@@ -249,7 +254,8 @@ class CampaignManager(object):
 
         # Check that the current repo commit corresponds to the one specified
         # in the campaign
-        self.check_repo_ok()
+        if self.check_repo:
+            self.check_repo_ok()
 
         # Build ns-3 before running any simulations
         # At this point, we can assume the project was already configured
@@ -613,6 +619,7 @@ class CampaignManager(object):
         saved in the campaign database, and that the ns-3 repository is clean
         (i.e., no untracked or modified files exist).
         """
+        from git import Repo, exc
         # Check that git is at the expected commit and that the repo is not
         # dirty
         if self.runner is not None:
