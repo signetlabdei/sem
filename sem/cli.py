@@ -5,6 +5,9 @@ import pprint
 import collections
 import os
 import re
+import glob
+import shutil
+from tinydb import TinyDB
 
 
 @click.group()
@@ -263,6 +266,49 @@ def export(results_dir, filename, do_not_try_parsing, parameters):
                                  runs=click.prompt("Runs", type=int))
     else:  # Unrecognized format
         raise ValueError("Format not recognized")
+
+#########
+# Merge #
+#########
+@cli.command()
+@click.argument("output-dir",
+                type=click.Path(exists=False, dir_okay=True, resolve_path=True),
+                required=True)
+@click.argument('sources',
+                nargs=-1,
+                type=click.Path(exists=True, resolve_path=True),
+                required=True)
+def merge(output_dir, sources):
+    """
+    Merge multiple results folder into one.
+    """
+    # TODO Check that the configuration for all campaigns is the same
+    # TODO Check that all results refer to the same commit
+    # Copy folders
+    filename = "%s.json" % os.path.split(output_dir)[1]
+    output_json = os.path.join(output_dir, filename)
+    output_data = os.path.join(output_dir, 'data')
+    print("output_json: %s, output_data: %s" % (output_json, output_data))
+    os.makedirs(output_data)
+
+    jsons = []
+    for s in sources:
+        filename = "%s.json" % os.path.split(s)[1]
+        jsons += [os.path.join(s, filename)]
+        for r in glob.glob(os.path.join(s, 'data/*')):
+            basename = os.path.basename(r)
+            shutil.copytree(r, os.path.join(output_data, basename))
+
+    # Create new database
+    db = TinyDB(output_json)
+    config = TinyDB(jsons[0]).table('config')
+    db.table('config').insert_multiple(config.all())
+
+    # Import results from all databases
+    for s in sources:
+        filename = "%s.json" % os.path.split(s)[1]
+        current_db = TinyDB(os.path.join(s, filename))
+        db.table('results').insert_multiple(current_db.table('results').all())
 
 
 def get_params_and_defaults(param_list, db):
