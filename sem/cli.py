@@ -282,29 +282,35 @@ def merge(output_dir, sources):
     """
     Merge multiple results folder into one.
     """
-    # TODO Check that the configuration for all campaigns is the same
-    # TODO Check that all results refer to the same commit
-    # Copy folders
-    filename = "%s.json" % os.path.split(output_dir)[1]
-    output_json = os.path.join(output_dir, filename)
-    output_data = os.path.join(output_dir, 'data')
-    print("output_json: %s, output_data: %s" % (output_json, output_data))
-    os.makedirs(output_data)
-
+    # Get paths for all campaign JSONS
     jsons = []
     for s in sources:
         filename = "%s.json" % os.path.split(s)[1]
         jsons += [os.path.join(s, filename)]
+
+    # Check that the configuration for all campaigns is the same
+    reference_config = TinyDB(jsons[0]).table('config')
+    for j in jsons[1:]:
+        for i, j in zip(reference_config.all(), TinyDB(j).table('config').all()):
+            assert i == j
+
+    # Create folders for new results directory
+    filename = "%s.json" % os.path.split(output_dir)[1]
+    output_json = os.path.join(output_dir, filename)
+    output_data = os.path.join(output_dir, 'data')
+    os.makedirs(output_data)
+
+    # Copy results to new data folder
+    for s in sources:
         for r in glob.glob(os.path.join(s, 'data/*')):
             basename = os.path.basename(r)
             shutil.copytree(r, os.path.join(output_data, basename))
 
     # Create new database
     db = TinyDB(output_json)
-    config = TinyDB(jsons[0]).table('config')
-    db.table('config').insert_multiple(config.all())
+    db.table('config').insert_multiple(reference_config.all())
 
-    # Import results from all databases
+    # Import results from all databases to the new JSON file
     for s in sources:
         filename = "%s.json" % os.path.split(s)[1]
         current_db = TinyDB(os.path.join(s, filename))
