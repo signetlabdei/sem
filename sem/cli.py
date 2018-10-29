@@ -278,9 +278,18 @@ def export(results_dir, filename, do_not_try_parsing, parameters):
                 nargs=-1,
                 type=click.Path(exists=True, resolve_path=True),
                 required=True)
-def merge(output_dir, sources):
+@click.option("--move",
+              default=False,
+              is_flag=True,
+              show_default=True,
+              help="Whether to move results to the new folders (default copies them)")
+def merge(move, output_dir, sources):
     """
-    Merge multiple results folder into one.
+    Merge multiple results folder into one, by copying the results over to a new folder.
+
+    For a faster operation (which on the other hand destroys the campaign data
+    if interrupted), the move option can be used to directly move results to
+    the new folder.
     """
     # Get paths for all campaign JSONS
     jsons = []
@@ -300,12 +309,6 @@ def merge(output_dir, sources):
     output_data = os.path.join(output_dir, 'data')
     os.makedirs(output_data)
 
-    # Copy results to new data folder
-    for s in sources:
-        for r in glob.glob(os.path.join(s, 'data/*')):
-            basename = os.path.basename(r)
-            shutil.copytree(r, os.path.join(output_data, basename))
-
     # Create new database
     db = TinyDB(output_json)
     db.table('config').insert_multiple(reference_config.all())
@@ -315,6 +318,21 @@ def merge(output_dir, sources):
         filename = "%s.json" % os.path.split(s)[1]
         current_db = TinyDB(os.path.join(s, filename))
         db.table('results').insert_multiple(current_db.table('results').all())
+
+    # Copy or move results to new data folder
+    for s in sources:
+        for r in glob.glob(os.path.join(s, 'data/*')):
+            basename = os.path.basename(r)
+            if move:
+                shutil.move(r, os.path.join(output_data, basename))
+            else:
+                shutil.copytree(r, os.path.join(output_data, basename))
+
+    if move:
+        for s in sources:
+            shutil.rmtree(os.path.join(s, 'data/*'))
+            shutil.rmtree(os.path.join(s, "%s.json" % os.path.split(s)[1]))
+            shutil.rmtree(s)
 
 
 def get_params_and_defaults(param_list, db):
