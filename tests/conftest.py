@@ -42,7 +42,7 @@ def ns_3_compiled(tmpdir):
 def config(tmpdir, ns_3_compiled):
     return {
         'script': 'hash-example',
-        'commit': 'cbcf4a24343c43bccec0af4c440ee27a1eec2796',
+        'commit': 'e060e93f468d32a5e0dab04cf780d30d4f5bd618',
         'params': ['dict', 'time'],
         'campaign_dir': str(tmpdir.join('test_campaign')),
     }
@@ -115,16 +115,16 @@ def get_and_compile_ns_3():
                         '--out=build/optimized', 'build'],
                        cwd=ns_3_test_compiled,
                        stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL) > 0:
-        raise Exception("Test build failed")
+                       stderr=subprocess.STDOUT) > 0:
+        raise Exception("Test build failed.")
 
     if subprocess.call(['python', 'waf', 'configure', '--disable-gtk',
                         '--disable-python', '--build-profile=optimized',
                         '--out=build/optimized', 'build'],
                        cwd=ns_3_examples,
                        stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL) > 0:
-        raise Exception("Examples build failed")
+                       stderr=subprocess.STDOUT) > 0:
+        raise Exception("Examples build failed.")
 
 #########################################################################
 # Clean up after each session                                           #

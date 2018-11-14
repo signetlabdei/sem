@@ -1,26 +1,12 @@
 language: python
 
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-trusty-5.0
-    packages:
-      - g++-7
-      - clang-5.0
-
 sudo: required
-dist: trusty
+dist: xenial
 
 python:
   - "3.5"
   - "3.6"
-
-env:
-  global:
-    - COMPILER=clang++-5.0
-    - CXX=clang++-5.0
-    - CC=clang-5.0
+  - "3.7"
 
 compiler: clang
 

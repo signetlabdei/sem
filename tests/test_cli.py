@@ -93,7 +93,7 @@ def test_cli_workflow(tmpdir, ns_3_compiled, config):
                                      tmpdir.join('results')])
 
     # Get result id to test id-based options
-    result_id = re.findall('.*id\':\s\'(.*)\'', result.output)[0]
+    result_id = re.findall(r'.*id\':\s\'(.*)\'', result.output)[0]
 
     # Show results from a single simulation
     result = runner.invoke(sem.cli, ['view', '--results-dir=%s' %
