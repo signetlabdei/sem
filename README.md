@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/DvdMgr/sem.svg?branch=develop)](https://travis-ci.org/DvdMgr/sem)
 [![codecov](https://codecov.io/gh/DvdMgr/sem/branch/develop/graph/badge.svg)](https://codecov.io/gh/DvdMgr/sem)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/sem.svg)
+![PyPI](https://img.shields.io/pypi/v/sem.svg)
 [![Join the chat at https://gitter.im/ns-3-sem/Lobby](https://badges.gitter.im/ns-3-sem/Lobby.svg)](https://gitter.im/ns-3-sem/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 This is a Python library to perform multiple ns-3 script executions, manage the
@@ -22,7 +24,7 @@ manage virtual environments and install dependencies, make sure it is installed.
 Typically, the following is enough:
 
 ```bash
-pip install -U --user pipenv
+pip install -U pipenv
 ```
 
 Note that, depending on the specifics of your python installation, you may need to add
@@ -65,8 +67,8 @@ This project uses the [`pytest`](https://docs.pytest.org/en/latest/) framework
 for running tests. Tests can be run, from the project root, using:
 
 ```bash
-pytest --doctest-glob='*.rst' docs/
-pytest -x -n 3 --doctest-modules --cov-report term --cov=sem/ ./tests
+python -m pytest --doctest-glob='*.rst' docs/
+python -m pytest -x -n 3 --doctest-modules --cov-report term --cov=sem/ ./tests
 ```
 
 These two commands will run, respectively, all code contained in the `docs/`

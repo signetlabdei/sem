@@ -121,7 +121,7 @@ class SimulationRunner(object):
 
         # Only configure if necessary
         if not skip_configuration:
-            configuration_command = ['./waf', 'configure', '--enable-examples',
+            configuration_command = ['python', 'waf', 'configure', '--enable-examples',
                                      '--disable-gtk', '--disable-python']
 
             if optimized:
@@ -133,7 +133,7 @@ class SimulationRunner(object):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         # Build ns-3
-        build_process = subprocess.Popen(['./waf', 'build'], cwd=self.path,
+        build_process = subprocess.Popen(['python', 'waf', 'build'], cwd=self.path,
                                          stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE)
 
@@ -150,7 +150,6 @@ class SimulationRunner(object):
             except (StopIteration):
                 if pbar is not None:
                     pbar.n = pbar.total
-                pass
         else:  # Wait for the build to finish anyway
             build_process.communicate()
 
@@ -171,12 +170,12 @@ class SimulationRunner(object):
                                     ".\nSTDERR\n%s\nSTDOUT\n%s" %
                                     (process.stderr.read(),
                                      process.stdout.read()))
-                raise StopIteration
+                return
             if output:
                 # Parse the output to get current and total tasks
                 # This assumes the progress displayed by waf is in the form
                 # [current/total]
-                matches = re.search('\[\s*(\d+?)/(\d+)\].*',
+                matches = re.search(r'\[\s*(\d+?)/(\d+)\].*',
                                     output.strip().decode('utf-8'))
                 if matches is not None:
                     yield [int(matches.group(1)), int(matches.group(2))]
@@ -262,7 +261,7 @@ class SimulationRunner(object):
             if return_code > 0:
                 complete_command = [self.script]
                 complete_command.extend(command[1:])
-                complete_command = "./waf --run \"%s\"" % (
+                complete_command = "python waf --run \"%s\"" % (
                     ' '.join(complete_command))
 
                 with open(stdout_file_path, 'r') as stdout_file, open(

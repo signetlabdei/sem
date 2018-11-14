@@ -24,8 +24,6 @@ def test_get_available_parameters(runner, config):
 
 @pytest.mark.parametrize('runner',
                          [
-                             ['SimulationRunner', False],
-                             ['ParallelRunner', False],
                              ['SimulationRunner', True],
                              ['ParallelRunner', True],
                           ],
