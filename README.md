@@ -4,43 +4,65 @@
 [![codecov](https://codecov.io/gh/DvdMgr/sem/branch/develop/graph/badge.svg)](https://codecov.io/gh/DvdMgr/sem)
 [![Join the chat at https://gitter.im/ns-3-sem/Lobby](https://badges.gitter.im/ns-3-sem/Lobby.svg)](https://gitter.im/ns-3-sem/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-A Python library to perform multiple ns-3 script executions, manage
-the results and collect them in processing-friendly data structures.
+This is a Python library to perform multiple ns-3 script executions, manage the
+results and collect them in processing-friendly data structures. For complete
+step-by-step usage and installation instructions, check out [readthedocs][rtd].
 
-## Building the module ##
+# Contributing #
 
-This module is developed using `pipenv` facilities. In order to manage
-virtual environments and install dependencies, make sure `pipenv` is
-installed. Typically, the following is enough:
+If you want to contribute to sem development, first of all you'll need an
+installation that allows you to modify the code, immediately see the results and
+run tests.
+
+## Building the module from scratch ##
+
+This module is developed using
+[`pipenv`](https://pipenv.readthedocs.io/en/latest/): in order to correctly
+manage virtual environments and install dependencies, make sure it is installed.
+Typically, the following is enough:
 
 ```bash
-pip install pipenv
+pip install -U --user pipenv
 ```
 
-From the project root, one can then install the package and the
+Note that, depending on the specifics of your python installation, you may need to add
+`~/.local/bin` to your path. In case this is needed, `pip` should warn you
+during installation.
+
+Then, clone the repo (or your fork, by changing the url in the following
+command), also getting the `ns-3` installations that are used for running
+examples and tests:
+
+```bash
+git clone https://github.com/DvdMgr/sem
+cd sem
+git submodule update --init --recursive
+```
+
+From the project root, you can then install the package and the
 requirements with the following:
 
 ```bash
-pipenv install
+pipenv install --dev
 ```
 
-If a development environment is also desired, the `Pipfile`'s
-`dev-packages` can be installed by attaching the `--dev` flag to the
-command above.
+This will also get you a set of tools such as `sphinx`, `pygments` and `pytest`
+that handle documentation and tests.
 
-After this step, a sub-shell using the new virtual environment can be
-created by calling:
+Finally, you can spawn a sub-shell using the new virtual environment by calling:
 
 ```bash
 pipenv shell
 ```
 
-Now, a python REPL can be started to use the library interactively.
+Now, you can start a python REPL to use the library interactively, issue the
+bash `sem` program, run tests and compile the documentation of your local copy
+of sem.
 
 ## Running tests ##
 
-This project uses the pytest framework for running tests. Tests can be run, from
-the project root, using:
+This project uses the [`pytest`](https://docs.pytest.org/en/latest/) framework
+for running tests. Tests can be run, from the project root, using:
 
 ```bash
 pytest --doctest-glob='*.rst' docs/
@@ -52,20 +74,26 @@ folder and all tests, also measuring coverage and outputting it to the terminal.
 
 Since we are mainly testing integration with ns-3, tests require frequent
 copying and pasting of folders, ns-3 compilations and simulation running.
-Because of this, full tests are not instantaneous. Single test files can be
-targeted, to achieve faster testing, by substituting `./tests` in the second
-command with the path to the test file that needs to be run.
+Furthermore, documentation tests run all the examples in the documentation to
+make sure the output is as expected. Because of this, full tests are far from
+instantaneous. Single test files can be targeted, to achieve faster execution
+times, by substituting `./tests` in the second command with the path to the test
+file that needs to be run.
 
-## ns-3-dev submodule ##
+## Building the documentation ##
 
-In order to execute the scripts in the `examples/` folder, it's necessary to
-populate the `ns-3-dev` git submodule:
+Documentation can be built locally using the makefile's `docs` target:
 
 ```bash
-git submodule update --init --recursive
+make docs
 ```
 
-Once this is done, the scripts in `examples/` can be directly run:
+The documentation of the current version of the package is also available on
+[readthedocs][rtd].
+
+## Running examples ##
+
+The scripts in `examples/` can be directly run:
 
 ```bash
 python examples/wifi_plotting_xarray.py
@@ -74,20 +102,14 @@ python examples/lorawan_parsing_xarray.py
 
 ## Troubleshooting ##
 
-In case there are problems with the pandas installation (this will happen in
-macos, for which no binaries are provide), use the following command for
+In case there are problems with the `pandas` installation (this will happen in
+macOS, for which no binaries are provided), use the following command for
 installation (and see [this pandas
 issue](https://github.com/pandas-dev/pandas/issues/20775) as a reference):
 
 ```bash
 PIP_NO_BUILD_ISOLATION=false pipenv install
 ```
-
-## Documentation ##
-
-Documentation can be built locally using the makefile's `docs` target.
-The documentation of the current version of the package is also
-available on [readthedocs][rtd].
 
 ## Authors ##
 

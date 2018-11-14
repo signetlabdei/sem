@@ -26,7 +26,7 @@ with open(path.join(here, 'LICENSE'), encoding='utf-8') as f:
 setup(
     name='sem',
     url='https://github.com/DvdMgr/sem',
-    version='0.2.0',
+    version='0.2.2',
     description='A simulation execution manager for ns-3',
     long_description=readme,
     long_description_content_type='text/markdown',
