@@ -2,6 +2,7 @@ from itertools import product
 import io
 import numpy as np
 import warnings
+import numpy.core.numeric as nx
 
 try:
     DRMAA_AVAILABLE = True
@@ -83,6 +84,17 @@ def automatic_parser(result, dtypes={}, converters={}):
     np.seterr(all='raise')
     parsed = {}
 
+    # By default, if dtype is None, the order Numpy tries to convert a string
+    # to a value is: bool, int, float. We don't like this, since it would give
+    # us a mixture of integers and doubles in the output, if any integers
+    # existed in the data. So, we modify the StringMapper's default mapper to
+    # skip the int check and directly convert numbers to floats.
+    oldmapper = np.lib._iotools.StringConverter._mapper
+    np.lib._iotools.StringConverter._mapper = [(nx.bool_, np.lib._iotools.str2bool, False),
+                                               (nx.floating, float, nx.nan),
+                                               (nx.complexfloating, complex, nx.nan + 0j),
+                                               (nx.longdouble, nx.longdouble, nx.nan)]
+
     for filename, contents in result['output'].items():
         if dtypes.get(filename) is None:
             dtypes[filename] = None
@@ -95,5 +107,8 @@ def automatic_parser(result, dtypes={}, converters={}):
                                              dtype=dtypes[filename],
                                              converters=converters[filename]
                                              ).tolist()
+
+    # Here we restore the original mapper, so no side-effects remain.
+    np.lib._iotools.StringConverter._mapper = oldmapper
 
     return parsed
