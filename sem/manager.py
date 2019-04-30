@@ -124,7 +124,10 @@ class CampaignManager(object):
         commit = ""
         if check_repo:
             from git import Repo, exc
-            commit = Repo(ns_path).head.commit.hexsha
+            repo = Repo(ns_path)
+            commit = repo.head.commit.hexsha
+            if repo.is_dirty(untracked_files=True):
+                raise Exception("ns-3 repository is not clean")
 
         # Create a database manager from the configuration
         db = DatabaseManager.new(script=script,
