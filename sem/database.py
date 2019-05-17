@@ -9,6 +9,8 @@ import collections
 import glob
 from pprint import pformat
 from tinydb import TinyDB, where
+from tinydb.storages import JSONStorage
+from tinydb.middlewares import CachingMiddleware
 
 
 class DatabaseManager(object):
@@ -82,7 +84,8 @@ class DatabaseManager(object):
         # The indent and separators ensure the database is human readable.
         os.makedirs(campaign_dir)
         tinydb = TinyDB(os.path.join(campaign_dir, "%s.json" %
-                                     os.path.basename(campaign_dir)))
+                                     os.path.basename(campaign_dir)),
+                        storage=CachingMiddleware(JSONStorage))
 
         # Save the configuration in the database
         config = {
@@ -90,7 +93,10 @@ class DatabaseManager(object):
             'commit': commit,
             'params': sorted(params)
         }
+
         tinydb.table('config').insert(config)
+
+        tinydb.storage.flush()
 
         return cls(tinydb, campaign_dir)
 
@@ -120,13 +126,14 @@ class DatabaseManager(object):
 
         try:
             # Read TinyDB instance from file
-            tinydb = TinyDB(filepath)
+            tinydb = TinyDB(filepath,
+                            storage=CachingMiddleware(JSONStorage))
 
             # Make sure the configuration is a valid dictionary
             assert set(
                 tinydb.table('config').all()[0].keys()) == set(['script',
-                                                                'params',
-                                                                'commit'])
+                                                            'params',
+                                                            'commit'])
         except:
             # Remove the database instance created by tinydb
             os.remove(filepath)
@@ -137,6 +144,9 @@ class DatabaseManager(object):
     ###################
     # Database access #
     ###################
+
+    def write_to_disk(self):
+        self.db.storage.flush()
 
     def get_config(self):
         """
@@ -228,7 +238,7 @@ class DatabaseManager(object):
                     pformat(result, depth=1)))
 
         # Insert result
-        self.db.table('results').insert(result)
+        self.db.table('results').insert(deepcopy(result))
 
     def get_results(self, params=None, result_id=None):
         """
@@ -384,6 +394,7 @@ class DatabaseManager(object):
         """
         # Clean results table
         self.db.purge_table('results')
+        self.write_to_disk()
 
         # Get rid of contents of data dir
         map(shutil.rmtree, glob.glob(os.path.join(self.get_data_dir(), '*.*')))

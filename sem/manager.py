@@ -290,6 +290,8 @@ class CampaignManager(object):
         for result in result_generator:
             self.db.insert_result(result)
 
+        self.db.write_to_disk()
+
     def get_missing_simulations(self, param_list, runs=None):
         """
         Return a list of the simulations among the required ones that are not

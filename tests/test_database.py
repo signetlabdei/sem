@@ -14,7 +14,8 @@ def db(config):
     """
     Provide a valid database, initialized with an example configuration.
     """
-    return DatabaseManager.new(**config)
+    db = DatabaseManager.new(**config)
+    return db
 
 #################################
 # Database creation and loading #
@@ -48,6 +49,7 @@ def test_db_loading(config, db, tmpdir):
 
     # Modify the campaign database, removing an entry
     db.db.purge_table('config')
+    db.db.storage.flush()
 
     # Wrong database format is currently detected
     with pytest.raises(Exception):

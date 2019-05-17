@@ -19,6 +19,7 @@ def test_campaign_creation(ns_3_compiled, config):
 def test_new_campaign_reload(ns_3_compiled, config, manager, result):
     # Insert a result in the already available sem.CampaignManager
     manager.db.insert_result(result)
+    manager.db.write_to_disk()
 
     # Try creating a new sem.CampaignManager with the same settings
     new_campaign = sem.CampaignManager.new(ns_3_compiled, config['script'],
