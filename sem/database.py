@@ -132,8 +132,8 @@ class DatabaseManager(object):
             # Make sure the configuration is a valid dictionary
             assert set(
                 tinydb.table('config').all()[0].keys()) == set(['script',
-                                                            'params',
-                                                            'commit'])
+                                                                'params',
+                                                                'commit'])
         except:
             # Remove the database instance created by tinydb
             os.remove(filepath)
@@ -194,6 +194,27 @@ class DatabaseManager(object):
         available_runs = [result['params']['RngRun'] for result in
                           self.get_results()]
         yield from DatabaseManager.get_next_values(available_runs)
+
+    def insert_results(self, results):
+
+        # This dictionary serves as a model for how the keys in the newly
+        # inserted result should be structured.
+        example_result = {
+            'params': {k: ['...'] for k in self.get_params() + ['RngRun']},
+            'meta': {k: ['...'] for k in ['elapsed_time', 'id']},
+        }
+
+        for result in results:
+            # Verify result format is correct
+            if not(DatabaseManager.have_same_structure(result, example_result)):
+                raise ValueError(
+                    '%s:\nExpected: %s\nGot: %s' % (
+                        "Result dictionary does not correspond to database format",
+                        pformat(example_result, depth=1),
+                        pformat(result, depth=1)))
+
+        # Insert results
+        self.db.table('results').insert_multiple(results)
 
     def insert_result(self, result):
         """

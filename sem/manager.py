@@ -287,9 +287,17 @@ class CampaignManager(object):
         # save results as they are finalized by the SimulationRunner, and
         # that they are kept even if execution is terminated abruptly by
         # crashes or by a KeyboardInterrupt.
-        for result in result_generator:
-            self.db.insert_result(result)
+        results_batch = []
 
+        for result in result_generator:
+
+            results_batch += [result]
+
+            if len(results_batch) > 100:
+                self.db.insert_results(results_batch)
+                results_batch = []
+
+        self.db.insert_results(results_batch)
         self.db.write_to_disk()
 
     def get_missing_simulations(self, param_list, runs=None):
