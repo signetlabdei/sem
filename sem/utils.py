@@ -112,3 +112,38 @@ def automatic_parser(result, dtypes={}, converters={}):
     np.lib._iotools.StringConverter._mapper = oldmapper
 
     return parsed
+
+def stdout_automatic_parser(result):
+    """
+    Try and automatically convert strings formatted as tables into a matrix.
+
+    Under the hood, this function essentially applies the genfromtxt function
+    to the stdout.
+
+    Args:
+      result (dict): the result to parse.
+    """
+    np.seterr(all='raise')
+    parsed = {}
+
+    # By default, if dtype is None, the order Numpy tries to convert a string
+    # to a value is: bool, int, float. We don't like this, since it would give
+    # us a mixture of integers and doubles in the output, if any integers
+    # existed in the data. So, we modify the StringMapper's default mapper to
+    # skip the int check and directly convert numbers to floats.
+    oldmapper = np.lib._iotools.StringConverter._mapper
+    np.lib._iotools.StringConverter._mapper = [(nx.bool_, np.lib._iotools.str2bool, False),
+                                               (nx.floating, float, nx.nan),
+                                               (nx.complexfloating, complex, nx.nan + 0j),
+                                               (nx.longdouble, nx.longdouble, nx.nan)]
+
+    file_contents = result['output']['stdout']
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        parsed = np.genfromtxt(io.StringIO(file_contents))
+
+    # Here we restore the original mapper, so no side-effects remain.
+    np.lib._iotools.StringConverter._mapper = oldmapper
+
+    return parsed
