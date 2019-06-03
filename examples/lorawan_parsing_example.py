@@ -88,7 +88,7 @@ def main():
         path_occupancy = np.array(parsed_result['occupiedReceptionPaths'])
         t = np.linspace(path_occupancy[0, 0], 5, num=1001, endpoint=True)
         plt.plot(t, interp1d(
-            path_occupancy[:, 0], path_occupancy[:, 1], kind='previous')(t))
+            path_occupancy[:, 0], path_occupancy[:, 1], kind='nearest')(t))
 
         packets = np.array(parsed_result['packets'])
 

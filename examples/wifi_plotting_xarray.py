@@ -91,7 +91,7 @@ def main():
             std = results_std.sel(nWifi=1, distance=1,
                                   useShortGuardInterval=useShortGuardInterval,
                                   useRts=useRts)
-            plt.errorbar(x=params['mcs'], y=avg, yerr=6*std)
+            plt.errorbar(x=params['mcs'], y=np.squeeze(avg), yerr=6*np.squeeze(std))
             legend_entries += ['SGI = %s, RTS = %s' %
                                (useShortGuardInterval, useRts)]
     plt.legend(legend_entries)

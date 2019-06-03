@@ -1,6 +1,7 @@
 from .database import DatabaseManager
 from .runner import SimulationRunner
 from .parallelrunner import ParallelRunner
+from .lptrunner import LptRunner
 from .utils import DRMAA_AVAILABLE, list_param_combinations
 from copy import deepcopy
 from tqdm import tqdm
@@ -204,7 +205,7 @@ class CampaignManager(object):
         if runner_type == 'Auto' and DRMAA_AVAILABLE:
             runner_type = 'GridRunner'
         elif runner_type == 'Auto':
-            runner_type = 'ParallelRunner'
+            runner_type = 'LptRunner'
 
         return locals().get(runner_type,
                             globals().get(runner_type))(
@@ -247,7 +248,11 @@ class CampaignManager(object):
         for p in param_list:
             # Besides the parameters that were actually passed, we add the ones
             # that are always available in every script
-            passed = list(p.keys())
+            if isinstance(p, list):
+                parameter = p[0]
+            else:
+                parameter = p
+            passed = list(parameter.keys())
             available = ['RngRun'] + desired_params
             if set(passed) != set(available):
                 raise ValueError("Specified parameter combination does not "
@@ -266,14 +271,14 @@ class CampaignManager(object):
 
         # Shuffle simulations
         # This mixes up long and short simulations, and gives better time
-        # estimates.
+        # estimates for the simple ParallelRunner.
         shuffle(param_list)
 
         # Offload simulation execution to self.runner
         # Note that this only creates a generator for the results, no
         # computation is performed on this line.
         results = self.runner.run_simulations(param_list,
-                                              self.db.get_data_dir())
+                                            self.db.get_data_dir())
 
         # Wrap the result generator in the progress bar generator.
         if show_progress:
@@ -300,7 +305,7 @@ class CampaignManager(object):
         self.db.insert_results(results_batch)
         self.db.write_to_disk()
 
-    def get_missing_simulations(self, param_list, runs=None):
+    def get_missing_simulations(self, param_list, runs=None, with_time_estimate=False):
         """
         Return a list of the simulations among the required ones that are not
         available in the database.
@@ -317,15 +322,20 @@ class CampaignManager(object):
 
         if runs is not None:  # Get next available runs from the database
             next_runs = self.db.get_next_rngruns()
-            available_params = [r['params'] for r in self.db.get_results()]
+            available_results = [r for r in self.db.get_results()]
             for param_comb in param_list:
                 # Count how many param combinations we found, and remove them
-                # from the list of available_params for faster searching in the
+                # from the list of available_results for faster searching in the
                 # future
                 needed_runs = runs
-                for i, p in enumerate(available_params):
-                    if param_comb == {k: p[k] for k in p.keys() if k != "RngRun"}:
+                if with_time_estimate:
+                    time_prediction = float("Inf")
+                for i, r in enumerate(available_results):
+                    if param_comb == {k: r['params'][k] for k in
+                                      r['params'].keys() if k != "RngRun"}:
                         needed_runs -= 1
+                        if with_time_estimate:
+                            time_prediction = float(r['meta']['elapsed_time'])
                 new_param_combs = []
                 for needed_run in range(needed_runs):
                     # Here it's important that we make copies of the
@@ -335,12 +345,28 @@ class CampaignManager(object):
                     # different for each copy.
                     new_param = deepcopy(param_comb)
                     new_param['RngRun'] = next(next_runs)
-                    new_param_combs += [new_param]
+                    if with_time_estimate:
+                        new_param_combs += [[new_param, time_prediction]]
+                    else:
+                        new_param_combs += [new_param]
                 params_to_simulate += new_param_combs
         else:
             for param_comb in param_list:
-                if not self.db.get_results(param_comb):
-                    params_to_simulate += [param_comb]
+                previous_results = self.db.get_results(param_comb)
+                if not previous_results:
+                    if with_time_estimate:
+                        # Try and find results with different RngRun to provide
+                        # a time prediction
+                        param_comb_no_rngrun = {k:param_comb[k] for k in
+                                                param_comb.keys() if k != "RngRun"}
+                        prev_results_different_rngrun = self.db.get_results(param_comb_no_rngrun)
+                        if prev_results_different_rngrun:
+                            time_prediction = float(prev_results_different_rngrun[0]['meta']['elapsed_time'])
+                        else:
+                            time_prediction = float("Inf")
+                        params_to_simulate += [[param_comb, time_prediction]]
+                    else:
+                        params_to_simulate += [param_comb]
 
         return params_to_simulate
 
@@ -369,8 +395,12 @@ class CampaignManager(object):
             param_list = list_param_combinations(param_list)
 
         # If we are passed a list already, just run the missing simulations
-        self.run_simulations(
-            self.get_missing_simulations(param_list, runs))
+        if isinstance(self.runner, LptRunner):
+            self.run_simulations(
+                self.get_missing_simulations(param_list, runs, with_time_estimate=True))
+        else:
+            self.run_simulations(
+                self.get_missing_simulations(param_list, runs))
 
     #####################
     # Result management #
