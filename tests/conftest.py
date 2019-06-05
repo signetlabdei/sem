@@ -11,6 +11,8 @@ ns_3_examples = os.path.join(os.path.dirname(os.path.realpath(__file__)),
 ns_3_test = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ns-3')
 ns_3_test_compiled = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                   'ns-3-compiled')
+ns_3_test_compiled_debug = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                  'ns-3-compiled-debug')
 
 
 @pytest.fixture(scope='function')
@@ -31,6 +33,23 @@ def ns_3_compiled(tmpdir):
     if subprocess.call(['./waf', 'configure', '--disable-gtk',
                         '--disable-python', '--build-profile=optimized',
                         '--out=build/optimized', 'build'],
+                       cwd=ns_3_tempdir,
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL) > 0:
+        raise Exception("Build failed")
+    return ns_3_tempdir
+
+
+@pytest.fixture(scope='function')
+def ns_3_compiled_debug(tmpdir):
+    # Copy the test ns-3 installation in the temporary directory
+    ns_3_tempdir = str(tmpdir.join('ns-3-compiled-debug'))
+    shutil.copytree(ns_3_test_compiled_debug, ns_3_tempdir, symlinks=True)
+
+    # Relocate build by running the same command in the new directory
+    if subprocess.call(['./waf', 'configure', '--disable-gtk',
+                        '--disable-python', '--build-profile=debug',
+                        '--out=build', 'build'],
                        cwd=ns_3_tempdir,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL) > 0:
@@ -106,14 +125,27 @@ def get_and_compile_ns_3():
     if not os.path.exists(ns_3_test):
         Repo.clone_from('http://github.com/DvdMgr/ns-3-dev.git', ns_3_test,
                         branch='sem-tests')
-    # Compilation
+
+    # Copy folder to compile in optimized mode
     if not os.path.exists(ns_3_test_compiled):
         shutil.copytree(ns_3_test, ns_3_test_compiled, symlinks=True)
+
+    # Copy folder to compile in debug mode
+    if not os.path.exists(ns_3_test_compiled_debug):
+        shutil.copytree(ns_3_test, ns_3_test_compiled_debug, symlinks=True)
 
     if subprocess.call(['python', 'waf', 'configure', '--disable-gtk',
                         '--disable-python', '--build-profile=optimized',
                         '--out=build/optimized', 'build'],
                        cwd=ns_3_test_compiled,
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.STDOUT) > 0:
+        raise Exception("Test build failed.")
+
+    if subprocess.call(['python', 'waf', 'configure', '--disable-gtk',
+                        '--disable-python', '--build-profile=debug',
+                        '--out=build', 'build'],
+                       cwd=ns_3_test_compiled_debug,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.STDOUT) > 0:
         raise Exception("Test build failed.")

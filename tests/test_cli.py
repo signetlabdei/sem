@@ -48,6 +48,42 @@ def test_parameters_from_file(tmpdir, ns_3_compiled, config):
                    '--parameters=%s' % param_file],
                   catch_exceptions=False)
 
+    # Export results giving a parameter file as input
+    runner.invoke(sem.cli, ['export', '--results-dir=%s' %
+                            tmpdir.join('results'),
+                            '--parameters=%s' % param_file, 'folder_output' ],
+                  input="\n\n1\n",
+                  catch_exceptions=False)
+
+
+
+def test_cli_merge(tmpdir, ns_3_compiled, config):
+    runner = CliRunner()
+    runner.invoke(sem.cli, ['run', '--ns-3-path=%s' % ns_3_compiled,
+                            '--results-dir=%s' % tmpdir.join('results_primary'),
+                            '--script=%s' % config['script']],
+                  input="'/usr/share/dict/web2'\n'false'\n1\n",
+                  catch_exceptions=False)
+
+    runner.invoke(sem.cli, ['run', '--ns-3-path=%s' % ns_3_compiled,
+                            '--results-dir=%s' % tmpdir.join('results_secondary'),
+                            '--script=%s' % config['script']],
+                  input="'/usr/share/dict/web2'\n'false'\n1\n",
+                  catch_exceptions=False)
+
+    runner.invoke(sem.cli, ['merge', '--move=False', 'results_merged',
+                            'results_primary', 'results_secondary'],
+                  input="'/usr/share/dict/web2'\n'false'\n1\n",
+                  catch_exceptions=False)
+
+    runner.invoke(sem.cli, ['merge', '--move=True', 'results_merged_moved',
+                            'results_primary', 'results_secondary'],
+                  input="'/usr/share/dict/web2'\n'false'\n1\n",
+                  catch_exceptions=False)
+
+    # TODO Check that the new folders actually have all results we expect them
+    # to have
+
 
 def test_cli_workflow(tmpdir, ns_3_compiled, config):
     runner = CliRunner()
@@ -70,6 +106,20 @@ def test_cli_workflow(tmpdir, ns_3_compiled, config):
     # View all results
     runner.invoke(sem.cli, ['view', '--results-dir=%s' %
                             tmpdir.join('results'), '--show-all'],
+                  input="q",
+                  catch_exceptions=False)
+
+    # View all results without simulation output
+    runner.invoke(sem.cli, ['view', '--results-dir=%s' %
+                            tmpdir.join('results'), '--show-all',
+                            '--hide-simulation-output'],
+                  input="q",
+                  catch_exceptions=False)
+
+    # Directly print all results to screen
+    runner.invoke(sem.cli, ['view', '--results-dir=%s' %
+                            tmpdir.join('results'), '--show-all',
+                            '--no-pager'],
                   input="q",
                   catch_exceptions=False)
 
@@ -119,6 +169,12 @@ def test_cli_workflow(tmpdir, ns_3_compiled, config):
     runner.invoke(sem.cli, ['export', '--results-dir=%s' %
                             tmpdir.join('results'), '--do-not-try-parsing',
                             'folder_output'],
+                  input="\n\n1\n",
+                  catch_exceptions=False)
+
+    # Export results with parsing
+    runner.invoke(sem.cli, ['export', '--results-dir=%s' %
+                            tmpdir.join('results'), 'folder_output'],
                   input="\n\n1\n",
                   catch_exceptions=False)
 

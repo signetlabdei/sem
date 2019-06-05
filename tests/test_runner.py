@@ -7,13 +7,15 @@ import pytest
 ###################
 
 
-@pytest.fixture(scope='function', params=[['ParallelRunner', True]])
-def runner(ns_3_compiled, config, request):
+@pytest.fixture(scope='function', params=[['ParallelRunner', True],
+                                          ['ParallelRunner', False]])
+def runner(ns_3_compiled, ns_3_compiled_debug, config, request):
+    ns_3_folder = ns_3_compiled if request.param[1] is True else ns_3_compiled_debug
     if request.param[0] == 'SimulationRunner':
-        return SimulationRunner(ns_3_compiled, config['script'],
+        return SimulationRunner(ns_3_folder, config['script'],
                                 optimized=request.param[1])
     elif request.param[0] == 'ParallelRunner':
-        return ParallelRunner(ns_3_compiled, config['script'],
+        return ParallelRunner(ns_3_folder, config['script'],
                               optimized=request.param[1])
 
 

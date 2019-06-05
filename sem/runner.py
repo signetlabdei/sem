@@ -40,17 +40,15 @@ class SimulationRunner(object):
             library_path = "%s:%s" % (
                 os.path.join(path, 'build/optimized'),
                 os.path.join(path, 'build/optimized/lib'))
-
-            # We use both LD_ and DYLD_ to support Linux and Mac OS.
-            self.environment = {
-                'LD_LIBRARY_PATH': library_path,
-                'DYLD_LIBRARY_PATH': library_path}
         else:
-            library_path = "%s:%s" % (os.path.join(path, 'build'),
-                                      os.path.join(path, 'build/lib'))
-            self.environment = {
-                'LD_LIBRARY_PATH': os.path.join(path, 'build'),
-                'DYLD_LIBRARY_PATH': os.path.join(path, 'build')}
+            library_path = "%s:%s" % (
+                os.path.join(path, 'build/'),
+                os.path.join(path, 'build/lib'))
+
+        # We use both LD_ and DYLD_ to support Linux and Mac OS.
+        self.environment = {
+            'LD_LIBRARY_PATH': library_path,
+            'DYLD_LIBRARY_PATH': library_path}
 
         # Configure and build ns-3
         self.configure_and_build(path, optimized=optimized)

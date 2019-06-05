@@ -15,6 +15,7 @@ lib64
 __pycache__
 _build
 /tests/ns-3-compiled/
+/tests/ns-3-compiled-debug/
 .pytest_cache
 /.coverage
 /.dir-locals.el
