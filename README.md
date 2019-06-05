@@ -1,7 +1,7 @@
 # A Simulation Execution Manager for ns-3 #
 
 [![Build Status](https://travis-ci.org/signetlabdei/sem.svg?branch=master)](https://travis-ci.org/signetlabdei/sem)
-[![codecov](https://codecov.io/gh/DvdMgr/sem/branch/develop/graph/badge.svg)](https://codecov.io/gh/signetlabdei/sem)
+[![codecov](https://codecov.io/gh/DvdMgr/sem/branch/master/graph/badge.svg)](https://codecov.io/gh/signetlabdei/sem)
 [![Join the chat at https://gitter.im/ns-3-sem/Lobby](https://badges.gitter.im/ns-3-sem/Lobby.svg)](https://gitter.im/ns-3-sem/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 This is a Python library to perform multiple ns-3 script executions, manage the
