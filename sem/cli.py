@@ -276,7 +276,7 @@ def export(results_dir, filename, do_not_try_parsing, parameters):
                 required=True)
 @click.argument('sources',
                 nargs=-1,
-                type=click.Path(exists=True, resolve_path=True),
+                (type)=click.Path(exists=True, resolve_path=True),
                 required=True)
 @click.option("--move",
               default=False,
@@ -330,9 +330,10 @@ def merge(move, output_dir, sources):
 
     if move:
         for s in sources:
-            shutil.rmtree(os.path.join(s, 'data/*'))
-            shutil.rmtree(os.path.join(s, "%s.json" % os.path.split(s)[1]))
-            shutil.rmtree(s)
+            shutil.rmtree(os.path.join(s, 'data/'))
+            os.remove(os.path.join(s, "%s.json" % os.path.split(s)[1]))
+            if not os.listdir(s):
+                shutil.rmtree(s)
 
 
 def get_params_and_defaults(param_list, db):

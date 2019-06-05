@@ -71,14 +71,14 @@ def test_cli_merge(tmpdir, ns_3_compiled, config):
                   input="'/usr/share/dict/web2'\n'false'\n1\n",
                   catch_exceptions=False)
 
-    runner.invoke(sem.cli, ['merge', '--move=False', 'results_merged',
-                            'results_primary', 'results_secondary'],
-                  input="'/usr/share/dict/web2'\n'false'\n1\n",
+    runner.invoke(sem.cli, ['merge', str(tmpdir.join('results_merged')),
+                            str(tmpdir.join('results_primary')),
+                            str(tmpdir.join('results_secondary'))],
                   catch_exceptions=False)
 
-    runner.invoke(sem.cli, ['merge', '--move=True', 'results_merged_moved',
-                            'results_primary', 'results_secondary'],
-                  input="'/usr/share/dict/web2'\n'false'\n1\n",
+    runner.invoke(sem.cli, ['merge', '--move', str(tmpdir.join('results_merged_moved')),
+                            str(tmpdir.join('results_primary')),
+                            str(tmpdir.join('results_secondary'))],
                   catch_exceptions=False)
 
     # TODO Check that the new folders actually have all results we expect them
@@ -120,7 +120,6 @@ def test_cli_workflow(tmpdir, ns_3_compiled, config):
     runner.invoke(sem.cli, ['view', '--results-dir=%s' %
                             tmpdir.join('results'), '--show-all',
                             '--no-pager'],
-                  input="q",
                   catch_exceptions=False)
 
     # Without the simulation output
