@@ -1,5 +1,6 @@
-from sem import list_param_combinations, automatic_parser
+from sem import list_param_combinations, automatic_parser, stdout_automatic_parser
 import json
+import numpy as np
 from operator import getitem
 
 
@@ -25,6 +26,18 @@ def test_list_param_combinations():
                                {'d': 6, 'e': 9}, {'d': 7, 'e': 9}]))
 
 
+def test_stdout_automatic_parser(result):
+    # Create a dummy result
+    result['output'] = {}
+    result['output']['stderr'] = ''
+    result['output']['stdout'] = '1 2 3 4 5\n6 7 8 9 10'
+
+    parsed = stdout_automatic_parser(result)
+
+    assert np.all(parsed == [[1, 2, 3, 4, 5],
+                             [6, 7, 8, 9, 10]])
+
+
 def test_automatic_parser(result):
     # Create a dummy result
     result['output'] = {}
@@ -33,6 +46,6 @@ def test_automatic_parser(result):
 
     parsed = automatic_parser(result)
 
-    assert parsed['stdout'] == [[1, 2, 3, 4, 5],
-                                [6, 7, 8, 9, 10]]
+    assert np.all(parsed['stdout'] == [[1, 2, 3, 4, 5],
+                                       [6, 7, 8, 9, 10]])
     assert parsed['stderr'] == []
