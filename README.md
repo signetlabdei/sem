@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="res/logo.png" width="200">
+</p>
+
 # A Simulation Execution Manager for ns-3 #
 
 [![Build Status](https://travis-ci.org/signetlabdei/sem.svg?branch=master)](https://travis-ci.org/signetlabdei/sem)
