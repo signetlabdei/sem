@@ -1,9 +1,10 @@
 Getting started
 ===============
 
-This page only provides an initial guide that illustrates the SEM workflow. For
-a more comprehensive documentation, refer to the :ref:`detailed-functionality`
-page.
+This page only provides an initial guide that illustrates the SEM workflow using
+the Python API. For a more comprehensive overview of how things work under
+the hood, refer to the :ref:`detailed-functionality` page. If you are interested
+in using SEM from the command line, check out the :ref:`cli` page instead.
 
 `SEM` operates on simulation campaigns, which consist in a collection of results
 obtained from running a specific `ns-3` simulation script with possibly varying
@@ -31,7 +32,8 @@ Creation of a new campaign requires:
 * The name of the simulation script that will be run
 * The location of the folder where the campaign will be saved.
 
-We can create a campaign using the following instructions::
+We can create a campaign using the following instructions in a Python
+interpreter or script::
 
   >>> import sem
   >>> ns_path = 'examples/ns-3'
