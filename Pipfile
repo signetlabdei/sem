@@ -18,7 +18,6 @@ sem = {path = ".", editable = true}
 sphinx = "*"
 pygments = "*"
 importmagic = "*"
-sphinxcontrib-napoleon = "*"
 matplotlib = "*"
 pytest = "*"
 scipy = "*"
