@@ -52,8 +52,13 @@ def cli():
               show_default=True,
               help="The maximum number of parallel simulations to spawn " +
               "in simulations using ParallelRunner")
+@click.option("--runner-type",
+              type=click.STRING,
+              default="Auto",
+              show_default=False,
+              help="The Runner class to employ for this simulation")
 def run(ns_3_path, results_dir, script, no_optimization, parameters,
-        max_processes):
+        max_processes, runner_type):
     """
     Run multiple simulations.
     """
@@ -65,7 +70,8 @@ def run(ns_3_path, results_dir, script, no_optimization, parameters,
                                        script,
                                        results_dir,
                                        overwrite=False,
-                                       optimized=not no_optimization)
+                                       optimized=not no_optimization,
+                                       runner_type=runner_type)
 
     # Print campaign info
     click.echo(campaign)
