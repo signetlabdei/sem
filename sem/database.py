@@ -37,7 +37,8 @@ class DatabaseManager(object):
         """
         self.campaign_dir = campaign_dir
         self.db = db
-        self.insertions = 0
+        self.maxrngrun = max([result['params']['RngRun'] for result in
+                              self.get_results()]) if self.get_results() else 0
 
     @classmethod
     def new(cls, script, commit, params, campaign_dir, overwrite=False):
@@ -217,7 +218,6 @@ class DatabaseManager(object):
 
         # Insert results
         self.db.table('results').insert_multiple(results)
-        self.insertions += len(results)
 
     def insert_result(self, result):
         """
@@ -263,7 +263,6 @@ class DatabaseManager(object):
 
         # Insert result
         self.db.table('results').insert(deepcopy(result))
-        self.insertions += 1
 
     def get_results(self, params=None, result_id=None):
         """
@@ -308,7 +307,7 @@ class DatabaseManager(object):
         # Verify parameter format is correct
         all_params = set(['RngRun'] + self.get_params())
         param_subset = set(params.keys())
-        if (not all_params.issuperset(param_subset)):
+        if not all_params.issuperset(param_subset):
             raise ValueError(
                 '%s:\nParameters: %s\nQuery: %s' % (
                     'Specified parameter keys do not match database format',
@@ -459,8 +458,10 @@ class DatabaseManager(object):
             yield from filter(lambda x: x not in values_list,
                               itertools.count())
         else:
-            yield from filter(lambda x: x not in values_list,
-                              itertools.count(self.insertions))
+            for next_value in filter(lambda x: x not in values_list,
+                                     itertools.count(self.maxrngrun)):
+                self.maxrngrun += 1
+                yield next_value
 
     def have_same_structure(d1, d2):
         """
