@@ -1,18 +1,22 @@
-from .database import DatabaseManager
-from .runner import SimulationRunner
-from .parallelrunner import ParallelRunner
-from .lptrunner import LptRunner
-from .utils import DRMAA_AVAILABLE, list_param_combinations
+import collections
+import os
+import shutil
 from copy import deepcopy
-from tqdm import tqdm
+from datetime import datetime
+from pathlib import Path
 from random import shuffle
+
 import numpy as np
 import xarray as xr
 from scipy.io import savemat
-import os
-import shutil
-from pathlib import Path
-import collections
+from tqdm import tqdm
+
+from .database import DatabaseManager
+from .lptrunner import LptRunner
+from .parallelrunner import ParallelRunner
+from .runner import SimulationRunner
+from .utils import DRMAA_AVAILABLE, list_param_combinations
+
 if DRMAA_AVAILABLE:
     from .gridrunner import GridRunner
 
@@ -278,7 +282,7 @@ class CampaignManager(object):
         # Note that this only creates a generator for the results, no
         # computation is performed on this line.
         results = self.runner.run_simulations(param_list,
-                                            self.db.get_data_dir())
+                                              self.db.get_data_dir())
 
         # Wrap the result generator in the progress bar generator.
         if show_progress:
@@ -293,19 +297,24 @@ class CampaignManager(object):
         # that they are kept even if execution is terminated abruptly by
         # crashes or by a KeyboardInterrupt.
         results_batch = []
+        last_save_time = datetime.now()
 
         for result in result_generator:
 
             results_batch += [result]
 
-            if len(results_batch) > 100:
+            if (len(results_batch) > 100 or
+                    (datetime.now() - last_save_time).total_seconds() > 60):
                 self.db.insert_results(results_batch)
+                self.db.write_to_disk()
                 results_batch = []
+                last_save_time = datetime.now()
 
         self.db.insert_results(results_batch)
         self.db.write_to_disk()
 
-    def get_missing_simulations(self, param_list, runs=None, with_time_estimate=False):
+    def get_missing_simulations(self, param_list, runs=None,
+                                with_time_estimate=False):
         """
         Return a list of the simulations among the required ones that are not
         available in the database.
