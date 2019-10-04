@@ -12,6 +12,7 @@ from tinydb import TinyDB, where
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 
+REUSE_RNGRUN_VALUES = True
 
 class DatabaseManager(object):
     """
@@ -36,6 +37,7 @@ class DatabaseManager(object):
         """
         self.campaign_dir = campaign_dir
         self.db = db
+        self.insertions = 0
 
     @classmethod
     def new(cls, script, commit, params, campaign_dir, overwrite=False):
@@ -193,7 +195,7 @@ class DatabaseManager(object):
         """
         available_runs = [result['params']['RngRun'] for result in
                           self.get_results()]
-        yield from DatabaseManager.get_next_values(available_runs)
+        yield from DatabaseManager.get_next_values(self, available_runs)
 
     def insert_results(self, results):
 
@@ -215,6 +217,7 @@ class DatabaseManager(object):
 
         # Insert results
         self.db.table('results').insert_multiple(results)
+        self.insertions += len(results)
 
     def insert_result(self, result):
         """
@@ -260,6 +263,7 @@ class DatabaseManager(object):
 
         # Insert result
         self.db.table('results').insert(deepcopy(result))
+        self.insertions += 1
 
     def get_results(self, params=None, result_id=None):
         """
@@ -420,6 +424,13 @@ class DatabaseManager(object):
         # Get rid of contents of data dir
         map(shutil.rmtree, glob.glob(os.path.join(self.get_data_dir(), '*.*')))
 
+    def delete_result(self, result):
+        """
+        Remove the specified result from the database, based on its id.
+        """
+        self.db.table('results').remove(where('meta')['id'] ==
+                                        result['meta']['id'])
+
     #############
     # Utilities #
     #############
@@ -433,7 +444,7 @@ class DatabaseManager(object):
             configuration['script'], configuration['params'],
             configuration['commit'])
 
-    def get_next_values(values_list):
+    def get_next_values(self, values_list):
         """
         Given a list of integers, this method yields the lowest integers that
         do not appear in the list.
@@ -444,7 +455,12 @@ class DatabaseManager(object):
 
         [2, 5, 6, ...]
         """
-        yield from filter(lambda x: x not in values_list, itertools.count())
+        if REUSE_RNGRUN_VALUES:
+            yield from filter(lambda x: x not in values_list,
+                              itertools.count())
+        else:
+            yield from filter(lambda x: x not in values_list,
+                              itertools.count(self.insertions))
 
     def have_same_structure(d1, d2):
         """
