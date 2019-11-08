@@ -95,9 +95,13 @@ class SimulationRunner(object):
         self.script_executable = max(match_percentages,
                                      key=lambda x: x['percentage'])['path']
 
-        if optimized and "scratch" in self.script_executable:
-            self.script_executable = os.path.abspath(
-                os.path.join(path, "build/optimized/scratch", self.script))
+        if "scratch" in self.script_executable:
+            if optimized:
+                self.script_executable = os.path.abspath(
+                    os.path.join(path, "build/optimized/scratch", self.script))
+            else:
+                self.script_executable = os.path.abspath(
+                    os.path.join(path, "build/scratch", self.script))
 
     #############
     # Utilities #
