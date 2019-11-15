@@ -3,6 +3,9 @@ import io
 import numpy as np
 import warnings
 import numpy.core.numeric as nx
+import math
+import SALib.sample.saltelli
+import SALib.analyze.sobol
 
 try:
     DRMAA_AVAILABLE = True
@@ -147,3 +150,86 @@ def stdout_automatic_parser(result):
     np.lib._iotools.StringConverter._mapper = oldmapper
 
     return parsed
+
+
+#################################
+# Code for sensitivity analysis #
+#################################
+
+
+def get_bounds(ranges):
+    """
+    Format bounds for SALib, starting from a dictionary of ranges for each
+    parameter. The values for the parameters contained in ranges can be one of
+    the following:
+    1. A dictionary containing min and max keys, describing a range of possible
+    values for the parameter.
+    2. A list of allowed values for the parameter.
+    """
+    bounds = {}
+    for i in ranges.items():
+        if isinstance(i[1], dict):
+            # Defined as range
+            bounds[i[0]] = [i[1]['min'], i[1]['max']]
+        elif len(i[1]) > 1:
+            # Defined as list of possible values
+            bounds[i[0]] = [0, len(i[1])]
+
+    return bounds
+
+
+def salib_param_values_to_params(ranges, values):
+    """
+    Convert SALib's parameter specification to a SEM-compatible parameter
+    specification.
+    """
+    sem_params = []
+    for value in values:
+        v_idx = 0
+        params = {}
+        for rang in ranges.items():
+            if isinstance(rang[1], dict):
+                # Defined as range, leave as it is
+                params[rang[0]] = value[v_idx]
+                v_idx += 1
+            elif len(rang[1]) > 1:
+                # Defined as list of possible values
+                params[rang[0]] = ranges[rang[0]][math.floor(value[v_idx])]
+                v_idx += 1
+            else:
+                # Defined as single value
+                params[rang[0]] = rang[1][0]
+        sem_params.append(params)
+    return sem_params
+
+
+def compute_sensitivity_analysis(
+        campaign, result_parsing_function, ranges,
+        salib_sample_function=SALib.sample.saltelli.sample,
+        salib_analyze_function=SALib.analyze.sobol.analyze):
+    """
+    Compute sensitivity analysis on a campaign using the passed SALib sample
+    and analyze functions.
+    """
+    bounds = get_bounds(ranges)
+
+    problem = {
+        'num_vars': len(bounds),
+        'names': list(bounds.keys()),
+        'bounds': list(bounds.values())}
+    # TODO Extract this 10 to a variable
+    param_values = salib_sample_function(problem, 100)
+    sem_parameter_list = salib_param_values_to_params(ranges, param_values)
+
+    if not bounds.get('RngRun'):
+        # If we don't have RngRun parameter specified, we just assign a new
+        # value to each combination
+        next_runs = campaign.db.get_next_rngruns()
+        for p in sem_parameter_list:
+            p['RngRun'] = next(next_runs)
+
+    campaign.run_missing_simulations(sem_parameter_list)
+    results = np.array(
+    [result_parsing_function(campaign.db.get_complete_results(p)[0])
+        for p in sem_parameter_list])
+    return salib_analyze_function(problem, results)
