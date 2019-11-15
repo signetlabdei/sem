@@ -38,14 +38,14 @@ setup(
     package_data={
         '': ['*.sh'],
     },
-    classifiers = [
+    classifiers=[
         'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         ],
     install_requires=['tinydb', 'tqdm', 'numpy', 'xarray', 'drmaa',
-                      'gitpython', 'click', 'scipy'],
+                      'gitpython', 'click', 'scipy', 'SALib'],
     extras_require={
         'dev': ['check-manifest'],
         'test': ['pytest'],
