@@ -249,3 +249,31 @@ def compute_sensitivity_analysis(
         [result_parsing_function(campaign.db.get_complete_results(p)[0])
          for p in sem_parameter_list])
     return salib_analyze_function(problem, results)
+
+
+def interactive_plot(campaign, param_ranges, result_parsing_function, x_axis, runs=None):
+
+    # Average over RngRuns if param_ranges does not contain RngRun
+    if runs is not None:
+        assert(not param_ranges.get('RngRun'))
+        xarray = campaign.get_results_as_xarray(param_ranges,
+                                                result_parsing_function,
+                                                'Result',
+                                                runs).reduce(np.mean, 'runs')
+    else:
+        assert(param_ranges.get('RngRun'))
+        xarray = campaign.get_results_as_xarray(param_ranges,
+                                                result_parsing_function,
+                                                'Result',
+                                                runs=1)
+
+    def plot_line(**kwargs):
+        # x goes on the x axis
+        # Everything else goes as a parameter
+        # plt.xlabel(x_axis)
+        plt.ylim([np.min(xarray), np.max(xarray)])
+        plt.plot(param_ranges[x_axis],
+                 np.array(xarray.sel(**kwargs)).squeeze())
+
+    interact(plot_line, **{k: v for k, v in param_ranges.items() if k != x_axis
+                           and len(v) > 1})
