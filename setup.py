@@ -45,7 +45,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         ],
     install_requires=['tinydb', 'tqdm', 'numpy', 'xarray', 'drmaa',
-                      'gitpython', 'click', 'scipy', 'SALib'],
+                      'gitpython', 'click', 'scipy', 'SALib', 'jupyter'],
     extras_require={
         'dev': ['check-manifest'],
         'test': ['pytest'],
