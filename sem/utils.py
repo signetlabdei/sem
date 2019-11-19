@@ -1,11 +1,14 @@
-from itertools import product
 import io
-import numpy as np
-import warnings
-import numpy.core.numeric as nx
 import math
-import SALib.sample.saltelli
+import warnings
+from itertools import product
+
+import matplotlib.pyplot as plt
+import numpy as np
+import numpy.core.numeric as nx
 import SALib.analyze.sobol
+import SALib.sample.saltelli
+from ipywidgets import interact
 
 try:
     DRMAA_AVAILABLE = True
@@ -93,10 +96,14 @@ def automatic_parser(result, dtypes={}, converters={}):
     # existed in the data. So, we modify the StringMapper's default mapper to
     # skip the int check and directly convert numbers to floats.
     oldmapper = np.lib._iotools.StringConverter._mapper
-    np.lib._iotools.StringConverter._mapper = [(nx.bool_, np.lib._iotools.str2bool, False),
+    np.lib._iotools.StringConverter._mapper = [(nx.bool_,
+                                                np.lib._iotools.str2bool,
+                                                False),
                                                (nx.floating, float, nx.nan),
-                                               (nx.complexfloating, complex, nx.nan + 0j),
-                                               (nx.longdouble, nx.longdouble, nx.nan)]
+                                               (nx.complexfloating, complex,
+                                                nx.nan + 0j),
+                                               (nx.longdouble, nx.longdouble,
+                                                nx.nan)]
 
     for filename, contents in result['output'].items():
         if dtypes.get(filename) is None:
@@ -115,6 +122,7 @@ def automatic_parser(result, dtypes={}, converters={}):
     np.lib._iotools.StringConverter._mapper = oldmapper
 
     return parsed
+
 
 def stdout_automatic_parser(result):
     """
@@ -135,10 +143,14 @@ def stdout_automatic_parser(result):
     # existed in the data. So, we modify the StringMapper's default mapper to
     # skip the int check and directly convert numbers to floats.
     oldmapper = np.lib._iotools.StringConverter._mapper
-    np.lib._iotools.StringConverter._mapper = [(nx.bool_, np.lib._iotools.str2bool, False),
+    np.lib._iotools.StringConverter._mapper = [(nx.bool_,
+                                                np.lib._iotools.str2bool,
+                                                False),
                                                (nx.floating, float, nx.nan),
-                                               (nx.complexfloating, complex, nx.nan + 0j),
-                                               (nx.longdouble, nx.longdouble, nx.nan)]
+                                               (nx.complexfloating, complex,
+                                                nx.nan + 0j),
+                                               (nx.longdouble, nx.longdouble,
+                                                nx.nan)]
 
     file_contents = result['output']['stdout']
 
@@ -206,7 +218,8 @@ def salib_param_values_to_params(ranges, values):
 def compute_sensitivity_analysis(
         campaign, result_parsing_function, ranges,
         salib_sample_function=SALib.sample.saltelli.sample,
-        salib_analyze_function=SALib.analyze.sobol.analyze):
+        salib_analyze_function=SALib.analyze.sobol.analyze,
+        samples=100):
     """
     Compute sensitivity analysis on a campaign using the passed SALib sample
     and analyze functions.
@@ -217,8 +230,7 @@ def compute_sensitivity_analysis(
         'num_vars': len(bounds),
         'names': list(bounds.keys()),
         'bounds': list(bounds.values())}
-    # TODO Extract this 10 to a variable
-    param_values = salib_sample_function(problem, 100)
+    param_values = salib_sample_function(problem, samples)
     sem_parameter_list = salib_param_values_to_params(ranges, param_values)
 
     if not bounds.get('RngRun'):
@@ -228,8 +240,12 @@ def compute_sensitivity_analysis(
         for p in sem_parameter_list:
             p['RngRun'] = next(next_runs)
 
+    # TODO Make a copy of all available results, search a result for each item
+    # in sem_parameter_list, remove the result from the copied list, assign new
+    # RngRun value in case we don't find anything.
+
     campaign.run_missing_simulations(sem_parameter_list)
     results = np.array(
-    [result_parsing_function(campaign.db.get_complete_results(p)[0])
-        for p in sem_parameter_list])
+        [result_parsing_function(campaign.db.get_complete_results(p)[0])
+         for p in sem_parameter_list])
     return salib_analyze_function(problem, results)
