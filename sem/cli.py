@@ -17,6 +17,41 @@ def cli():
     """
     pass
 
+#########
+# Build #
+#########
+
+@cli.command()
+@click.option("--ns-3-path",
+              type=click.Path(exists=True, resolve_path=True),
+              prompt='ns-3 installation directory',
+              help='Path to ns-3 installation')
+@click.option("--results-dir",
+              type=click.Path(dir_okay=True, resolve_path=True),
+              prompt='Results directory',
+              help='Path to directory where results are saved')
+@click.option("--script",
+              prompt='Simulation script',
+              help='Simulation script to run')
+@click.option("--no-optimization",
+              default=False,
+              is_flag=True,
+              show_default=True,
+              help="Whether to avoid optimization of the build")
+def build(ns_3_path, results_dir, script, no_optimization):
+    """
+    Run multiple simulations.
+    """
+
+    # Create a campaign
+    campaign = sem.CampaignManager.new(ns_3_path,
+                                       script,
+                                       results_dir,
+                                       overwrite=False,
+                                       optimized=not no_optimization)
+
+    # Print campaign info
+    click.echo(campaign)
 
 #######
 # Run #
