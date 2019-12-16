@@ -258,11 +258,21 @@ class CampaignManager(object):
                 parameter = p
             passed = list(parameter.keys())
             available = ['RngRun'] + desired_params
-            if set(passed) != set(available):
+            if set(passed) != set(available) and self.runner.optimized:
+                additional_required_parameters = set(available) - set(passed)
+                not_supported_parameters = set(passed) - set(available)
+                errormsg = ""
+                if additional_required_parameters:
+                    errormsg += ("Add the following parameters "
+                                 "to your specification: %s\n" %
+                                 additional_required_parameters)
+                if not_supported_parameters:
+                    errormsg += ("The following parameters are "
+                                 "not supported by the script: %s\n" %
+                                 not_supported_parameters)
                 raise ValueError("Specified parameter combination does not "
-                                 "match the supported parameters:\n"
-                                 "Passed: %s\nSupported: %s" %
-                                 (sorted(passed), sorted(available)))
+                                 "match the supported parameters!\n" +
+                                 errormsg)
 
         # Check that the current repo commit corresponds to the one specified
         # in the campaign
