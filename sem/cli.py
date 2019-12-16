@@ -317,7 +317,7 @@ def export(results_dir, filename, do_not_try_parsing, parameters):
                 required=True)
 @click.argument('sources',
                 nargs=-1,
-                (type)=click.Path(exists=True, resolve_path=True),
+                type=click.Path(exists=True, resolve_path=True),
                 required=True)
 @click.option("--move",
               default=False,
