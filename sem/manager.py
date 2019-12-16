@@ -258,7 +258,7 @@ class CampaignManager(object):
                 parameter = p
             passed = list(parameter.keys())
             available = ['RngRun'] + desired_params
-            if set(passed) != set(available) and self.runner.optimized:
+            if set(passed) != set(available):
                 additional_required_parameters = set(available) - set(passed)
                 not_supported_parameters = set(passed) - set(available)
                 errormsg = ""
