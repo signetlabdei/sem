@@ -92,8 +92,13 @@ def build(ns_3_path, results_dir, script, no_optimization):
               default="Auto",
               show_default=False,
               help="The Runner class to employ for this simulation")
+@click.option("--skip-repo-check",
+              default=False,
+              is_flag=True,
+              show_default=True,
+              help="Avoid ensuring the ns-3 repository is clean -- use with caution")
 def run(ns_3_path, results_dir, script, no_optimization, parameters,
-        max_processes, runner_type):
+        max_processes, runner_type, skip_repo_check):
     """
     Run multiple simulations.
     """
@@ -106,7 +111,8 @@ def run(ns_3_path, results_dir, script, no_optimization, parameters,
                                        results_dir,
                                        overwrite=False,
                                        optimized=not no_optimization,
-                                       runner_type=runner_type)
+                                       runner_type=runner_type,
+                                       check_repo=skip_repo_check)
 
     # Print campaign info
     click.echo(campaign)
