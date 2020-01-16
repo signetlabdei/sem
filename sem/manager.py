@@ -5,6 +5,7 @@ from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from random import shuffle
+import gc
 
 import numpy as np
 import xarray as xr
@@ -639,8 +640,11 @@ class CampaignManager(object):
                 for name, filepath in available_files.items():
                     with open(filepath, 'r') as file_contents:
                         r['output'][name] = file_contents.read()
-
                 parsed.append(result_parsing_function(r))
+                del r
+            del results
+
+            gc.collect()
 
             return parsed
 
