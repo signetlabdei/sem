@@ -440,7 +440,7 @@ class CampaignManager(object):
             runs (int): number of runs to gather for each parameter
                 combination.
         """
-        return np.array(self.get_space(self.db.get_complete_results(), {},
+        return np.array(self.get_space(self.db.get_results(), {},
                                        parameter_space, runs,
                                        result_parsing_function))
 
@@ -558,7 +558,7 @@ class CampaignManager(object):
         """
         np_array = np.array(
             self.get_space(
-                self.db.get_complete_results(), {},
+                self.db.get_results(), {},
                 collections.OrderedDict([(k, v) for k, v in
                                          parameter_space.items()]),
                 runs, result_parsing_function))
@@ -631,6 +631,15 @@ class CampaignManager(object):
                        self.satisfies_query(r, current_query)]
             parsed = []
             for r in results[:runs]:
+
+                # Make results complete, by reading the output from file
+                # TODO Extract this into a function
+                r['output'] = {}
+                available_files = self.db.get_result_files(r['meta']['id'])
+                for name, filepath in available_files.items():
+                    with open(filepath, 'r') as file_contents:
+                        r['output'][name] = file_contents.read()
+
                 parsed.append(result_parsing_function(r))
 
             return parsed
