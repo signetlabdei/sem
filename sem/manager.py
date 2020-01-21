@@ -314,8 +314,8 @@ class CampaignManager(object):
 
             results_batch += [result]
 
-            if (len(results_batch) > 100 or
-                    (datetime.now() - last_save_time).total_seconds() > 60):
+            # Save results to disk once every 60 seconds
+            if ((datetime.now() - last_save_time).total_seconds() > 60):
                 self.db.insert_results(results_batch)
                 self.db.write_to_disk()
                 results_batch = []
