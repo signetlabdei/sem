@@ -1,11 +1,11 @@
 import collections
+import gc
 import os
 import shutil
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from random import shuffle
-import gc
 
 import numpy as np
 import xarray as xr
@@ -469,9 +469,10 @@ class CampaignManager(object):
                 parameter_space[key] = [parameter_space[key]]
 
         # Add a dimension label for each non-singular dimension
-        dimension_labels = [{key: str(parameter_space[key])} for key in
+        dimension_labels = [{key: np.array(parameter_space[key],
+                                           dtype=np.object)} for key in
                             parameter_space.keys() if len(parameter_space[key])
-                            > 1] + [{'runs': range(runs)}]
+                            > 0] + [{'runs': range(runs)}]
 
         # Create a list of the parameter names
 
@@ -480,7 +481,7 @@ class CampaignManager(object):
             {'results':
              self.get_results_as_numpy_array(parameter_space,
                                              result_parsing_function,
-                                             runs=runs),
+                                             runs=runs).astype(np.object),
              'dimension_labels': dimension_labels})
 
     def save_to_npy_file(self, parameter_space,
