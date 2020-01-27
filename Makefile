@@ -1,4 +1,4 @@
 .PHONY: docs
 
 docs:
-	pipenv run $(MAKE) -C docs/ html;
+	poetry run $(MAKE) -C docs/ html;

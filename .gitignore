@@ -23,3 +23,5 @@ _build
 /.coverage.*
 tests/ns-3
 Pipfile.lock
+poetry.lock
+package-lock.json
