@@ -1,10 +1,11 @@
-import subprocess
-import re
-import os
-import uuid
-import time
-from tqdm import tqdm
 import importlib
+import os
+import re
+import subprocess
+import time
+import uuid
+
+from tqdm import tqdm
 
 
 class SimulationRunner(object):
@@ -123,8 +124,9 @@ class SimulationRunner(object):
 
         # Only configure if necessary
         if not skip_configuration:
-            configuration_command = ['python', 'waf', 'configure', '--enable-examples',
-                                     '--disable-gtk', '--disable-python']
+            configuration_command = ['python', 'waf', 'configure',
+                                     '--enable-examples', '--disable-gtk',
+                                     '--disable-python']
 
             if optimized:
                 configuration_command += ['--build-profile=optimized',
@@ -135,7 +137,8 @@ class SimulationRunner(object):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         # Build ns-3
-        build_process = subprocess.Popen(['python', 'waf', 'build'], cwd=self.path,
+        build_process = subprocess.Popen(['python', 'waf', 'build'],
+                                         cwd=self.path,
                                          stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE)
 
@@ -145,10 +148,12 @@ class SimulationRunner(object):
             pbar = None
             try:
                 [initial, total] = next(line_iterator)
-                pbar = tqdm(line_iterator, initial=initial, total=total,
+                pbar = tqdm(initial=initial, total=total,
                             unit='file', desc='Building ns-3', smoothing=0)
-                for current, total in pbar:
-                    pbar.n = current
+                with pbar as progress_bar:
+                    for current, total in line_iterator:
+                        progress_bar.update(1)
+                    progress_bar.n = progress_bar.total
             except (StopIteration):
                 if pbar is not None:
                     pbar.n = pbar.total
