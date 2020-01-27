@@ -12,11 +12,15 @@ This is a Python library to perform multiple ns-3 script executions, manage the
 results and collect them in processing-friendly data structures. For complete
 step-by-step usage and installation instructions, check out [readthedocs][rtd].
 
+<p align="center">
+  <img src="res/semdemo.gif">
+</p>
+
 # How to cite us #
 
 If you used SEM for your ns-3 analysis, please cite the following paper, both to provide a reference and help others find out about this tool:
 
-Davide Magrin, Dizhi Zhou, and Michele Zorzi. 2019. A Simulation Execution Manager for ns-3: Encouraging reproducibility and simplifying statistical analysis of ns-3 simulations. In Proceedings of the 22nd International ACM Conference on Modeling, Analysis and Simulation of Wireless and Mobile Systems (MSWIM '19). ACM, New York, NY, USA, 121-125. DOI: https://doi.org/10.1145/3345768.3355942 
+Davide Magrin, Dizhi Zhou, and Michele Zorzi. 2019. A Simulation Execution Manager for ns-3: Encouraging reproducibility and simplifying statistical analysis of ns-3 simulations. In Proceedings of the 22nd International ACM Conference on Modeling, Analysis and Simulation of Wireless and Mobile Systems (MSWIM '19). ACM, New York, NY, USA, 121-125. DOI: https://doi.org/10.1145/3345768.3355942
 
 # Contributing #
 
