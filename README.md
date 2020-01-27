@@ -31,17 +31,16 @@ run tests.
 ## Building the module from scratch ##
 
 This module is developed using
-[`pipenv`](https://pipenv.readthedocs.io/en/latest/): in order to correctly
+[`poetry`](https://python-poetry.org/docs/): in order to correctly
 manage virtual environments and install dependencies, make sure it is installed.
 Typically, the following is enough:
 
 ```bash
-pip install -U pipenv
+curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
 ```
 
-Note that, depending on the specifics of your python installation, you may need to add
-`~/.local/bin` to your path. In case this is needed, `pip` should warn you
-during installation.
+Note that, if poetry's installer does not add poetry's path to your shell's startup file properly, you may need to add
+`source $HOME/.poetry/env` to your startup file. You can tell that you need to add it if your shell cannot find the poetry command the next time you open a terminal window.
 
 Then, clone the repo (or your fork, by changing the url in the following
 command), also getting the `ns-3` installations that are used for running
@@ -57,7 +56,7 @@ From the project root, you can then install the package and the
 requirements with the following:
 
 ```bash
-pipenv install --dev
+poetry install
 ```
 
 This will also get you a set of tools such as `sphinx`, `pygments` and `pytest`
@@ -66,7 +65,7 @@ that handle documentation and tests.
 Finally, you can spawn a sub-shell using the new virtual environment by calling:
 
 ```bash
-pipenv shell
+poetry shell
 ```
 
 Now, you can start a python REPL to use the library interactively, issue the
