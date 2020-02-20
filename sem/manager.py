@@ -558,13 +558,6 @@ class CampaignManager(object):
             runs (int): the number of runs to export for each parameter
                 combination.
         """
-        np_array = np.array(
-            self.get_space(
-                self.db.get_results(), {},
-                collections.OrderedDict([(k, v) for k, v in
-                                         parameter_space.items()]),
-                runs, result_parsing_function))
-
         # Create a parameter space only containing the variable parameters
         clean_parameter_space = collections.OrderedDict(
             [(k, v) for k, v in parameter_space.items()])
@@ -574,7 +567,12 @@ class CampaignManager(object):
         if isinstance(output_labels, list):
             clean_parameter_space['metrics'] = output_labels
 
-        xr_array = xr.DataArray(np_array, coords=clean_parameter_space,
+        data = self.get_space(
+            self.db.get_results(), {},
+            collections.OrderedDict([(k, v) for k, v in
+                                     parameter_space.items()]),
+            runs, result_parsing_function)
+        xr_array = xr.DataArray(data, coords=clean_parameter_space,
                                 dims=list(clean_parameter_space.keys()))
 
         return xr_array
@@ -644,8 +642,6 @@ class CampaignManager(object):
                 parsed.append(result_parsing_function(r))
                 del r
             del results
-
-            gc.collect()
 
             return parsed
 
