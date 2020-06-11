@@ -18,7 +18,7 @@ class SimulationRunner(object):
     # Initialization #
     ##################
 
-    def __init__(self, path, script, optimized=True):
+    def __init__(self, path, script, optimized=True, skip_configuration=False):
         """
         Initialization function.
 
@@ -28,6 +28,8 @@ class SimulationRunner(object):
             script (str): ns-3 script that will be used by this Runner.
             optimized (bool): whether this Runner should build ns-3 with the
                 optimized profile.
+            skip_configuration (bool): whether to skip the configuration step,
+                and only perform compilation.
         """
 
         # Save member variables
@@ -52,7 +54,8 @@ class SimulationRunner(object):
             'DYLD_LIBRARY_PATH': library_path}
 
         # Configure and build ns-3
-        self.configure_and_build(path, optimized=optimized)
+        self.configure_and_build(path, optimized=optimized,
+                                 skip_configuration=skip_configuration)
 
         # ns-3's build status output is used to get the executable path for the
         # specified script.
