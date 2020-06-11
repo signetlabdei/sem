@@ -61,7 +61,8 @@ class CampaignManager(object):
 
     @classmethod
     def new(cls, ns_path, script, campaign_dir, runner_type='Auto',
-            overwrite=False, optimized=True, check_repo=True):
+            overwrite=False, optimized=True, check_repo=True,
+            skip_configuration=False):
         """
         Create a new campaign from an ns-3 installation and a campaign
         directory.
@@ -100,6 +101,10 @@ class CampaignManager(object):
                 it only contains files that were detected to be created by sem.
             optimized (bool): whether to configure the runner to employ an
                 optimized ns-3 build.
+            skip_configuration (bool): whether to skip the configuration step,
+                and only perform compilation.
+                NOTE: if skip_configuration=True and optimized=True, the build
+                folder should be manually set to --out=build/optimized.
         """
         # Convert paths to be absolute
         ns_path = os.path.abspath(ns_path)
@@ -111,7 +116,8 @@ class CampaignManager(object):
             manager = CampaignManager.load(campaign_dir, ns_path,
                                            runner_type=runner_type,
                                            optimized=optimized,
-                                           check_repo=check_repo)
+                                           check_repo=check_repo,
+                                           skip_configuration=skip_configuration)
 
             if manager.db.get_script() == script:
                 return manager
@@ -121,7 +127,8 @@ class CampaignManager(object):
         # Initialize runner
         runner = CampaignManager.create_runner(ns_path, script,
                                                runner_type=runner_type,
-                                               optimized=optimized)
+                                               optimized=optimized,
+                                               skip_configuration=skip_configuration)
 
         # Get list of parameters to save in the DB
         params = runner.get_available_parameters()
@@ -146,7 +153,7 @@ class CampaignManager(object):
 
     @classmethod
     def load(cls, campaign_dir, ns_path=None, runner_type='Auto',
-             optimized=True, check_repo=True):
+             optimized=True, check_repo=True, skip_configuration=False):
         """
         Load an existing simulation campaign.
 
@@ -167,6 +174,8 @@ class CampaignManager(object):
                 a DRMAA-compatible parallel task scheduler).
             optimized (bool): whether to configure the runner to employ an
                 optimized ns-3 build.
+            skip_configuration (bool): whether to skip the configuration step,
+                and only perform compilation.
         """
         # Convert paths to be absolute
         if ns_path is not None:
@@ -180,12 +189,13 @@ class CampaignManager(object):
         runner = None
         if ns_path is not None:
             runner = CampaignManager.create_runner(ns_path, script,
-                                                   runner_type, optimized)
+                                                   runner_type, optimized,
+                                                   skip_configuration)
 
         return cls(db, runner, check_repo)
 
     def create_runner(ns_path, script, runner_type='Auto',
-                      optimized=True):
+                      optimized=True, skip_configuration=False):
         """
         Create a SimulationRunner from a string containing the desired
         class implementation, and return it.
@@ -203,6 +213,8 @@ class CampaignManager(object):
                 DRMAA is available, ParallelRunner otherwise).
             optimized (bool): whether to configure the runner to employ an
                 optimized ns-3 build.
+            skip_configuration (bool): whether to skip the configuration step,
+                and only perform compilation.
         """
         # locals() contains a dictionary pairing class names with class
         # objects: we can create the object using the desired class starting
@@ -214,7 +226,8 @@ class CampaignManager(object):
 
         return locals().get(runner_type,
                             globals().get(runner_type))(
-                                ns_path, script, optimized=optimized)
+                                ns_path, script, optimized=optimized,
+                                skip_configuration=skip_configuration)
 
     ######################
     # Simulation running #
