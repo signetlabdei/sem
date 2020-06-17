@@ -35,6 +35,7 @@ class SimulationRunner(object):
         # Save member variables
         self.path = path
         self.script = script
+        self.optimized = optimized
 
         if optimized:
             # For old ns-3 installations, the library is in build, while for

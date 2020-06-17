@@ -16,6 +16,7 @@ from tqdm import tqdm
 from .database import DatabaseManager
 from .lptrunner import LptRunner
 from .parallelrunner import ParallelRunner
+from .conditionalrunner import ConditionalRunner
 from .runner import SimulationRunner
 from .utils import DRMAA_AVAILABLE, list_param_combinations
 
@@ -317,6 +318,9 @@ class CampaignManager(object):
         else:
             result_generator = results
 
+        self.run_and_save_results(result_generator)
+
+    def run_and_save_results(self, result_generator, batch_results=True):
         # Insert result object in db. Using the generator here ensures we
         # save results as they are finalized by the SimulationRunner, and
         # that they are kept even if execution is terminated abruptly by
@@ -329,7 +333,11 @@ class CampaignManager(object):
             results_batch += [result]
 
             # Save results to disk once every 60 seconds
-            if ((datetime.now() - last_save_time).total_seconds() > 60):
+            if not batch_results:
+                self.db.insert_results(results_batch)
+                results_batch = []
+            elif (batch_results and
+                  (datetime.now() - last_save_time).total_seconds() > 60):
                 self.db.insert_results(results_batch)
                 self.db.write_to_disk()
                 results_batch = []
@@ -430,37 +438,22 @@ class CampaignManager(object):
         if isinstance(param_list, dict):
             param_list = list_param_combinations(param_list)
 
-        from .parallelrunner import MAX_PARALLEL_PROCESSES as MAX_PARALLEL_PROCESSES
-
-        # XXX If we are not using all processes in parallel, this becomes
-        # inefficient very quickly
         # In this case, we need to run simulations in batches
         if runs is None and condition_checking_function:
-            # Run a first batch of simulations, with 1 run per parameter
-            # combination
-            unique_param_list = copy.deepcopy(param_list)
             next_runs = self.db.get_next_rngruns()
-            self.run_simulations(self.get_missing_simulations(param_list, 1))
-            while True:
-                # Identify the subset of parameter combinations that don't pass
-                # the check
-                need_to_repeat = []
-                for p in unique_param_list:
-                    if not condition_checking_function(self, p):
-                        need_to_repeat += [p]
-                if len(need_to_repeat) == 0:
-                    break
-                else:
-                    new_simulations = copy.deepcopy(need_to_repeat)
-                    if (MAX_PARALLEL_PROCESSES is not None):
-                        while (len(new_simulations) < MAX_PARALLEL_PROCESSES):
-                            for s in copy.deepcopy(need_to_repeat):
-                                new_simulations += [s]
-                    # Assign an RngRun value to all the simulations we need to
-                    # run.
-                    for s in new_simulations:
-                        s['RngRun'] = next(next_runs)
-                    self.run_simulations(new_simulations)
+            # Create a ConditionalRunner
+            cr = ConditionalRunner(self.runner.path,
+                                   self.runner.script,
+                                   self.runner.optimized)
+            # Set up the runner's stopping condition function
+            cr.stopping_function = lambda x: condition_checking_function(self,
+                                                                         x)
+            # Set up the runner's iterator for next runs
+            cr.next_runs = next_runs
+
+            self.run_and_save_results(cr.run_simulations(param_list,
+                                                         self.db.get_data_dir()),
+                                      batch_results=False)
 
         # Otherwise, we just run all required runs for each combination
         if condition_checking_function is None:
