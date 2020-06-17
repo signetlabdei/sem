@@ -251,7 +251,8 @@ def compute_sensitivity_analysis(
     return salib_analyze_function(problem, results)
 
 
-def interactive_plot(campaign, param_ranges, result_parsing_function, x_axis, runs=None):
+def interactive_plot(campaign, param_ranges, result_parsing_function, x_axis,
+                     runs=None):
 
     # Average over RngRuns if param_ranges does not contain RngRun
     if runs is not None:

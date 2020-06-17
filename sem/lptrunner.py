@@ -7,6 +7,7 @@ import itertools
 
 MAX_PARALLEL_PROCESSES = None  # If None, the number of CPUs is used
 
+
 def have_same_combination(dict1, dict2):
     return len(set({i:v for i, v in dict1.items() if i!='RngRun'}.items()) ^
                set({i:v for i, v in dict2.items() if i!='RngRun'}.items())) == 0
@@ -25,7 +26,6 @@ class LptRunner(SimulationRunner):
     def __init__(self, path, script, optimized):
         SimulationRunner.__init__(self, path, script, optimized)
         self.parameter_runtime_map = {}
-
 
     def run_simulations(self, parameter_list, data_folder):
         """
@@ -65,13 +65,15 @@ class LptRunner(SimulationRunner):
                 if next_sim is None:
                     break
                 # with iolock:
-                    # print("processing", next_sim)
-                result = next(SimulationRunner.run_simulations(self, [next_sim],
-                                                               self.data_folder))
+                #     print("processing", next_sim)
+                result = next(
+                    SimulationRunner.run_simulations(self,
+                                                     [next_sim],
+                                                     self.data_folder))
                 times[index] = float(result['meta']['elapsed_time'])
 
                 # with iolock:
-                    # print("completed in ", result['meta']['elapsed_time'])
+                #     print("completed in ", result['meta']['elapsed_time'])
 
                 outq.put(result)
 
@@ -96,8 +98,10 @@ class LptRunner(SimulationRunner):
             # print("Param list from main: %s" % param_list)
             available_times = [t if param_list[idx] else -1 for idx, t in
                                enumerate(times)]
-            maximums = (np.squeeze((np.argwhere(available_times ==
-                                              np.amax(available_times))))).tolist()
+            maximums = (np.squeeze
+                        (np.argwhere(
+                            available_times ==
+                            np.amax(available_times)))).tolist()
             # print("Times: %s" % [i for i in times])
             # print("Maximums: %s" % maximums)
 
@@ -131,79 +135,3 @@ class LptRunner(SimulationRunner):
                 yield outq.get_nowait()
             except queue.Empty:
                 return
-
-        # # First round, to collect data
-        # with Pool(processes=MAX_PARALLEL_PROCESSES) as pool:
-        #     iterator = ParamIterator(unique_combos, self)
-        #     # for result in map(self.launch_simulation, iterator):
-        #     for result in pool.imap_unordered(self.launch_simulation,
-        #                                         iterator,
-        #                                         1):
-        #         # Save the result's running time in our map
-        #         iterator.update_time(result)
-
-        #         yield result
-
-
-#     def launch_simulation(self, parameter):
-#         """
-#         Launch a single simulation, using SimulationRunner's facilities.
-
-#         This function is used by ParallelRunner's run_simulations to map
-#         simulation running over the parameter list.
-
-#         Args:
-#             parameter (dict): the parameter combination to simulate.
-#         """
-#         return next(SimulationRunner.run_simulations(self, [parameter],
-#                                                      self.data_folder))
-
-# class ParamIterator:
-
-#     """Iterator that returns the next parameter combination to simulate."""
-
-#     def __init__(self, unique_combos, runner):
-#         self.runner = runner
-#         self.param_list = [[i, float("Inf")] for i in deepcopy(unique_combos)]
-#         self.first_pass_counter = len(unique_combos)-1
-
-#     def __iter__(self):
-#         return self
-
-#     def __len__(self):
-#         return len([i for i in c for c in unique_combos])
-
-#     def __next__(self):
-#         # Sort the parameter list according to the average and return the
-#         # param combination with the biggest value
-#         try:
-#             # if self.first_pass_counter >= 0:  # We are in exploration phase
-#             #     self.first_pass_counter -= 1
-#             #     return self.param_list[self.first_pass_counter + 1][0].pop()
-#             # else:  # We should have timing info for all unique combos
-#             times = [i[1] for i in self.param_list]
-#             maximums = np.argwhere(times == np.amax(times))
-#             argmax = np.random.choice(np.squeeze(maximums))
-#             print("Times: %s" % times)
-#             # print("Returning item with time %s" % self.param_list[argmax][1])
-#             if len(self.param_list[argmax][0]) == 1:
-#                 last_parameter = self.param_list[argmax][0][0]
-#                 self.param_list.pop(argmax)
-#                 # print("Returning %s" % last_parameter)
-#                 return last_parameter
-#             else:
-#                 # print("Returning %s" % self.param_list[argmax][0][-1])
-#                 return self.param_list[argmax][0].pop()
-#         except ValueError:
-#             raise StopIteration()
-
-
-#     def update_time(self, result):
-#         # print("Elapsed time: %s" % result['meta']['elapsed_time'])
-#         for i in self.param_list:
-#             # Skip if this item already has a timing
-#             if i[1] < float("Inf"):
-#                 continue
-
-#             if (have_same_combination(result['params'], i[0][0])):
-#                 i[1] = float(result['meta']['elapsed_time'])
