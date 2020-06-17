@@ -472,7 +472,8 @@ class CampaignManager(object):
     #####################
 
     def get_results_as_numpy_array(self, parameter_space,
-                                   result_parsing_function, runs):
+                                   result_parsing_function, runs=None,
+                                   extract_complete_results=True):
         """
         Return the results relative to the desired parameter space in the form
         of a numpy array.
@@ -594,7 +595,8 @@ class CampaignManager(object):
 
     def get_results_as_xarray(self, parameter_space,
                               result_parsing_function,
-                              output_labels, runs):
+                              output_labels, runs=None,
+                              extract_complete_results=True):
         """
         Return the results relative to the desired parameter space in the form
         of an xarray data structure.
@@ -661,8 +663,9 @@ class CampaignManager(object):
         """
         return result['output']
 
-    def get_space(self, current_result_list, current_query, param_space, runs,
-                  result_parsing_function):
+    def get_space(self, current_result_list, current_query, param_space,
+                  result_parsing_function, runs=None,
+                  extract_complete_results=True):
         """
         Convert a parameter space specification to a nested array structure
         representing the space. In other words, if the parameter space is::
@@ -707,8 +710,6 @@ class CampaignManager(object):
             results = [r for r in current_result_list if
                        self.satisfies_query(r, current_query)]
             parsed = []
-            for r in results[:runs]:
-
             sliced_results = results[:runs] if runs else results
             for r in sliced_results:
                 # Make results complete, by reading the output from file
@@ -716,8 +717,11 @@ class CampaignManager(object):
                 r['output'] = {}
                 available_files = self.db.get_result_files(r['meta']['id'])
                 for name, filepath in available_files.items():
-                    with open(filepath, 'r') as file_contents:
-                        r['output'][name] = file_contents.read()
+                    if extract_complete_results:
+                        with open(filepath, 'r') as file_contents:
+                            r['output'][name] = file_contents.read()
+                    else:
+                        r['output'][name] = filepath
                 parsed.append(result_parsing_function(r))
                 del r
             del results
@@ -738,8 +742,9 @@ class CampaignManager(object):
             temp_result_list = [r for r in current_result_list if
                                 self.satisfies_query(r, temp_query)]
             space.append(self.get_space(temp_result_list, next_query,
-                                        next_param_space, runs,
-                                        result_parsing_function))
+                                        next_param_space,
+                                        result_parsing_function, runs,
+                                        extract_complete_results))
         return space
 
     def satisfies_query(self, result, query):
