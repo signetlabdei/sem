@@ -1,6 +1,7 @@
 import collections
 import gc
 import os
+import copy
 import shutil
 from copy import deepcopy
 from datetime import datetime
@@ -390,8 +391,9 @@ class CampaignManager(object):
                     if with_time_estimate:
                         # Try and find results with different RngRun to provide
                         # a time prediction
-                        param_comb_no_rngrun = {k:param_comb[k] for k in
-                                                param_comb.keys() if k != "RngRun"}
+                        param_comb_no_rngrun = {k: param_comb[k]
+                                                for k in param_comb.keys()
+                                                if k != "RngRun"}
                         prev_results_different_rngrun = self.db.get_results(param_comb_no_rngrun)
                         if prev_results_different_rngrun:
                             time_prediction = float(prev_results_different_rngrun[0]['meta']['elapsed_time'])
@@ -403,7 +405,8 @@ class CampaignManager(object):
 
         return params_to_simulate
 
-    def run_missing_simulations(self, param_list, runs=None):
+    def run_missing_simulations(self, param_list, runs=None,
+                                condition_checking_function=None):
         """
         Run the simulations from the parameter list that are not yet available
         in the database.
@@ -427,13 +430,42 @@ class CampaignManager(object):
         if isinstance(param_list, dict):
             param_list = list_param_combinations(param_list)
 
-        # If we are passed a list already, just run the missing simulations
-        if isinstance(self.runner, LptRunner):
-            self.run_simulations(
-                self.get_missing_simulations(param_list, runs, with_time_estimate=True))
-        else:
-            self.run_simulations(
-                self.get_missing_simulations(param_list, runs))
+        # XXX If we are not using all processes in parallel, this becomes
+        # inefficient very quickly
+        # In this case, we need to run simulations in batches
+        if runs is None and condition_checking_function:
+            # Run a first batch of simulations, with 1 run per parameter
+            # combination
+            unique_param_list = copy.deepcopy(param_list)
+            next_runs = self.db.get_next_rngruns()
+            self.run_simulations(self.get_missing_simulations(param_list, 1))
+            while True:
+                # Identify the subset of parameter combinations that don't pass
+                # the check
+                print(len(unique_param_list))
+                need_to_repeat = []
+                for p in unique_param_list:
+                    if not condition_checking_function(self, p):
+                        need_to_repeat += [p]
+                if len(need_to_repeat) == 0:
+                    break
+                else:
+                    new_simulations_with_rngrun = copy.deepcopy(need_to_repeat)
+                    for s in new_simulations_with_rngrun:
+                        s['RngRun'] = next(next_runs)
+                    self.run_simulations(new_simulations_with_rngrun)
+
+        # Otherwise, we just run all required runs for each combination
+        if condition_checking_function is None:
+            # If we are passed a list already, just run the missing simulations
+            if isinstance(self.runner, LptRunner):
+                self.run_simulations(
+                    self.get_missing_simulations(param_list,
+                                                 runs,
+                                                 with_time_estimate=True))
+            else:
+                self.run_simulations(
+                    self.get_missing_simulations(param_list, runs))
 
     #####################
     # Result management #
