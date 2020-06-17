@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sem"
-version = "0.2.3"
+version = "0.2.4"
 description = "A simulation execution manager for ns-3"
 authors = ["Davide Magrin <magrinda@dei.unipd.it>"]
 license = "GPL-2.0-only"
@@ -10,16 +10,16 @@ homepage = "https://github.com/signetlabdei/sem"
 keywords = ["ns-3","simulation","execution"]
 
 [tool.poetry.dependencies]
-python = "^3.5" 
+python = "^3.6.1"
 tqdm = "*"
 gitpython = "*"
 drmaa = "*"
-tinydb = "*"
+tinydb = "^4.0.0"
 xarray = "*"
 numpy = "*"
 click = "*"
 salib = "^1.3.8"
-ipywidgets = "^7.5.1"
+ipywidgets = { version = "^7.5.1", optional = true }
 
 [tool.poetry.dev-dependencies]
 sphinx = "*"
@@ -41,6 +41,7 @@ sem = 'sem:cli'
 
 [tool.poetry.extras]
 dev = ["check-manifest"]
+ipynb = ["ipywidgets"]
 
 [build-system]
 requires = ["poetry>=0.12"]
