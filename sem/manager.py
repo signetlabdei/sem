@@ -486,9 +486,15 @@ class CampaignManager(object):
             runs (int): number of runs to gather for each parameter
                 combination.
         """
-        return np.array(self.get_space(self.db.get_results(), {},
-                                       parameter_space, runs,
-                                       result_parsing_function))
+
+        data = self.get_space(
+            self.db.get_results(), {},
+            collections.OrderedDict([(k, v) for k, v in
+                                     parameter_space.items()]),
+            result_parsing_function, runs, extract_complete_results)
+
+        data, max_runs = self.fill_with_nan(data)
+        return np.array(data)
 
     def save_to_mat_file(self, parameter_space,
                          result_parsing_function,
@@ -607,20 +613,46 @@ class CampaignManager(object):
         clean_parameter_space = collections.OrderedDict(
             [(k, v) for k, v in parameter_space.items()])
 
-        clean_parameter_space['runs'] = range(runs)
-
-        if isinstance(output_labels, list):
-            clean_parameter_space['metrics'] = output_labels
-
         data = self.get_space(
             self.db.get_results(), {},
             collections.OrderedDict([(k, v) for k, v in
                                      parameter_space.items()]),
-            runs, result_parsing_function)
+            result_parsing_function, runs, extract_complete_results)
+
+        data, max_runs = self.fill_with_nan(data)
+
+        clean_parameter_space['runs'] = range(max_runs)
+
+        if isinstance(output_labels, list):
+            clean_parameter_space['metrics'] = output_labels
+
         xr_array = xr.DataArray(data, coords=clean_parameter_space,
                                 dims=list(clean_parameter_space.keys()))
 
         return xr_array
+
+    def fill_with_nan(self, data):
+        # Find maximum value of runs in the output space
+        def find_max_runs(data):
+            if isinstance(data, list) and not isinstance(data[0], list):
+                return len(data)
+            sub_maximums = []
+            for d in data:
+                sub_maximums += [find_max_runs(d)]
+            return max(sub_maximums)
+
+        max_runs = find_max_runs(data)
+
+        def fill_max_runs(data, max_runs):
+            if isinstance(data, list) and not isinstance(data[0], list):
+                return data + [float('nan')
+                               for _ in range(max_runs - len(data))]
+            new_structure = []
+            for d in data:
+                new_structure += [fill_max_runs(d, max_runs)]
+            return new_structure
+
+        return [fill_max_runs(data, max_runs), max_runs]
 
     def files_in_dictionary(result):
         """
@@ -677,6 +709,8 @@ class CampaignManager(object):
             parsed = []
             for r in results[:runs]:
 
+            sliced_results = results[:runs] if runs else results
+            for r in sliced_results:
                 # Make results complete, by reading the output from file
                 # TODO Extract this into a function
                 r['output'] = {}

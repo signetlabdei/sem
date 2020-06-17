@@ -81,7 +81,7 @@ class ConditionalRunner(SimulationRunner):
                     param_list_with_check[idx][1] = self.stopping_function(item[0])
 
             # print("Converged: %s" % sum(list(zip(*param_list_with_check))[1]))
-            progress.n = sum(list(zip(*param_list_with_check))[1])
+            progress.n = sum(list(zip(*param_list_with_check))[1]) - 1
             progress.update()
 
             if all(list(zip(*param_list_with_check))[1]):
@@ -98,8 +98,6 @@ class ConditionalRunner(SimulationRunner):
                 for p in new_simulations:
                     q.put(p, block=True)
 
-        print("Out of the main thread")
-        progress.n = len(param_list_with_check)
         progress.close()
 
         # This closes everything
