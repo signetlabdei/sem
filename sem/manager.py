@@ -430,6 +430,8 @@ class CampaignManager(object):
         if isinstance(param_list, dict):
             param_list = list_param_combinations(param_list)
 
+        from .parallelrunner import MAX_PARALLEL_PROCESSES as MAX_PARALLEL_PROCESSES
+
         # XXX If we are not using all processes in parallel, this becomes
         # inefficient very quickly
         # In this case, we need to run simulations in batches
@@ -442,7 +444,6 @@ class CampaignManager(object):
             while True:
                 # Identify the subset of parameter combinations that don't pass
                 # the check
-                print(len(unique_param_list))
                 need_to_repeat = []
                 for p in unique_param_list:
                     if not condition_checking_function(self, p):
@@ -450,10 +451,16 @@ class CampaignManager(object):
                 if len(need_to_repeat) == 0:
                     break
                 else:
-                    new_simulations_with_rngrun = copy.deepcopy(need_to_repeat)
-                    for s in new_simulations_with_rngrun:
+                    new_simulations = copy.deepcopy(need_to_repeat)
+                    if (MAX_PARALLEL_PROCESSES is not None):
+                        while (len(new_simulations) < MAX_PARALLEL_PROCESSES):
+                            for s in copy.deepcopy(need_to_repeat):
+                                new_simulations += [s]
+                    # Assign an RngRun value to all the simulations we need to
+                    # run.
+                    for s in new_simulations:
                         s['RngRun'] = next(next_runs)
-                    self.run_simulations(new_simulations_with_rngrun)
+                    self.run_simulations(new_simulations)
 
         # Otherwise, we just run all required runs for each combination
         if condition_checking_function is None:

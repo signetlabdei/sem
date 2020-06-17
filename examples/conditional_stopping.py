@@ -9,6 +9,7 @@ import matplotlib
 # matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
+sem.parallelrunner.MAX_PARALLEL_PROCESSES = 10
 
 #######################
 # Create the campaign #
@@ -56,12 +57,15 @@ def is_enough(campaign, params):
     avg = np.mean(throughput_values)
     std = np.std(throughput_values)
     ci = 1.96 * std / np.sqrt(len(throughput_values))
+    maximum_ci = 0.1
+    if ci > maximum_ci:
+        print(ci)
     # print ("Current ci: %s" % ci)
     # print ("We had %s samples" % len(throughput_values))
     # print ("ci < 0.3? %s" % (ci < 0.3))
-    return (ci < 0.3)
+    return (ci < maximum_ci)
 
 
 campaign.run_missing_simulations(params, condition_checking_function=is_enough)
 
-results = campaign.get_results_as_xarray(params, get_average_throughput, 'throughput', 10)
+# results = campaign.get_results_as_xarray(params, get_average_throughput, 'throughput', 10)
