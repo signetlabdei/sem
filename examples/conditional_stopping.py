@@ -22,10 +22,6 @@ campaign = sem.CampaignManager.new(ns_path, script, campaign_dir,
 
 print(campaign)  # This prints out the campaign settings
 
-###################
-# Run simulations #
-###################
-
 # These are the available parameters
 # We specify each parameter as an array containing the desired values
 params = {
@@ -37,7 +33,6 @@ params = {
     'channelWidth': ['20'],
     'simulationTime': [4],
 }
-
 
 def get_average_throughput(result):
     stdout = result['output']['stdout']
@@ -68,8 +63,12 @@ def is_enough(campaign, params):
     return (ci < maximum_ci)
 
 
+# Run the simulations
+# We don't specify the number of repetitions for each combination because SEM
+# will figure it out for us.
 campaign.run_missing_simulations(params, condition_checking_function=is_enough)
 
+# Plot the results
 results = campaign.get_results_as_xarray(params,
                                          get_average_throughput,
                                          'throughput')
