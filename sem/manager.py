@@ -473,7 +473,8 @@ class CampaignManager(object):
 
     def get_results_as_numpy_array(self, parameter_space,
                                    result_parsing_function, runs=None,
-                                   extract_complete_results=True):
+                                   extract_complete_results=True,
+                                   aggregation_function=None):
         """
         Return the results relative to the desired parameter space in the form
         of a numpy array.
@@ -492,7 +493,7 @@ class CampaignManager(object):
             self.db.get_results(), {},
             collections.OrderedDict([(k, v) for k, v in
                                      parameter_space.items()]),
-            result_parsing_function, runs, extract_complete_results)
+            result_parsing_function, runs, extract_complete_results, aggregation_function)
 
         data, max_runs = self.fill_with_nan(data)
         return np.array(data)
@@ -596,7 +597,8 @@ class CampaignManager(object):
     def get_results_as_xarray(self, parameter_space,
                               result_parsing_function,
                               output_labels, runs=None,
-                              extract_complete_results=True):
+                              extract_complete_results=True,
+                              aggregation_function=None):
         """
         Return the results relative to the desired parameter space in the form
         of an xarray data structure.
@@ -619,11 +621,15 @@ class CampaignManager(object):
             self.db.get_results(), {},
             collections.OrderedDict([(k, v) for k, v in
                                      parameter_space.items()]),
-            result_parsing_function, runs, extract_complete_results)
+            result_parsing_function, runs, extract_complete_results,
+            aggregation_function)
 
         data, max_runs = self.fill_with_nan(data)
 
-        clean_parameter_space['runs'] = range(max_runs)
+        # Only create a runs dimension if we are not aggregating different runs
+        # already
+        if aggregation_function is None:
+            clean_parameter_space['runs'] = range(max_runs)
 
         if isinstance(output_labels, list):
             clean_parameter_space['metrics'] = output_labels
@@ -664,8 +670,10 @@ class CampaignManager(object):
         return result['output']
 
     def get_space(self, current_result_list, current_query, param_space,
-                  result_parsing_function, runs=None,
-                  extract_complete_results=True):
+                  result_parsing_function,
+                  runs=None,
+                  extract_complete_results=True,
+                  aggregation_function=None):
         """
         Convert a parameter space specification to a nested array structure
         representing the space. In other words, if the parameter space is::
@@ -726,7 +734,10 @@ class CampaignManager(object):
                 del r
             del results
 
-            return parsed
+            if aggregation_function is not None:
+                return aggregation_function(parsed)
+            else:
+                return parsed
 
         space = []
         [key, value] = list(param_space.items())[0]
@@ -744,7 +755,8 @@ class CampaignManager(object):
             space.append(self.get_space(temp_result_list, next_query,
                                         next_param_space,
                                         result_parsing_function, runs,
-                                        extract_complete_results))
+                                        extract_complete_results,
+                                        aggregation_function))
         return space
 
     def satisfies_query(self, result, query):
