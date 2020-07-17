@@ -631,8 +631,15 @@ class CampaignManager(object):
         if aggregation_function is None:
             clean_parameter_space['runs'] = range(max_runs)
 
+        if (not isinstance(output_labels, list) and
+            not isinstance(output_labels, np.ndarray)):
+            output_labels = [output_labels]
+
         if isinstance(output_labels, list):
             clean_parameter_space['metrics'] = output_labels
+
+        if isinstance(output_labels, np.ndarray):
+            clean_parameter_space['metrics'] = output_labels.tolist()
 
         xr_array = xr.DataArray(data, coords=clean_parameter_space,
                                 dims=list(clean_parameter_space.keys()))
@@ -642,7 +649,7 @@ class CampaignManager(object):
     def fill_with_nan(self, data):
         # Find maximum value of runs in the output space
         def find_max_runs(data):
-            if isinstance(data, list) and not isinstance(data[0], list):
+            if isinstance(data, list) and not isinstance(data[0][0], list):
                 return len(data)
             sub_maximums = []
             for d in data:
@@ -652,7 +659,7 @@ class CampaignManager(object):
         max_runs = find_max_runs(data)
 
         def fill_max_runs(data, max_runs):
-            if isinstance(data, list) and not isinstance(data[0], list):
+            if isinstance(data, list) and not isinstance(data[0][0], list):
                 return data + [float('nan')
                                for _ in range(max_runs - len(data))]
             new_structure = []
