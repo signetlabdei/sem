@@ -18,7 +18,7 @@ class SimulationRunner(object):
     # Initialization #
     ##################
 
-    def __init__(self, path, script, optimized=True, skip_configuration=False):
+    def __init__(self, path, script, optimized=True, skip_configuration=False, max_parallel_processes=None):
         """
         Initialization function.
 
@@ -36,6 +36,7 @@ class SimulationRunner(object):
         self.path = path
         self.script = script
         self.optimized = optimized
+        self.max_parallel_processes = max_parallel_processes
 
         if optimized:
             # For old ns-3 installations, the library is in build, while for

@@ -7,8 +7,6 @@ from copy import deepcopy
 import itertools
 from tqdm import tqdm
 
-MAX_PARALLEL_PROCESSES = None  # If None, the number of CPUs is used
-
 
 class ConditionalRunner(SimulationRunner):
     # TODO Update documentation
@@ -61,7 +59,7 @@ class ConditionalRunner(SimulationRunner):
         q = Queue(1)
         outq = Queue()
         iolock = Lock()
-        pool = Pool(MAX_PARALLEL_PROCESSES, initializer=process,
+        pool = Pool(self.max_parallel_processes, initializer=process,
                     initargs=(q, iolock, outq))
 
         progress = tqdm(total=len(param_list_with_check))

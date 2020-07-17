@@ -5,8 +5,6 @@ import numpy as np
 from copy import deepcopy
 import itertools
 
-MAX_PARALLEL_PROCESSES = None  # If None, the number of CPUs is used
-
 
 def have_same_combination(dict1, dict2):
     return len(set({i:v for i, v in dict1.items() if i!='RngRun'}.items()) ^
@@ -81,7 +79,7 @@ class LptRunner(SimulationRunner):
         q = Queue(1)
         outq = Queue()
         iolock = Lock()
-        pool = Pool(MAX_PARALLEL_PROCESSES, initializer=process,
+        pool = Pool(self.max_parallel_processes, initializer=process,
                     initargs=(q, iolock, outq, times))
 
         param_list = deepcopy(unique_combos)
