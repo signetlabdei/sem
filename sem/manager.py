@@ -119,7 +119,8 @@ class CampaignManager(object):
                                            runner_type=runner_type,
                                            optimized=optimized,
                                            check_repo=check_repo,
-                                           skip_configuration=skip_configuration)
+                                           skip_configuration=skip_configuration,
+                                           max_parallel_processes=max_parallel_processes)
 
             if manager.db.get_script() == script:
                 return manager
