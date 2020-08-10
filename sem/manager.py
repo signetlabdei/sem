@@ -630,12 +630,15 @@ class CampaignManager(object):
             result_parsing_function, runs, extract_complete_results,
             aggregation_function)
 
-        data, max_runs = self.fill_with_nan(data)
+        if runs is None:
+            data, max_runs = self.fill_with_nan(data)
+        else:
+            max_runs = runs
 
         # Only create a runs dimension if we are not aggregating different runs
         # already
         if aggregation_function is None:
-            clean_parameter_space['runs'] = range(max_runs)
+            clean_parameter_space['runs'] = list(range(max_runs))
 
         if (not isinstance(output_labels, list) and
             not isinstance(output_labels, np.ndarray)):
