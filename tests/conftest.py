@@ -134,7 +134,7 @@ def get_and_compile_ns_3():
     if not os.path.exists(ns_3_test_compiled_debug):
         shutil.copytree(ns_3_test, ns_3_test_compiled_debug, symlinks=True)
 
-    if subprocess.call(['python', 'waf', 'configure', '--disable-gtk',
+    if subprocess.call(['python3', 'waf', 'configure', '--disable-gtk',
                         '--disable-python', '--build-profile=optimized',
                         '--out=build/optimized', 'build'],
                        cwd=ns_3_test_compiled,
@@ -142,7 +142,7 @@ def get_and_compile_ns_3():
                        stderr=subprocess.STDOUT) > 0:
         raise Exception("Test build failed.")
 
-    if subprocess.call(['python', 'waf', 'configure', '--disable-gtk',
+    if subprocess.call(['python3', 'waf', 'configure', '--disable-gtk',
                         '--disable-python', '--build-profile=debug',
                         '--out=build', 'build'],
                        cwd=ns_3_test_compiled_debug,
@@ -150,7 +150,7 @@ def get_and_compile_ns_3():
                        stderr=subprocess.STDOUT) > 0:
         raise Exception("Test build failed.")
 
-    if subprocess.call(['python', 'waf', 'configure', '--disable-gtk',
+    if subprocess.call(['python3', 'waf', 'configure', '--disable-gtk',
                         '--disable-python', '--build-profile=optimized',
                         '--out=build/optimized', 'build'],
                        cwd=ns_3_examples,
