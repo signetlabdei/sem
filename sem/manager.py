@@ -746,7 +746,11 @@ class CampaignManager(object):
                             r['output'][name] = file_contents.read()
                     else:
                         r['output'][name] = filepath
-                parsed.append(result_parsing_function(r))
+                parsed_result = result_parsing_function(r)
+                if isinstance(parsed_result, list):
+                    parsed.append(parsed_result)
+                else:
+                    parsed.append([parsed_result])
                 del r
             del results
 

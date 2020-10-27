@@ -405,8 +405,15 @@ class DatabaseManager(object):
             r['output'] = {}
             available_files = self.get_result_files(r['meta']['id'])
             for name, filepath in available_files.items():
-                with open(filepath, 'r') as file_contents:
-                    r['output'][name] = file_contents.read()
+                try:
+                    with open(filepath,
+                              'r',
+                              encoding='utf-8',
+                              errors='strict') as file_contents:
+                        r['output'][name] = file_contents.read()
+                except UnicodeDecodeError:
+                    # Do not read the file
+                    continue
 
         return results
 
