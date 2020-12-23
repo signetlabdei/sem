@@ -19,6 +19,7 @@ from .parallelrunner import ParallelRunner
 from .conditionalrunner import ConditionalRunner
 from .runner import SimulationRunner
 from .utils import DRMAA_AVAILABLE, list_param_combinations
+import pandas as pd
 
 if DRMAA_AVAILABLE:
     from .gridrunner import GridRunner
@@ -237,6 +238,29 @@ class CampaignManager(object):
                                 skip_configuration=skip_configuration,
                                 max_parallel_processes=max_parallel_processes)
 
+    def check_and_fill_parameters(self, param_list, needs_rngrun):
+        # Check all parameter combinations fully specify the desired simulation
+        desired_params = list(self.db.get_params().keys())
+        for p in param_list:
+            # Besides the parameters that were actually passed, we add the ones
+            # that are always available in every script
+            if isinstance(p, list):
+                parameter = p[0]
+            else:
+                parameter = p
+            passed = list(parameter.keys())
+            available = ['RngRun'] + desired_params if needs_rngrun else desired_params
+            if set(passed) != set(available):
+                not_supported_parameters = set(passed) - set(available)
+                if not_supported_parameters:
+                    raise ValueError("The following parameters are "
+                                     "not supported by the script: %s\n" %
+                                     not_supported_parameters)
+            # Automatically fill remaining parameters with defaults
+            additional_required_parameters = set(available) - set(passed)
+            for additional_parameter in additional_required_parameters:
+                p[additional_parameter] = self.db.get_params()[additional_parameter]
+
     ######################
     # Simulation running #
     ######################
@@ -269,32 +293,7 @@ class CampaignManager(object):
         if param_list == []:
             return
 
-        # Check all parameter combinations fully specify the desired simulation
-        desired_params = self.db.get_params()
-        for p in param_list:
-            # Besides the parameters that were actually passed, we add the ones
-            # that are always available in every script
-            if isinstance(p, list):
-                parameter = p[0]
-            else:
-                parameter = p
-            passed = list(parameter.keys())
-            available = ['RngRun'] + desired_params
-            if set(passed) != set(available):
-                additional_required_parameters = set(available) - set(passed)
-                not_supported_parameters = set(passed) - set(available)
-                errormsg = ""
-                if additional_required_parameters:
-                    errormsg += ("Add the following parameters "
-                                 "to your specification: %s\n" %
-                                 additional_required_parameters)
-                if not_supported_parameters:
-                    errormsg += ("The following parameters are "
-                                 "not supported by the script: %s\n" %
-                                 not_supported_parameters)
-                raise ValueError("Specified parameter combination does not "
-                                 "match the supported parameters!\n" +
-                                 errormsg)
+        self.check_and_fill_parameters(param_list, needs_rngrun=True)
 
         # Check that the current repo commit corresponds to the one specified
         # in the campaign
@@ -367,6 +366,12 @@ class CampaignManager(object):
         """
 
         params_to_simulate = []
+
+        # Fill up a possibly impartial parameter definition with defaults
+        if runs is None:
+            self.check_and_fill_parameters (param_list, needs_rngrun=True)
+        else:
+            self.check_and_fill_parameters (param_list, needs_rngrun=False)
 
         if runs is not None:  # Get next available runs from the database
             next_runs = self.db.get_next_rngruns()
@@ -504,6 +509,76 @@ class CampaignManager(object):
         data, max_runs = self.fill_with_nan(data)
         return np.array(data)
 
+
+    def get_results_as_dataframe(self, result_parsing_function, columns,
+                                 params=None,
+                                 results_on_same_row=True,
+                                 function_yields_multiple_results=False, runs=None,
+                                 drop_columns=False):
+
+        if runs is not None:
+            results_list = []
+            param_values_to_skip = []
+            all_results = self.db.get_results()
+            for r in all_results:
+                params_no_rngrun = {k:v for k, v in r['params'].items() if k != "RngRun"}
+                param_values = list(params_no_rngrun.values())
+                # Check if we should skip this item
+                if any([values_to_skip == param_values for values_to_skip in param_values_to_skip]):
+                    continue
+                # If not, add the values in the list of values to skip
+                param_values_to_skip += [param_values]
+                # Query the database for all results with the current parameter
+                # combination, and only put the first runs results in the
+                # results_list
+                results_list += self.db.get_complete_results(params_no_rngrun)[:runs]
+        else:
+            results_list = self.db.get_complete_results()
+
+        data = []
+        for result in results_list:
+            if results_on_same_row:
+                if function_yields_multiple_results:
+                    for r in result_parsing_function(result):
+                        param_values = list(copy.deepcopy(result['params']).values())
+                        param_values += r
+                        data += [param_values]
+                else:
+                    param_values = list(copy.deepcopy(result['params']).values())
+                    param_values += result_parsing_function(result)
+                    data += [param_values]
+            else:
+                if function_yields_multiple_results:
+                    for r in result_parsing_function(result):
+                        param_values = list(copy.deepcopy(result['params']).values())
+                        param_values += [r]
+                        data += [param_values]
+                else:
+                    for output_idx, output in enumerate(result_parsing_function(result)):
+                        param_values = list(copy.deepcopy(result['params']).values())
+                        param_values += [columns[output_idx]]
+                        param_values += [output]
+                        data += [param_values]
+
+        if results_on_same_row:
+            df = pd.DataFrame(data,
+                              columns=(list(self.db.get_results()[0]['params'].keys())
+                                       + columns))
+        else:
+            df = pd.DataFrame(data,
+                              columns=(list(self.db.get_results()[0]['params'].keys())
+                                       + ['output', 'value']))
+
+
+
+        if drop_columns:
+            nunique = df.apply(pd.Series.nunique)
+            cols_to_drop = nunique[nunique == 1].index
+            df = df.drop(cols_to_drop, axis=1)
+            return df
+        else:
+            return df
+
     def save_to_mat_file(self, parameter_space,
                          result_parsing_function,
                          filename, runs):
@@ -621,12 +696,16 @@ class CampaignManager(object):
         """
         # Create a parameter space only containing the variable parameters
         clean_parameter_space = collections.OrderedDict(
-            [(k, v) for k, v in parameter_space.items()])
+            [(k, v) for k, v in parameter_space.items() if len(v) > 1])
+
+        if (len(clean_parameter_space) > 30):
+            raise ValueError ("Parameter space cannot have more than "
+                              "30 variable parameters due to numpy"
+                              "restrictions")
 
         data = self.get_space(
             self.db.get_results(), {},
-            collections.OrderedDict([(k, v) for k, v in
-                                     parameter_space.items()]),
+            clean_parameter_space,
             result_parsing_function, runs, extract_complete_results,
             aggregation_function)
 
@@ -746,11 +825,7 @@ class CampaignManager(object):
                             r['output'][name] = file_contents.read()
                     else:
                         r['output'][name] = filepath
-                parsed_result = result_parsing_function(r)
-                if isinstance(parsed_result, list):
-                    parsed.append(parsed_result)
-                else:
-                    parsed.append([parsed_result])
+                parsed.append(result_parsing_function(r))
                 del r
             del results
 

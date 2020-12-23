@@ -19,7 +19,7 @@ xarray = "*"
 numpy = "*"
 click = "*"
 salib = "^1.3.8"
-ipywidgets = { version = "^7.5.1", optional = true }
+ipywidgets = "^7.5.1"
 
 [tool.poetry.dev-dependencies]
 sphinx = "*"
@@ -34,7 +34,8 @@ pygments = "*"
 pytest-xdist = "*"
 importmagic = "*"
 flake8 = "*"
-check-manifest = { version = "*", optional = true }
+check-manifest = "*"
+ptvsd = "^4.3.2"
 
 [tool.poetry.scripts]
 sem = 'sem:cli'
@@ -44,5 +45,5 @@ dev = ["check-manifest"]
 ipynb = ["ipywidgets"]
 
 [build-system]
-requires = ["poetry>=0.12"]
+requires = ["setuptools", "poetry>=0.12"]
 build-backend = "poetry.masonry.api"

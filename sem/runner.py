@@ -206,8 +206,8 @@ class SimulationRunner(object):
                                          cwd=self.path).decode('utf-8')
 
         # Isolate the list of parameters
-        options = re.findall('.*Program\s(?:Options|Arguments):'
-                             '(.*)General\sArguments.*',
+        options = re.findall(r'.*Program\s(?:Options|Arguments):'
+                             r'(.*)General\sArguments.*',
                              result, re.DOTALL)
 
         global_options = subprocess.check_output([self.script_executable,
@@ -216,15 +216,41 @@ class SimulationRunner(object):
                                                  cwd=self.path).decode('utf-8')
 
         # Get the single parameter names
-        args = []
+        params = {}
         if len(options):
-            args += re.findall('.*--(.*?)[?::|=].*', options[0], re.MULTILINE)
+            parsed = {}
+            for line in options[0].splitlines():
+                print(line)
+                key = re.findall(r'.*--(.*?)[?::|=].*', line)
+                value = re.findall(r'.*\[(.*?)]', line)
+                if key:
+                    if not value:
+                        value = None
+                    else:
+                        value = value[0]
+                    parsed[key[0]] = value
+            for k, v in parsed.items():
+                if v is None:
+                    params[k] = None
+                elif str(v).lower() == 'true':
+                    params[k] = True
+                elif str(v).lower() == 'false':
+                    params[k] = False
+                else:
+                    try:
+                        params[k] = float(v)
+                    except ValueError:
+                        # Keep it as a string
+                        if str(v) == "" or any(not c.isalnum() for c in v):
+                            params[k] = None
+                        else:
+                            params[k] = str(v)
         if len(global_options):
-            args += [k for k in re.findall('.*--(.*?)[?::|=].*',
-                                           global_options, re.MULTILINE) if k
+            params.update({k:v for k, v in re.findall(r'.*--(.*?)[?::|=].*\[(.*?)\]',
+                                                      global_options, re.MULTILINE) if k
                      not in ['RngRun', 'RngSeed', 'SchedulerType',
-                             'SimulatorImplementationType', 'ChecksumEnabled']]
-        return sorted(args)  # Return a sorted list
+                             'SimulatorImplementationType', 'ChecksumEnabled']})
+        return params  # Return a sorted list
 
     ######################
     # Simulation running #
