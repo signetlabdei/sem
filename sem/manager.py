@@ -230,7 +230,7 @@ class CampaignManager(object):
         if runner_type == 'Auto' and DRMAA_AVAILABLE:
             runner_type = 'GridRunner'
         elif runner_type == 'Auto':
-            runner_type = 'LptRunner'
+            runner_type = 'ParallelRunner'
 
         return locals().get(runner_type,
                             globals().get(runner_type))(
