@@ -225,7 +225,7 @@ class SimulationRunner(object):
     # Simulation running #
     ######################
 
-    def run_simulations(self, parameter_list, data_folder):
+    def run_simulations(self, parameter_list, data_folder, environment={}):
         """
         Run several simulations using a certain combination of parameters.
 
@@ -247,7 +247,7 @@ class SimulationRunner(object):
 
             command = [self.script_executable] + ['--%s=%s' % (param, value)
                                                   for param, value in
-                                                  parameter.items()]
+                                                  parameter.items() if value != ""]
 
             # Run from dedicated temporary folder
             current_result['meta']['id'] = str(uuid.uuid4())
@@ -257,10 +257,13 @@ class SimulationRunner(object):
             start = time.time()  # Time execution
             stdout_file_path = os.path.join(temp_dir, 'stdout')
             stderr_file_path = os.path.join(temp_dir, 'stderr')
+            # Add the passed environment to self.environment, which contains
+            # the library path.
+            complete_environment = {**self.environment, **environment}
             with open(stdout_file_path, 'w') as stdout_file, open(
                     stderr_file_path, 'w') as stderr_file:
                 return_code = subprocess.call(command, cwd=temp_dir,
-                                              env=self.environment,
+                                              env=complete_environment,
                                               stdout=stdout_file,
                                               stderr=stderr_file)
             end = time.time()  # Time execution

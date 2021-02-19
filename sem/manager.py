@@ -712,3 +712,23 @@ class CampaignManager(object):
             if current_commit != campaign_commit:
                 raise Exception("ns-3 repository is on a different commit "
                                 "from the one specified in the campaign")
+
+    def run_and_log(self, param, log_components):
+        """
+        Run a certain parameter combinations in debug mode, with some log
+        components enabled, and return the generated logs.
+
+        Returns the filename of the generated logs.
+        """
+        if isinstance(param, dict):
+            param= list_param_combinations(param)
+
+        # Create a new runner in debug mode to employ in this single-shot
+        # simulation
+        runner = CampaignManager.create_runner(self.runner.path, self.runner.script, optimized=False, runner_type="SimulationRunner")
+
+        # We'll run this in a temporary folder
+        environment = {"NS_LOG": ":".join(log_components) + "=level_all|prefix_all"}
+        result = next(runner.run_simulations(param, '/tmp', environment=environment))
+
+        return '/tmp/' + result['meta']['id'] + '/stderr'

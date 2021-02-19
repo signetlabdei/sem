@@ -27,7 +27,7 @@ class LptRunner(SimulationRunner):
         self.parameter_runtime_map = {}
 
 
-    def run_simulations(self, parameter_list, data_folder):
+    def run_simulations(self, parameter_list, data_folder, environment={}):
         """
         This function runs multiple simulations in parallel.
 
@@ -67,7 +67,8 @@ class LptRunner(SimulationRunner):
                 # with iolock:
                     # print("processing", next_sim)
                 result = next(SimulationRunner.run_simulations(self, [next_sim],
-                                                               self.data_folder))
+                                                               self.data_folder,
+                                                               environment))
                 times[index] = float(result['meta']['elapsed_time'])
 
                 # with iolock:
