@@ -127,7 +127,7 @@ class SimulationRunner(object):
 
         # Only configure if necessary
         if not skip_configuration:
-            configuration_command = ['python', 'waf', 'configure',
+            configuration_command = ['python3', 'waf', 'configure',
                                      '--enable-examples', '--disable-gtk',
                                      '--disable-python']
 
@@ -140,7 +140,7 @@ class SimulationRunner(object):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         # Build ns-3
-        build_process = subprocess.Popen(['python', 'waf', 'build'],
+        build_process = subprocess.Popen(['python3', 'waf', 'build'],
                                          cwd=self.path,
                                          stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE)
@@ -271,7 +271,7 @@ class SimulationRunner(object):
             if return_code > 0:
                 complete_command = [self.script]
                 complete_command.extend(command[1:])
-                complete_command = "python waf --run \"%s\"" % (
+                complete_command = "python3 waf --run \"%s\"" % (
                     ' '.join(complete_command))
 
                 with open(stdout_file_path, 'r') as stdout_file, open(
