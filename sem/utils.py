@@ -55,11 +55,11 @@ def get_command_from_result(script, result, debug=False):
             template.
     """
     if not debug:
-        command = "python waf --run \"" + script + " " + " ".join(
+        command = "python3 waf --run \"" + script + " " + " ".join(
             ['--%s=%s' % (param, value) for param, value in
              result['params'].items()]) + "\""
     else:
-        command = "python waf --run " + script + " --command-template=\"" +\
+        command = "python3 waf --run " + script + " --command-template=\"" +\
             "gdb --args %s " + " ".join(['--%s=%s' % (param, value) for
                                          param, value in
                                          result['params'].items()]) + "\""

@@ -122,12 +122,12 @@ class GridRunner(SimulationRunner):
 
         clean_before = False
         if clean_before:
-            clean_command = 'python waf distclean'
+            clean_command = 'python3 waf distclean'
             self.run_program((clean_command), self.path,
                              native_spec=BUILD_GRID_PARAMS)
 
         if not skip_configuration:
-            configuration_command = 'python waf configure --enable-examples ' +\
+            configuration_command = 'python3 waf configure --enable-examples ' +\
                 '--disable-gtk --disable-python '
             if optimized:
                 configuration_command += '--build-profile=optimized ' +\
@@ -135,7 +135,7 @@ class GridRunner(SimulationRunner):
             self.run_program((configuration_command), self.path,
                              native_spec=BUILD_GRID_PARAMS)
 
-        self.run_program(('python waf build'), self.path,
+        self.run_program(('python3 waf build'), self.path,
                          native_spec=BUILD_GRID_PARAMS)
 
     def get_available_parameters(self):
