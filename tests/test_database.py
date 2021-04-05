@@ -48,7 +48,7 @@ def test_db_loading(config, db, tmpdir):
     assert db.get_config() == config
 
     # Modify the campaign database, removing an entry
-    db.db.purge_table('config')
+    db.db.drop_table('config')
     db.db.storage.flush()
 
     # Wrong database format is currently detected

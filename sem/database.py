@@ -417,7 +417,7 @@ class DatabaseManager(object):
         This also removes all output files, and cannot be undone.
         """
         # Clean results table
-        self.db.purge_table('results')
+        self.db.drop_table('results')
         self.write_to_disk()
 
         # Get rid of contents of data dir
