@@ -53,7 +53,7 @@ def test_script_without_args(ns_3_compiled):
 
 
 def test_empty_param_list(ns_3_compiled, config, parameter_combination):
-    runner = SimulationRunner(ns_3_compiled, 'error-throwing-example')
-    data_dir = os.path.join(config['campaign_dir'], 'data')
     with pytest.raises(Exception):
+        runner = SimulationRunner(ns_3_compiled, 'error-throwing-example')
+        data_dir = os.path.join(config['campaign_dir'], 'data')
         list(runner.run_simulations([parameter_combination], data_dir))
