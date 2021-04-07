@@ -67,13 +67,6 @@ def test_load_campaign(manager, config, parameter_combination):
         loaded_manager.run_simulations([parameter_combination])
 
 
-def test_wrong_parameter_combination(manager, parameter_combination):
-    # Try running a parameter combination for which a parameter is missing
-    del parameter_combination['time']
-    with pytest.raises(ValueError):
-        manager.run_simulations([parameter_combination])
-
-
 def test_check_repo_ok(manager, config, ns_3_compiled):
     # This should execute no problem
     manager.check_repo_ok()
@@ -131,7 +124,7 @@ def test_get_results_as_numpy_array(tmpdir, manager,
 
 def test_save_to_mat_file(tmpdir, manager, result, parameter_combination):
     mat_file = str(tmpdir.join('results.mat'))
-    manager.run_missing_simulations(parameter_combination, 1)
+    manager.run_missing_simulations(parameter_combination)
     manager.save_to_mat_file({'time': 'false', 'dict': '/usr/share/dict/web2'},
                              sem.utils.constant_array_parser,
                              mat_file, 1)

@@ -61,8 +61,8 @@ def ns_3_compiled_debug(tmpdir):
 def config(tmpdir, ns_3_compiled):
     return {
         'script': 'hash-example',
-        'commit': 'e060e93f468d32a5e0dab04cf780d30d4f5bd618',
-        'params': ['dict', 'time'],
+        'commit': Repo(ns_3_compiled).head.commit.hexsha,
+        'params': {'dict': None, 'time': False},
         'campaign_dir': str(tmpdir.join('test_campaign')),
     }
 
@@ -164,7 +164,7 @@ def get_and_compile_ns_3():
 #########################################################################
 
 
-@pytest.yield_fixture(autouse=True, scope='function')
+@pytest.fixture(autouse=True, scope='function')
 def setup_and_cleanup(tmpdir):
     yield
     shutil.rmtree(str(tmpdir))
