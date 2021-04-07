@@ -15,6 +15,7 @@ from tqdm import tqdm
 from .database import DatabaseManager
 from .lptrunner import LptRunner
 from .parallelrunner import ParallelRunner
+from .conditionalrunner import ConditionalRunner
 from .runner import SimulationRunner
 from .utils import DRMAA_AVAILABLE, list_param_combinations
 
@@ -316,6 +317,9 @@ class CampaignManager(object):
         else:
             result_generator = results
 
+        self.run_and_save_results(result_generator)
+
+    def run_and_save_results(self, result_generator, batch_results=True):
         # Insert result object in db. Using the generator here ensures we
         # save results as they are finalized by the SimulationRunner, and
         # that they are kept even if execution is terminated abruptly by
@@ -328,7 +332,11 @@ class CampaignManager(object):
             results_batch += [result]
 
             # Save results to disk once every 60 seconds
-            if ((datetime.now() - last_save_time).total_seconds() > 60):
+            if not batch_results:
+                self.db.insert_results(results_batch)
+                results_batch = []
+            elif (batch_results and
+                  (datetime.now() - last_save_time).total_seconds() > 60):
                 self.db.insert_results(results_batch)
                 self.db.write_to_disk()
                 results_batch = []
@@ -427,13 +435,40 @@ class CampaignManager(object):
         if isinstance(param_list, dict):
             param_list = list_param_combinations(param_list)
 
-        # If we are passed a list already, just run the missing simulations
-        if isinstance(self.runner, LptRunner):
-            self.run_simulations(
-                self.get_missing_simulations(param_list, runs, with_time_estimate=True))
-        else:
-            self.run_simulations(
-                self.get_missing_simulations(param_list, runs))
+        # In this case, we need to run simulations in batches
+        if runs is None and condition_checking_function:
+            next_runs = self.db.get_next_rngruns()
+            # Create a ConditionalRunner
+            cr = ConditionalRunner(self.runner.path,
+                                   self.runner.script,
+                                   self.runner.optimized,
+                                   max_parallel_processes=self.runner.max_parallel_processes)
+            # Set up the runner's stopping condition function
+            cr.stopping_function = lambda x: condition_checking_function(self, x)
+            # Set up the runner's iterator for next runs
+            cr.next_runs = next_runs
+
+            # Fill up a possibly impartial parameter definition with defaults
+            self.check_and_fill_parameters (param_list, needs_rngrun=False)
+
+            self.run_and_save_results(cr.run_simulations(param_list,
+                                                         self.db.get_data_dir(),
+                                                         stop_on_errors=stop_on_errors),
+                                      batch_results=False)
+
+        # Otherwise, we just run all required runs for each combination
+        if condition_checking_function is None:
+            # If we are passed a list already, just run the missing simulations
+            if isinstance(self.runner, LptRunner):
+                self.run_simulations(
+                    self.get_missing_simulations(param_list,
+                                                 runs,
+                                                 with_time_estimate=True),
+                    stop_on_errors=stop_on_errors)
+            else:
+                self.run_simulations(
+                    self.get_missing_simulations(param_list, runs),
+                    stop_on_errors=stop_on_errors)
 
     #####################
     # Result management #
