@@ -4,25 +4,39 @@
 
 # A Simulation Execution Manager for ns-3 #
 
-[![Build Status](https://travis-ci.org/signetlabdei/sem.svg?branch=master)](https://travis-ci.org/signetlabdei/sem)
+[![Build Status](https://travis-ci.com/signetlabdei/sem.svg)](https://travis-ci.org/signetlabdei/sem)
 [![codecov](https://codecov.io/gh/signetlabdei/sem/branch/master/graph/badge.svg)](https://codecov.io/gh/signetlabdei/sem)
 [![Join the chat at https://gitter.im/ns-3-sem/Lobby](https://badges.gitter.im/ns-3-sem/Lobby.svg)](https://gitter.im/ns-3-sem/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/signetlabdei/sem/newrelease?urlpath=lab)
 
 This is a Python library to perform multiple ns-3 script executions, manage the
-results and collect them in processing-friendly data structures. For complete
-step-by-step usage and installation instructions, check out [readthedocs][rtd].
+results and collect them in processing-friendly data structures.
 
 <p align="center">
   <img src="res/semdemo.gif">
 </p>
 
+# How does this work? #
+
+For complete step-by-step usage and installation instructions, check out
+[readthedocs][rtd].
+
 # How to cite us #
 
-If you used SEM for your ns-3 analysis, please cite the following paper, both to provide a reference and help others find out about this tool:
+If you used SEM for your ns-3 analysis, please cite the following paper, both to
+provide a reference and help others find out about this tool:
 
-Davide Magrin, Dizhi Zhou, and Michele Zorzi. 2019. A Simulation Execution Manager for ns-3: Encouraging reproducibility and simplifying statistical analysis of ns-3 simulations. In Proceedings of the 22nd International ACM Conference on Modeling, Analysis and Simulation of Wireless and Mobile Systems (MSWIM '19). ACM, New York, NY, USA, 121-125. DOI: https://doi.org/10.1145/3345768.3355942
+Davide Magrin, Dizhi Zhou, and Michele Zorzi. 2019. A Simulation Execution
+Manager for ns-3: Encouraging reproducibility and simplifying statistical
+analysis of ns-3 simulations. In Proceedings of the 22nd International ACM
+Conference on Modeling, Analysis and Simulation of Wireless and Mobile Systems
+(MSWIM '19). ACM, New York, NY, USA, 121-125. DOI:
+https://doi.org/10.1145/3345768.3355942
 
 # Contributing #
+
+This section contains information on how to contribute to the project. If you
+are only interested in using SEM, check out the [documentation][rtd].
 
 If you want to contribute to sem development, first of all you'll need an
 installation that allows you to modify the code, immediately see the results and
@@ -109,23 +123,26 @@ The documentation of the current version of the package is also available on
 The scripts in `examples/` can be directly run:
 
 ```bash
-python examples/wifi_plotting_xarray.py
-python examples/lorawan_parsing_xarray.py
+python examples/wifi_example.py
 ```
 
-## Troubleshooting ##
+## Installing SEM in pip's editable mode ##
 
-In case there are problems with the `pandas` installation (this will happen in
-macOS, for which no binaries are provided), use the following command for
-installation (and see [this pandas
-issue](https://github.com/pandas-dev/pandas/issues/20775) as a reference):
+`pip` currently requires a `setup.py` file to install projects in editable mode.
 
-```bash
-PIP_NO_BUILD_ISOLATION=false pipenv install
+As explained [here](https://github.com/python-poetry/poetry/issues/761), poetry
+actually already generates a `setup.py`. After building the project, you can
+extract the file from the archive using the following command:
+
+``` bash
+tar -xvf dist/*.tar.gz --wildcards --no-anchored '*/setup.py' --strip=1
 ```
+
+After this step, it becomes possible to install SEM in editable mode.
+
 
 ## Authors ##
 
 Davide Magrin
 
-[rtd]: https://simulationexecutionmanager.readthedocs.io
+[rtd]: https://simulationexecutionmanager.rtfd.io
