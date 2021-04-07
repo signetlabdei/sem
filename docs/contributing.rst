@@ -15,7 +15,7 @@ First of all, clone the Github repository:
 
 .. code:: bash
 
-  git clone https://github.com/DvdMgr/sem
+  git clone https://github.com/signetlabdei/sem
 
 This module is developed using pipenv_. In order to manage virtual
 environments and install dependencies, make sure pipenv is installed. Typically,

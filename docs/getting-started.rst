@@ -21,7 +21,7 @@ the results, in as few commands as possible. A script containing many commands
 of this section is available at the sem project github_, under
 `examples/wifi_example.py`.
 
-.. _github: https://github.com/dvdmgr/sem
+.. _github: https://github.com/signetlabdei/sem
 
 Creating and loading a simulation campaign
 ------------------------------------------
@@ -76,10 +76,10 @@ Simulations can be run by specifying a list of parameter combinations.
   ...    'nWifi': 1,
   ...    'distance': 1,
   ...    'simulationTime': 10,
-  ...    'useRts': 'false',
+  ...    'useRts': False,
   ...    'mcs': 7,
   ...    'channelWidth': 20,
-  ...    'useShortGuardInterval': 'false',
+  ...    'useShortGuardInterval': False,
   ...    'RngRun': 0
   ... }
   >>> campaign.run_simulations([param_combination])
@@ -138,10 +138,10 @@ dictionary, ranging the `mcs` parameter from 0 to 7 and turning on and off the
   ...     'nWifi': 1,
   ...     'distance': 1,
   ...     'simulationTime': 10,
-  ...     'useRts': ['false', 'true'],
+  ...     'useRts': [False, True],
   ...     'mcs': list(range(1, 8, 2)),
   ...     'channelWidth': 20,
-  ...     'useShortGuardInterval': ['false', 'true']
+  ...     'useShortGuardInterval': [False, True]
   ... }
   >>> campaign.run_missing_simulations(param_combinations,
   ...                                  runs=2)
@@ -167,10 +167,10 @@ For instance, let's check out the first result::
     'nWifi': 1,
     'distance': 1,
     'simulationTime': 10,
-    'useRts': 'false',
+    'useRts': False,
     'mcs': 7,
     'channelWidth': 20,
-    'useShortGuardInterval': 'false',
+    'useShortGuardInterval': False,
     'RngRun': 1,
     'id': '771e0511-43b9-4e33-aa6a-dc4266be24f1',
     'elapsed_time': 4.270819187164307,
@@ -194,16 +194,10 @@ throughput measured by the simulation. `SEM` will then use the function to
 automatically clean up the results before putting them in an `xarray`
 structure::
 
-  >>> import re  # Regular expressions to perform the parsing
   >>> def get_average_throughput(result):
   ...     # This function takes a result and parses its standard output to extract
   ...     # relevant information
-  ...     available_files = campaign.db.get_result_files(result['meta']['id'])
-  ...     with open(available_files['stdout'], 'r') as stdout:
-  ...         stdout = stdout.read()
-  ...         m = re.match('.*throughput: [-+]?([0-9]*\.?[0-9]+).*', stdout,
-  ...                     re.DOTALL).group(1)
-  ...         return [float(m)]
+  ...     return [float(result['output']['stdout'].split(" ")[-2])]
 
   >>> results = campaign.get_results_as_xarray(param_combinations,
   ...                                          get_average_throughput,
@@ -231,8 +225,8 @@ Finally, we can easily plot the obtained results by appropriately slicing the
   >>> import matplotlib.pyplot as plt
   >>> import numpy as np
   >>> # Iterate over all possible parameter values
-  >>> for useShortGuardInterval in ['false', 'true']:
-  ...   for useRts in ['false', 'true']:
+  >>> for useShortGuardInterval in [False, True]: # doctest: +SKIP
+  ...   for useRts in [False, True]:
   ...       avg = results.sel(useShortGuardInterval=useShortGuardInterval,
   ...                         useRts=useRts).reduce(np.mean, 'runs')
   ...       std = results.sel(useShortGuardInterval=useShortGuardInterval,
@@ -241,8 +235,8 @@ Finally, we can easily plot the obtained results by appropriately slicing the
   ...                    label='SGI %s, RTS %s' % (useShortGuardInterval, useRts))
   ...       xlb = plt.xlabel('MCS')
   ...       ylb = plt.ylabel('Throughput [Mbit/s]')
-  >>> legend = plt.legend(loc='best')
-  >>> plt.savefig('docs/throughput.png')
+  >>> legend = plt.legend(loc='best') # doctest: +SKIP
+  >>> plt.savefig('docs/throughput.png') # doctest: +SKIP
 
 .. figure:: throughput.png
     :width: 100%
