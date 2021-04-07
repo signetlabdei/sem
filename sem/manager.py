@@ -584,7 +584,7 @@ class CampaignManager(object):
             self.db.get_results(), {},
             collections.OrderedDict([(k, v) for k, v in
                                      parameter_space.items()]),
-            runs, result_parsing_function)
+            result_parsing_function, runs)
         xr_array = xr.DataArray(data, coords=clean_parameter_space,
                                 dims=list(clean_parameter_space.keys()))
 

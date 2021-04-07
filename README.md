@@ -61,7 +61,7 @@ command), also getting the `ns-3` installations that are used for running
 examples and tests:
 
 ```bash
-git clone https://github.com/DvdMgr/sem
+git clone https://github.com/signetlabdei/sem
 cd sem
 git submodule update --init --recursive
 ```
