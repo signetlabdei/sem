@@ -152,12 +152,12 @@ class GridRunner(SimulationRunner):
                                   environment=self.environment,
                                   native_spec=BUILD_GRID_PARAMS)
 
-        options = re.findall('.*Program\s(?:Arguments|Options):(.*)'
-                             'General\sArguments.*',
+        options = re.findall(r'.*Program\s(?:Arguments|Options):(.*)'
+                             r'General\sArguments.*',
                              stdout, re.DOTALL)
 
         if len(options):
-            args = re.findall('.*--(.*?):.*', options[0], re.MULTILINE)
+            args = re.findall(r'.*--(.*?):.*', options[0], re.MULTILINE)
             return args
         else:
             return []
