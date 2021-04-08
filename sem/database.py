@@ -12,7 +12,7 @@ from tinydb import TinyDB, where
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 
-REUSE_RNGRUN_VALUES = True
+REUSE_RNGRUN_VALUES = False
 
 class DatabaseManager(object):
     """
@@ -37,8 +37,6 @@ class DatabaseManager(object):
         """
         self.campaign_dir = campaign_dir
         self.db = db
-        self.maxrngrun = max([result['params']['RngRun'] for result in
-                              self.get_results()]) if self.get_results() else 0
 
     @classmethod
     def new(cls, script, commit, params, campaign_dir, overwrite=False):
@@ -457,14 +455,8 @@ class DatabaseManager(object):
 
         [2, 5, 6, ...]
         """
-        if REUSE_RNGRUN_VALUES:
-            yield from filter(lambda x: x not in values_list,
-                              itertools.count())
-        else:
-            for next_value in filter(lambda x: x not in values_list,
-                                     itertools.count(self.maxrngrun)):
-                self.maxrngrun += 1
-                yield next_value
+        yield from filter(lambda x: x not in values_list,
+                          itertools.count())
 
     def have_same_structure(d1, d2):
         """
