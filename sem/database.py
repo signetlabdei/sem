@@ -418,7 +418,7 @@ class DatabaseManager(object):
         This also removes all output files, and cannot be undone.
         """
         # Clean results table
-        self.db.purge_table('results')
+        self.db.drop_table('results')
         self.write_to_disk()
 
         # Get rid of contents of data dir
@@ -428,8 +428,10 @@ class DatabaseManager(object):
         """
         Remove the specified result from the database, based on its id.
         """
-        self.db.table('results').remove(where('meta')['id'] ==
-                                        result['meta']['id'])
+        # Get rid of contents of data dir
+        map(shutil.rmtree, os.path.join(self.get_data_dir(), result['meta']['id']))
+        # Remove entry from results table
+        self.db.table('results').remove(where('meta')['id'] == result['meta']['id'])
 
     #############
     # Utilities #
