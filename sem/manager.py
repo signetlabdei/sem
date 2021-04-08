@@ -240,7 +240,7 @@ class CampaignManager(object):
     # Simulation running #
     ######################
 
-    def run_simulations(self, param_list, show_progress=True):
+    def run_simulations(self, param_list, show_progress=True, stop_on_errors=True):
         """
         Run several simulations specified by a list of parameter combinations.
 
@@ -313,7 +313,8 @@ class CampaignManager(object):
         # Note that this only creates a generator for the results, no
         # computation is performed on this line.
         results = self.runner.run_simulations(param_list,
-                                              self.db.get_data_dir())
+                                              self.db.get_data_dir(),
+                                              stop_on_errors=stop_on_errors)
 
         # Wrap the result generator in the progress bar generator.
         if show_progress:
@@ -417,7 +418,9 @@ class CampaignManager(object):
 
         return params_to_simulate
 
-    def run_missing_simulations(self, param_list, runs=None):
+    def run_missing_simulations(self, param_list, runs=None,
+                                condition_checking_function=None,
+                                stop_on_errors=True):
         """
         Run the simulations from the parameter list that are not yet available
         in the database.

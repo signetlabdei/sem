@@ -4,6 +4,7 @@ import re
 import subprocess
 import time
 import uuid
+import sem.utils
 
 from tqdm import tqdm
 
@@ -231,7 +232,7 @@ class SimulationRunner(object):
     # Simulation running #
     ######################
 
-    def run_simulations(self, parameter_list, data_folder):
+    def run_simulations(self, parameter_list, data_folder, stop_on_errors=False):
         """
         Run several simulations using a certain combination of parameters.
 
@@ -271,23 +272,34 @@ class SimulationRunner(object):
                                               stderr=stderr_file)
             end = time.time()  # Time execution
 
-            if return_code > 0:
+            if return_code != 0:
                 complete_command = [self.script]
                 complete_command.extend(command[1:])
                 complete_command = "python3 waf --run \"%s\"" % (
                     ' '.join(complete_command))
-
                 with open(stdout_file_path, 'r') as stdout_file, open(
                         stderr_file_path, 'r') as stderr_file:
-                    raise Exception(('Simulation exited with an error.\n'
+                    complete_command = sem.utils.get_command_from_result(self.script, current_result)
+                    complete_command_debug = sem.utils.get_command_from_result(self.script, current_result, debug=True)
+                    error_message = ('\nSimulation exited with an error.\n'
                                      'Params: %s\n'
-                                     '\nStderr: %s\n'
+                                     'Stderr: %s\n'
                                      'Stdout: %s\n'
                                      'Use this command to reproduce:\n'
+                                     '%s\n'
+                                     'Debug with gdb:\n'
                                      '%s'
-                                     % (parameter, stderr_file.read(),
-                                        stdout_file.read(), complete_command)))
+                                     % (parameter,
+                                        stderr_file.read(),
+                                        stdout_file.read(),
+                                        complete_command,
+                                        complete_command_debug))
+                    if stop_on_errors:
+                        raise Exception(error_message)
+                    else:
+                        print(error_message)
 
             current_result['meta']['elapsed_time'] = end-start
+            current_result['meta']['exitcode'] = return_code
 
             yield current_result

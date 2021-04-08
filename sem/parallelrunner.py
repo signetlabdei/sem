@@ -7,7 +7,8 @@ class ParallelRunner(SimulationRunner):
     """
     A Runner which can perform simulations in parallel on the current machine.
     """
-    def run_simulations(self, parameter_list, data_folder):
+
+    def run_simulations(self, parameter_list, data_folder, stop_on_errors=False):
         """
         This function runs multiple simulations in parallel.
 
@@ -33,4 +34,5 @@ class ParallelRunner(SimulationRunner):
             parameter (dict): the parameter combination to simulate.
         """
         return next(SimulationRunner.run_simulations(self, [parameter],
-                                                     self.data_folder))
+                                                     self.data_folder,
+                                                     stop_on_errors=self.stop_on_errors))
