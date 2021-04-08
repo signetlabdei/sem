@@ -204,7 +204,7 @@ class DatabaseManager(object):
         # inserted result should be structured.
         example_result = {
             'params': {k: ['...'] for k in self.get_params() + ['RngRun']},
-            'meta': {k: ['...'] for k in ['elapsed_time', 'id']},
+            'meta': {k: ['...'] for k in ['elapsed_time', 'id', 'exitcode']},
         }
 
         for result in results:
