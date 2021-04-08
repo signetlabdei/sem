@@ -94,7 +94,7 @@ class DatabaseManager(object):
         config = {
             'script': script,
             'commit': commit,
-            'params': sorted(params)
+            'params': params
         }
 
         tinydb.table('config').insert(config)
@@ -203,7 +203,7 @@ class DatabaseManager(object):
         # This dictionary serves as a model for how the keys in the newly
         # inserted result should be structured.
         example_result = {
-            'params': {k: ['...'] for k in self.get_params() + ['RngRun']},
+            'params': {k: ['...'] for k in list(self.get_params().keys()) + ['RngRun']},
             'meta': {k: ['...'] for k in ['elapsed_time', 'id', 'exitcode']},
         }
 
@@ -213,8 +213,8 @@ class DatabaseManager(object):
                 raise ValueError(
                     '%s:\nExpected: %s\nGot: %s' % (
                         "Result dictionary does not correspond to database format",
-                        pformat(example_result, depth=1),
-                        pformat(result, depth=1)))
+                        pformat(example_result, depth=2),
+                        pformat(result, depth=2)))
 
         # Insert results
         self.db.table('results').insert_multiple(results)
@@ -249,7 +249,8 @@ class DatabaseManager(object):
         # This dictionary serves as a model for how the keys in the newly
         # inserted result should be structured.
         example_result = {
-            'params': {k: ['...'] for k in self.get_params() + ['RngRun']},
+            'params': {k: ['...'] for k in list(self.get_params().keys()) +
+                       ['RngRun']},
             'meta': {k: ['...'] for k in ['elapsed_time', 'id']},
         }
 
@@ -305,7 +306,7 @@ class DatabaseManager(object):
             return [dict(i) for i in self.db.table('results').all()]
 
         # Verify parameter format is correct
-        all_params = set(['RngRun'] + self.get_params())
+        all_params = set(['RngRun'] + list(self.get_params().keys()))
         param_subset = set(params.keys())
         if not all_params.issuperset(param_subset):
             raise ValueError(
@@ -407,8 +408,8 @@ class DatabaseManager(object):
             for name, filepath in available_files.items():
                 with open(filepath, 'r') as file_contents:
                     r['output'][name] = file_contents.read()
-
-        return results
+            yield r
+            del r
 
     def wipe_results(self):
         """
