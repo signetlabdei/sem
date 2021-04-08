@@ -236,6 +236,29 @@ class CampaignManager(object):
                                 skip_configuration=skip_configuration,
                                 max_parallel_processes=max_parallel_processes)
 
+    def check_and_fill_parameters(self, param_list, needs_rngrun):
+        # Check all parameter combinations fully specify the desired simulation
+        desired_params = list(self.db.get_params().keys())
+        for p in param_list:
+            # Besides the parameters that were actually passed, we add the ones
+            # that are always available in every script
+            if isinstance(p, list):
+                parameter = p[0]
+            else:
+                parameter = p
+            passed = list(parameter.keys())
+            available = ['RngRun'] + desired_params if needs_rngrun else desired_params
+            if set(passed) != set(available):
+                not_supported_parameters = set(passed) - set(available)
+                if not_supported_parameters:
+                    raise ValueError("The following parameters are "
+                                     "not supported by the script: %s\n" %
+                                     not_supported_parameters)
+            # Automatically fill remaining parameters with defaults
+            additional_required_parameters = set(available) - set(passed)
+            for additional_parameter in additional_required_parameters:
+                p[additional_parameter] = self.db.get_params()[additional_parameter]
+
     ######################
     # Simulation running #
     ######################
@@ -268,32 +291,7 @@ class CampaignManager(object):
         if param_list == []:
             return
 
-        # Check all parameter combinations fully specify the desired simulation
-        desired_params = self.db.get_params()
-        for p in param_list:
-            # Besides the parameters that were actually passed, we add the ones
-            # that are always available in every script
-            if isinstance(p, list):
-                parameter = p[0]
-            else:
-                parameter = p
-            passed = list(parameter.keys())
-            available = ['RngRun'] + desired_params
-            if set(passed) != set(available):
-                additional_required_parameters = set(available) - set(passed)
-                not_supported_parameters = set(passed) - set(available)
-                errormsg = ""
-                if additional_required_parameters:
-                    errormsg += ("Add the following parameters "
-                                 "to your specification: %s\n" %
-                                 additional_required_parameters)
-                if not_supported_parameters:
-                    errormsg += ("The following parameters are "
-                                 "not supported by the script: %s\n" %
-                                 not_supported_parameters)
-                raise ValueError("Specified parameter combination does not "
-                                 "match the supported parameters!\n" +
-                                 errormsg)
+        self.check_and_fill_parameters(param_list, needs_rngrun=True)
 
         # Check that the current repo commit corresponds to the one specified
         # in the campaign
@@ -367,6 +365,12 @@ class CampaignManager(object):
         """
 
         params_to_simulate = []
+
+        # Fill up a possibly impartial parameter definition with defaults
+        if runs is None:
+            self.check_and_fill_parameters (param_list, needs_rngrun=True)
+        else:
+            self.check_and_fill_parameters (param_list, needs_rngrun=False)
 
         if runs is not None:  # Get next available runs from the database
             next_runs = self.db.get_next_rngruns()
