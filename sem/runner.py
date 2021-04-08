@@ -207,8 +207,8 @@ class SimulationRunner(object):
                                          cwd=self.path).decode('utf-8')
 
         # Isolate the list of parameters
-        options = re.findall('.*Program\s(?:Options|Arguments):'
-                             '(.*)General\sArguments.*',
+        options = re.findall(r'.*Program\s(?:Options|Arguments):'
+                             r'(.*)General\sArguments.*',
                              result, re.DOTALL)
 
         global_options = subprocess.check_output([self.script_executable,
