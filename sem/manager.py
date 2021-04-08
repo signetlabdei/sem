@@ -18,6 +18,7 @@ from .parallelrunner import ParallelRunner
 from .conditionalrunner import ConditionalRunner
 from .runner import SimulationRunner
 from .utils import DRMAA_AVAILABLE, list_param_combinations
+import pandas as pd
 
 if DRMAA_AVAILABLE:
     from .gridrunner import GridRunner
@@ -486,6 +487,70 @@ class CampaignManager(object):
     #####################
     # Result management #
     #####################
+
+    def get_results_as_dataframe(self,
+                                 result_parsing_function,
+                                 columns,
+                                 params=None,
+                                 function_yields_multiple_results=False,
+                                 runs=None,
+                                 drop_columns=False):
+        """
+        Return a Pandas DataFrame containing results parsed using a
+        user-specified function.
+
+        If function_yields_multiple_results if False, result_parsing_function is
+        expected to return a list of outputs for each parsed result, and column
+        should contain an equal number of labels describing the contents of the
+        output list.
+
+        If function_yields_multiple_results is True, instead,
+        result_parsing_function is expected to return multiple lists of outputs,
+        as described by the labels in columns, for each result. In this case,
+        each result in the database will yield a number of rows in the output
+        dataframe that is equal to the length of the result_parsing_function
+        output computed on that result.
+
+        Args:
+            result_parsing_function (function): user-defined function, taking a
+                result dictionary as input and returning a list of outputs or a list
+                of lists of outputs.
+        """
+
+        results_list = []
+        if params is not None:
+            for param_combination in list_param_combinations(params):
+                if runs is not None:
+                    results_list += list(self.db.get_complete_results(param_combination))[:runs]
+                else:
+                    results_list += list(self.db.get_complete_results(param_combination))
+        else:
+            results_list = list(self.db.get_complete_results())
+
+        data = []
+        for result in results_list:
+            if function_yields_multiple_results:
+                for r in result_parsing_function(result):
+                    param_values = list(deepcopy(result['params']).values())
+                    param_values += [r] if not isinstance(r, list) else r
+                    data += [param_values]
+            else:
+                param_values = list(deepcopy(result['params']).values())
+                parsed = result_parsing_function(result)
+                param_values += [parsed] if not isinstance(parsed, list) else parsed
+                data += [param_values]
+
+        df = pd.DataFrame(data,
+                            columns=(list(self.db.get_results()[0]['params'].keys())
+                                    + columns))
+
+        if drop_columns:
+            nunique = df.apply(pd.Series.nunique)
+            cols_to_drop = nunique[nunique == 1].index
+            df = df.drop(cols_to_drop, axis=1)
+            return df
+        else:
+            return df
 
     def get_results_as_numpy_array(self, parameter_space,
                                    result_parsing_function, runs):
