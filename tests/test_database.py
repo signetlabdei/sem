@@ -182,19 +182,18 @@ def test_results_queries(db, result):
 
 def test_get_complete_results(manager, parameter_combination):
     manager.run_simulations([parameter_combination], show_progress=False)
-    assert next(manager.db.get_complete_results(
-        )).get('output').get('stdout') is not None
+    assert manager.db.get_complete_results()[0].get('output').get('stdout') is not None
     # Try getting complete results via id
-    result = next(manager.db.get_complete_results())
+    result = manager.db.get_complete_results()[0]
     result_id = result['meta']['id']
-    assert next(manager.db.get_complete_results(
-        result_id=result_id)).get('output').get('stdout') is not None
+    assert manager.db.get_complete_results(
+        result_id=result_id)[0].get('output').get('stdout') is not None
 
 
 def test_get_result_files(manager, parameter_combination):
     manager.run_simulations([parameter_combination], show_progress=False)
     # Try querying result files via id
-    result = next(manager.db.get_complete_results())
+    result = manager.db.get_complete_results()[0]
     result_id = result['meta']['id']
     assert manager.db.get_result_files(result_id) is not None
 

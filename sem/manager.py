@@ -691,7 +691,7 @@ class CampaignManager(object):
         """
         # Create a parameter space only containing the variable parameters
         clean_parameter_space = collections.OrderedDict(
-            [(k, v) for k, v in parameter_space.items()])
+            [(k, v) if isinstance(v, list) else (k, [v]) for k, v in parameter_space.items()])
 
         clean_parameter_space['runs'] = range(runs)
 
@@ -783,6 +783,8 @@ class CampaignManager(object):
 
         space = []
         [key, value] = list(param_space.items())[0]
+        if not isinstance(value, list):
+            value = [value]
         # Iterate over dictionary values
         for v in value:
             next_query = deepcopy(current_query)

@@ -321,8 +321,7 @@ class SimulationRunner(object):
                                         complete_command_debug))
                     if stop_on_errors:
                         raise Exception(error_message)
-                    else:
-                        print(error_message)
+                    print(error_message)
 
             current_result['meta']['elapsed_time'] = end-start
             current_result['meta']['exitcode'] = return_code
