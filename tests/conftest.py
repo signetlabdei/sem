@@ -72,7 +72,7 @@ def result(config):
     r = {
         'params': collections.OrderedDict(
             [('dict', '/usr/share/dict/web2'),
-             ('time', 'false'),
+             ('time', False),
              ('RngRun', 10)]),
         'meta': {
             'elapsed_time': 10,
@@ -88,21 +88,21 @@ def parameter_combination_no_rngrun():
     # We need to explicitly state we want an OrderedDict here in order to
     # support Python < 3.6 - since Python 3.6, dicts are ordered by default
     return collections.OrderedDict([('dict', '/usr/share/dict/web2'),
-                                    ('time', 'false')])
+                                    ('time', False)])
 
 @pytest.fixture(scope='function')
 def parameter_combination():
     # We need to explicitly state we want an OrderedDict here in order to
     # support Python < 3.6 - since Python 3.6, dicts are ordered by default
     return collections.OrderedDict([('dict', '/usr/share/dict/web2'),
-                                    ('time', 'false'),
+                                    ('time', False),
                                     ('RngRun', '0')])
 
 
 @pytest.fixture(scope='function')
 def parameter_combination_2():
     return collections.OrderedDict([('dict', '/usr/share/dict/web2a'),
-                                    ('time', 'true'),
+                                    ('time', True),
                                     ('RngRun', '0')])
 
 
@@ -110,8 +110,7 @@ def parameter_combination_2():
 def parameter_combination_range():
     return collections.OrderedDict([('dict', ['/usr/share/dict/web2',
                                               '/usr/share/dict/web2a']),
-                                    ('time', ['false',
-                                              'true'])])
+                                    ('time', [False, True])])
 
 
 @pytest.fixture(scope='function')

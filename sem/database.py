@@ -303,6 +303,11 @@ class DatabaseManager(object):
         if params is None:
             return [dict(i) for i in self.db.table('results').all()]
 
+        # If we are passed a list of parameter combinations, we concatenate
+        # results for the queries corresponding to each dictionary in the list
+        if isinstance(params, list):
+            return sum([self.get_results(x) for x in params], [])
+
         # Verify parameter format is correct
         all_params = set(['RngRun'] + list(self.get_params().keys()))
         param_subset = set(params.keys())
@@ -405,9 +410,13 @@ class DatabaseManager(object):
             available_files = self.get_result_files(r['meta']['id'])
             for name, filepath in available_files.items():
                 with open(filepath, 'r') as file_contents:
-                    r['output'][name] = file_contents.read()
-            yield r
-            del r
+                    try:
+                        r['output'][name] = file_contents.read()
+                    except UnicodeDecodeError:
+                        # If this is not decodable, we leave this output alone
+                        # (but still insert its name in the result)
+                        r['output'][name] = 'RAW'
+        return results
 
     def wipe_results(self):
         """

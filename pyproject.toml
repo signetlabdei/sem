@@ -36,7 +36,7 @@ importmagic = "*"
 flake8 = "*"
 check-manifest = "*"
 ptvsd = "^4.3.2"
-seaborn = "^0.11.1"
+seaborn = "*"
 
 [tool.poetry.scripts]
 sem = 'sem:cli'
