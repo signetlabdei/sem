@@ -144,7 +144,9 @@ class SimulationRunner(object):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         # Build ns-3
-        build_process = subprocess.Popen(['python3', 'waf', 'build'],
+        j_argument = ['-j', str(self.max_parallel_processes)] if self.max_parallel_processes else []
+        build_process = subprocess.Popen(['python3', 'waf', 'build'] +
+                                         j_argument,
                                          cwd=self.path,
                                          stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE)
