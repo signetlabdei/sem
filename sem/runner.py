@@ -259,6 +259,26 @@ class SimulationRunner(object):
     # Simulation running #
     ######################
 
+    def initialize_result(self, parameter):
+
+        # Craft the result we will eventually insert in the database
+        current_result = {
+            'params': {},
+            'meta': {}
+            }
+        current_result['params'].update(parameter)
+
+        # Run from dedicated temporary folder
+        current_result['meta']['id'] = str(uuid.uuid4())
+        temp_dir = os.path.join(self.data_folder, current_result['meta']['id'])
+        os.makedirs(temp_dir)
+
+        # Create the command
+        command = [self.script_executable] + ['--%s=%s' % (param, value)
+                                                for param, value in
+                                                parameter.items()]
+        return [current_result, command, temp_dir]
+
     def run_simulations(self, parameter_list, data_folder, stop_on_errors=False):
         """
         Run several simulations using a certain combination of parameters.
@@ -273,20 +293,7 @@ class SimulationRunner(object):
 
         for idx, parameter in enumerate(parameter_list):
 
-            current_result = {
-                'params': {},
-                'meta': {}
-                }
-            current_result['params'].update(parameter)
-
-            command = [self.script_executable] + ['--%s=%s' % (param, value)
-                                                  for param, value in
-                                                  parameter.items()]
-
-            # Run from dedicated temporary folder
-            current_result['meta']['id'] = str(uuid.uuid4())
-            temp_dir = os.path.join(data_folder, current_result['meta']['id'])
-            os.makedirs(temp_dir)
+            current_result, command, temp_dir = self.initialize_result(parameter)
 
             start = time.time()  # Time execution
             stdout_file_path = os.path.join(temp_dir, 'stdout')
