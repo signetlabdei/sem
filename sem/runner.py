@@ -104,12 +104,21 @@ class SimulationRunner(object):
                                      key=lambda x: x['percentage'])['path']
 
         if "scratch" in self.script_executable:
+            path_with_subdir = self.script_executable.split("/scratch/")[-1]
+            if ("/" in path_with_subdir):  # Script is in a subdir
+                executable_subpath = "%s/%s" % (self.script, self.script)
+            else:  # Script is in scratch root
+                executable_subpath = self.script
             if optimized:
                 self.script_executable = os.path.abspath(
-                    os.path.join(path, "build/optimized/scratch", self.script))
+                    os.path.join(path,
+                                 "build/optimized/scratch",
+                                 executable_subpath))
             else:
                 self.script_executable = os.path.abspath(
-                    os.path.join(path, "build/scratch", self.script))
+                    os.path.join(path,
+                                 "build/scratch",
+                                 executable_subpath))
 
     #############
     # Utilities #

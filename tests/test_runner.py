@@ -43,6 +43,12 @@ def test_scratch_script(ns_3_compiled, config):
     list(runner.run_simulations([{}], data_dir))
 
 
+def test_scratch_script_in_subdir(ns_3_compiled, config):
+    data_dir = os.path.join(config['campaign_dir'], 'data')
+    runner = ParallelRunner(ns_3_compiled, 'subdir')
+    list(runner.run_simulations([{}], data_dir))
+
+
 def test_non_existent_script(ns_3_compiled):
     with pytest.raises(ValueError):
         ParallelRunner(ns_3_compiled, 'non_existing_script')
