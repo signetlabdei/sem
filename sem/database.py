@@ -436,9 +436,10 @@ class DatabaseManager(object):
         Remove the specified result from the database, based on its id.
         """
         # Get rid of contents of data dir
-        map(shutil.rmtree, os.path.join(self.get_data_dir(), result['meta']['id']))
+        shutil.rmtree(os.path.join(self.get_data_dir(), result['meta']['id']))
         # Remove entry from results table
         self.db.table('results').remove(where('meta')['id'] == result['meta']['id'])
+        self.write_to_disk()
 
     #############
     # Utilities #
