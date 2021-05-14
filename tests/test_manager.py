@@ -137,3 +137,50 @@ def test_save_to_folders(tmpdir, manager, result, parameter_combination_range):
     manager.save_to_folders(parameter_combination_range,
                             str(tmpdir.join('folder_export')),
                             2)
+
+
+def test_only_load_some_files_decorator(tmpdir, manager, result, parameter_combination_no_rngrun):
+    def parsing_function(result):
+        assert len(result['output'].keys()) == 2
+        return [0]
+
+    # Insert a first parameter combination
+    manager.run_missing_simulations(parameter_combination_no_rngrun, 1)
+    dataframe = manager.get_results_as_dataframe(
+        parsing_function,
+        ['Label'],
+        parameter_combination_no_rngrun,
+        runs=1)  # Get one run per combination
+
+    @sem.utils.only_load_some_files(['stdout'])
+    def decorated_parsing_function(result):
+        assert list(result['output'].keys()) == ['stdout']
+        return [0]
+
+    dataframe = manager.get_results_as_dataframe(
+        decorated_parsing_function,
+        ['Label'],
+        parameter_combination_no_rngrun,
+        runs=1)  # Get one run per combination
+
+    @sem.utils.only_load_some_files(r'.*err')
+    def another_decorated_parsing_function(result):
+        assert list(result['output'].keys()) == ['stderr']
+        return [0]
+
+    dataframe = manager.get_results_as_dataframe(
+        another_decorated_parsing_function,
+        ['Label'],
+        parameter_combination_no_rngrun,
+        runs=1)  # Get one run per combination
+
+    @sem.utils.only_load_some_files(['stderr', 'garbage'])
+    def yet_another_decorated_parsing_function(result):
+        assert list(result['output'].keys()) == ['stderr']
+        return [0]
+
+    dataframe = manager.get_results_as_dataframe(
+        yet_another_decorated_parsing_function,
+        ['Label'],
+        parameter_combination_no_rngrun,
+        runs=1)  # Get one run per combination
