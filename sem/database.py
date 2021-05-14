@@ -4,6 +4,7 @@ import itertools
 from operator import and_, or_
 from pathlib import Path
 from copy import deepcopy
+import re
 import shutil
 import collections
 import glob
@@ -364,7 +365,7 @@ class DatabaseManager(object):
 
         return {k: v for k, v in filename_path_pairs}
 
-    def get_complete_results(self, params=None, result_id=None):
+    def get_complete_results(self, params=None, result_id=None, files_to_load=r'.*'):
         """
         Return available results, analogously to what get_results does, but
         also read the corresponding output files for each result, and
@@ -409,13 +410,15 @@ class DatabaseManager(object):
             r['output'] = {}
             available_files = self.get_result_files(r['meta']['id'])
             for name, filepath in available_files.items():
-                with open(filepath, 'r') as file_contents:
-                    try:
-                        r['output'][name] = file_contents.read()
-                    except UnicodeDecodeError:
-                        # If this is not decodable, we leave this output alone
-                        # (but still insert its name in the result)
-                        r['output'][name] = 'RAW'
+                if ((isinstance(files_to_load, str) and re.search(files_to_load, name)) or
+                    (isinstance(files_to_load, list) and name in files_to_load)):
+                    with open(filepath, 'r') as file_contents:
+                        try:
+                            r['output'][name] = file_contents.read()
+                        except UnicodeDecodeError:
+                            # If this is not decodable, we leave this output alone
+                            # (but still insert its name in the result)
+                            r['output'][name] = 'RAW'
         return results
 
     def wipe_results(self):
