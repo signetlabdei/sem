@@ -7,6 +7,8 @@ from datetime import datetime
 from pathlib import Path
 from random import shuffle
 
+from multiprocessing import Pool
+
 import numpy as np
 import xarray as xr
 from scipy.io import savemat
@@ -23,6 +25,30 @@ import pandas as pd
 if DRMAA_AVAILABLE:
     from .gridrunner import GridRunner
 
+def parse_result(param):
+    result, function_yields_multiple_results, result_parsing_function, param_columns = param
+    data = []
+    if function_yields_multiple_results:
+        for r in result_parsing_function(result):
+            param_values = list(deepcopy(result['params']).values())
+            if param_columns != 'all':
+                param_keys = list(deepcopy(result['params']).keys())
+                param_values_to_keep = [v for k, v in list(zip(param_keys, param_values)) if k in param_columns]
+            else:
+                param_values_to_keep = param_values
+            param_values_to_keep += [r] if not isinstance(r, list) else r
+            data += [param_values_to_keep]
+    else:
+        param_values = list(deepcopy(result['params']).values())
+        if param_columns != 'all':
+            param_keys = list(deepcopy(result['params']).keys())
+            param_values_to_keep = list([v for k, v in list(zip(param_keys, param_values)) if k in param_columns])
+        else:
+            param_values_to_keep = param_values
+        parsed = result_parsing_function(result)
+        param_values_to_keep += [parsed] if not isinstance(parsed, list) else parsed
+        data += [param_values_to_keep]
+    return data
 
 class CampaignManager(object):
     """
@@ -494,7 +520,9 @@ class CampaignManager(object):
                                  params=None,
                                  function_yields_multiple_results=False,
                                  runs=None,
-                                 drop_columns=False):
+                                 param_columns='all',
+                                 drop_constant_columns=False,
+                                 parallel_parsing=False):
         """
         Return a Pandas DataFrame containing results parsed using a
         user-specified function.
@@ -521,30 +549,46 @@ class CampaignManager(object):
         if params is not None:
             for param_combination in list_param_combinations(params):
                 if runs is not None:
-                    results_list += list(self.db.get_complete_results(param_combination))[:runs]
+                    results_list += list(self.db.get_results(param_combination))[:runs]
                 else:
-                    results_list += list(self.db.get_complete_results(param_combination))
+                    results_list += list(self.db.get_results(param_combination))
         else:
-            results_list = list(self.db.get_complete_results())
+            results_list = list(self.db.get_results())
+
+        if result_parsing_function.__dict__.get('files_to_load', None) is not None:
+            files_to_load = result_parsing_function.__dict__['files_to_load']
+        else:
+            files_to_load = r".*"
 
         data = []
-        for result in results_list:
-            if function_yields_multiple_results:
-                for r in result_parsing_function(result):
-                    param_values = list(deepcopy(result['params']).values())
-                    param_values += [r] if not isinstance(r, list) else r
-                    data += [param_values]
-            else:
-                param_values = list(deepcopy(result['params']).values())
-                parsed = result_parsing_function(result)
-                param_values += [parsed] if not isinstance(parsed, list) else parsed
-                data += [param_values]
 
-        df = pd.DataFrame(data,
-                            columns=(list(self.db.get_results()[0]['params'].keys())
-                                    + columns))
+        if parallel_parsing:
+            with Pool(processes=self.runner.max_parallel_processes) as pool:
+                for parsed_result in tqdm(pool.imap_unordered(parse_result,
+                                                              [[self.db.get_complete_results(result_id=result['meta']['id'],
+                                                                                             files_to_load=files_to_load)[0],
+                                                                function_yields_multiple_results,
+                                                                result_parsing_function,
+                                                                param_columns] for result in results_list]),
+                                          total=len(results_list),
+                                          unit='result',
+                                          desc='Parsing Results'):
+                    data += parsed_result
+        else:
+            for parsed_result in [parse_result([self.db.get_complete_results(result_id=result['meta']['id'],
+                                                                             files_to_load=files_to_load)[0],
+                                                function_yields_multiple_results,
+                                                result_parsing_function,
+                                                param_columns]) for result in results_list]:
+                data += parsed_result
 
-        if drop_columns:
+        if param_columns == 'all':
+            param_columns = list(self.db.get_results()[0]['params'].keys())
+        all_columns = ([k for k in list(self.db.get_results()[0]['params'].keys()) if k in param_columns] + columns)
+
+        df = pd.DataFrame(data, columns=all_columns)
+
+        if drop_constant_columns:
             nunique = df.apply(pd.Series.nunique)
             cols_to_drop = nunique[nunique == 1].index
             df = df.drop(cols_to_drop, axis=1)
