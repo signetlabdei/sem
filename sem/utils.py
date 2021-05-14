@@ -17,6 +17,16 @@ try:
 except(RuntimeError):
     DRMAA_AVAILABLE = False
 
+def output_labels(argument):
+    def decorator(function):
+        function.__dict__["output_labels"] = argument
+        @wraps(function)
+        def wrapper(*args, **kwargs):
+            result = function(*args, **kwargs)
+            return result
+        return wrapper
+    return decorator
+
 
 def only_load_some_files(argument):
     def decorator(function):
@@ -27,6 +37,15 @@ def only_load_some_files(argument):
             return result
         return wrapper
     return decorator
+
+
+def yields_multiple_results(function):
+    function.__dict__["yields_multiple_results"] = True
+    @wraps(function)
+    def wrapper(*args, **kwargs):
+        result = function(*args, **kwargs)
+        return result
+    return wrapper
 
 
 def list_param_combinations(param_ranges):
