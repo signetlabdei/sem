@@ -516,9 +516,8 @@ class CampaignManager(object):
 
     def get_results_as_dataframe(self,
                                  result_parsing_function,
-                                 columns,
+                                 columns=None,
                                  params=None,
-                                 function_yields_multiple_results=False,
                                  runs=None,
                                  param_columns='all',
                                  drop_constant_columns=False,
@@ -560,6 +559,17 @@ class CampaignManager(object):
         else:
             files_to_load = r".*"
 
+        if result_parsing_function.__dict__.get('yields_multiple_results', None) is not None:
+            function_yields_multiple_results = True
+        else:
+            function_yields_multiple_results = False
+
+        if columns == None:
+            if result_parsing_function.__dict__.get('output_labels', None) is not None:
+                columns = result_parsing_function.__dict__['output_labels']
+            else:
+                raise ValueError("Please either specify a column parameter or decorate your function with the @sem.utils.output_labels decorator")
+
         data = []
 
         if parallel_parsing:
@@ -575,11 +585,14 @@ class CampaignManager(object):
                                           desc='Parsing Results'):
                     data += parsed_result
         else:
-            for parsed_result in [parse_result([self.db.get_complete_results(result_id=result['meta']['id'],
-                                                                             files_to_load=files_to_load)[0],
-                                                function_yields_multiple_results,
-                                                result_parsing_function,
-                                                param_columns]) for result in results_list]:
+            for parsed_result in tqdm((parse_result([self.db.get_complete_results(result_id=result['meta']['id'],
+                                                                                  files_to_load=files_to_load)[0],
+                                                     function_yields_multiple_results,
+                                                     result_parsing_function,
+                                                     param_columns]) for result in results_list),
+                                      total=len(results_list),
+                                      unit='result',
+                                      desc='Parsing Results'):
                 data += parsed_result
 
         if param_columns == 'all':
