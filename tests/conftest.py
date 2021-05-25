@@ -138,23 +138,23 @@ def get_and_compile_ns_3():
                         '--out=build/optimized', 'build'],
                        cwd=ns_3_test_compiled,
                        stdout=subprocess.DEVNULL,
-                       stderr=subprocess.STDOUT) > 0:
-        raise Exception("Test build failed.")
+                       stderr=subprocess.STDOUT) != 0:
+        raise Exception("Optimized test build failed.")
 
     if subprocess.call(['python3', 'waf', 'configure', '--disable-gtk',
                         '--disable-python', '--build-profile=debug',
                         '--out=build', 'build'],
                        cwd=ns_3_test_compiled_debug,
                        stdout=subprocess.DEVNULL,
-                       stderr=subprocess.STDOUT) > 0:
-        raise Exception("Test build failed.")
+                       stderr=subprocess.STDOUT) != 0:
+        raise Exception("Debug test build failed.")
 
     if subprocess.call(['python3', 'waf', 'configure', '--disable-gtk',
                         '--disable-python', '--build-profile=optimized',
                         '--out=build/optimized', 'build'],
                        cwd=ns_3_examples,
                        stdout=subprocess.DEVNULL,
-                       stderr=subprocess.STDOUT) > 0:
+                       stderr=subprocess.STDOUT) != 0:
         raise Exception("Examples build failed.")
 
 #########################################################################
@@ -167,7 +167,6 @@ def get_and_compile_ns_3():
 def setup_and_cleanup(tmpdir):
     yield
     shutil.rmtree(str(tmpdir))
-
 
 def pytest_configure(config):
     print("Getting and compiling ns-3...")

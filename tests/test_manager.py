@@ -148,8 +148,8 @@ def test_only_load_some_files_decorator(tmpdir, manager, result, parameter_combi
     manager.run_missing_simulations(parameter_combination_no_rngrun, 1)
     dataframe = manager.get_results_as_dataframe(
         parsing_function,
-        ['Label'],
-        parameter_combination_no_rngrun,
+        columns=['Label'],
+        params=parameter_combination_no_rngrun,
         runs=1)  # Get one run per combination
 
     @sem.utils.only_load_some_files(['stdout'])
@@ -159,8 +159,8 @@ def test_only_load_some_files_decorator(tmpdir, manager, result, parameter_combi
 
     dataframe = manager.get_results_as_dataframe(
         decorated_parsing_function,
-        ['Label'],
-        parameter_combination_no_rngrun,
+        columns=['Label'],
+        params=parameter_combination_no_rngrun,
         runs=1)  # Get one run per combination
 
     @sem.utils.only_load_some_files(r'.*err')
@@ -170,8 +170,8 @@ def test_only_load_some_files_decorator(tmpdir, manager, result, parameter_combi
 
     dataframe = manager.get_results_as_dataframe(
         another_decorated_parsing_function,
-        ['Label'],
-        parameter_combination_no_rngrun,
+        columns=['Label'],
+        params=parameter_combination_no_rngrun,
         runs=1)  # Get one run per combination
 
     @sem.utils.only_load_some_files(['stderr', 'garbage'])
@@ -181,6 +181,6 @@ def test_only_load_some_files_decorator(tmpdir, manager, result, parameter_combi
 
     dataframe = manager.get_results_as_dataframe(
         yet_another_decorated_parsing_function,
-        ['Label'],
-        parameter_combination_no_rngrun,
+        columns=['Label'],
+        params=parameter_combination_no_rngrun,
         runs=1)  # Get one run per combination
