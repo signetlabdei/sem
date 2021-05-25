@@ -65,7 +65,9 @@ class ConditionalRunner(SimulationRunner):
                     initializer=process,
                     initargs=(q, iolock, outq))
 
-        progress = tqdm(total=len(param_list_with_check))
+        progress = tqdm(total=len(param_list_with_check),
+                        unit='parameter combination',
+                        desc='Running Simulations')
 
         # This generates the tasks and adds them to the queue
         while True:
