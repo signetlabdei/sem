@@ -521,7 +521,8 @@ class CampaignManager(object):
                                  runs=None,
                                  param_columns='all',
                                  drop_constant_columns=False,
-                                 parallel_parsing=False):
+                                 parallel_parsing=False,
+                                 verbose=False):
         """
         Return a Pandas DataFrame containing results parsed using a
         user-specified function.
@@ -582,7 +583,8 @@ class CampaignManager(object):
                                                                 param_columns] for result in results_list]),
                                           total=len(results_list),
                                           unit='result',
-                                          desc='Parsing Results'):
+                                          desc='Parsing Results',
+                                          disable=not verbose):
                     data += parsed_result
         else:
             for parsed_result in tqdm((parse_result([self.db.get_complete_results(result_id=result['meta']['id'],
@@ -592,7 +594,8 @@ class CampaignManager(object):
                                                      param_columns]) for result in results_list),
                                       total=len(results_list),
                                       unit='result',
-                                      desc='Parsing Results'):
+                                      desc='Parsing Results',
+                                      disable=not verbose):
                 data += parsed_result
 
         if param_columns == 'all':
