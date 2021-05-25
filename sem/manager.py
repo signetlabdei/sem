@@ -565,11 +565,10 @@ class CampaignManager(object):
         else:
             function_yields_multiple_results = False
 
-        if columns == None:
-            if result_parsing_function.__dict__.get('output_labels', None) is not None:
-                columns = result_parsing_function.__dict__['output_labels']
-            else:
-                raise ValueError("Please either specify a column parameter or decorate your function with the @sem.utils.output_labels decorator")
+        if columns is None and result_parsing_function.__dict__.get('output_labels', None) is None:
+            raise ValueError("Please either specify a column parameter or decorate your function with the @sem.utils.output_labels decorator")
+        elif columns is None:
+            columns = result_parsing_function.__dict__['output_labels']
 
         data = []
 
