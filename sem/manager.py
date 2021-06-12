@@ -6,6 +6,7 @@ from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from random import shuffle
+from git.refs import log
 
 import numpy as np
 import xarray as xr
@@ -233,7 +234,7 @@ class CampaignManager(object):
     # Simulation running #
     ######################
 
-    def run_simulations(self, param_list, show_progress=True):
+    def run_simulations(self, param_list, show_progress=True, log_component=None):
         """
         Run several simulations specified by a list of parameter combinations.
 
@@ -260,6 +261,21 @@ class CampaignManager(object):
         # Return if the list is empty
         if param_list == []:
             return
+
+        environment = {}
+
+        #Create environment from the log_component passed
+        if log_component:
+            if isinstance(log_component,dict):
+                component_list = []
+                for component,level in log_component.items():
+                    component_list.append(component + '=' + level + '|prefix_all')
+                environment_varaible = ":".join(component_list)
+                #print(tmp)
+            if isinstance(log_component,str):
+                environment_varaible = log_component
+
+            environment = {"NS_LOG": environment_varaible}
 
         # Check all parameter combinations fully specify the desired simulation
         desired_params = self.db.get_params()
@@ -288,6 +304,10 @@ class CampaignManager(object):
                                  "match the supported parameters!\n" +
                                  errormsg)
 
+        #Add code to check if the passed environment is valid                                                       #TODO
+        if log_component is not None:
+            pass # check
+
         # Check that the current repo commit corresponds to the one specified
         # in the campaign
         if self.check_repo:
@@ -295,7 +315,10 @@ class CampaignManager(object):
 
         # Build ns-3 before running any simulations
         # At this point, we can assume the project was already configured
-        self.runner.configure_and_build(skip_configuration=True)
+        if log_component is not None:
+            self.runner.configure_and_build(optimized=False,skip_configuration=True)    
+        else:
+            self.runner.configure_and_build(skip_configuration=True)
 
         # Shuffle simulations
         # This mixes up long and short simulations, and gives better time
@@ -306,7 +329,7 @@ class CampaignManager(object):
         # Note that this only creates a generator for the results, no
         # computation is performed on this line.
         results = self.runner.run_simulations(param_list,
-                                              self.db.get_data_dir())
+                                              self.db.get_data_dir(),environment=environment)
 
         # Wrap the result generator in the progress bar generator.
         if show_progress:
@@ -324,21 +347,25 @@ class CampaignManager(object):
         last_save_time = datetime.now()
 
         for result in result_generator:
+            if environment:
+                result['meta']['log_component'] = log_component
+            else:
+                result['meta']['log_component'] = None
 
             results_batch += [result]
 
             # Save results to disk once every 60 seconds
             if ((datetime.now() - last_save_time).total_seconds() > 60):
-                self.db.insert_results(results_batch)
+                self.db.insert_results(results_batch,log_component)
                 self.db.write_to_disk()
                 results_batch = []
                 last_save_time = datetime.now()
 
-        self.db.insert_results(results_batch)
+        self.db.insert_results(results_batch,log_component)
         self.db.write_to_disk()
 
     def get_missing_simulations(self, param_list, runs=None,
-                                with_time_estimate=False):
+                                with_time_estimate=False,log_component=None):
         """
         Return a list of the simulations among the required ones that are not
         available in the database.
@@ -356,6 +383,7 @@ class CampaignManager(object):
         if runs is not None:  # Get next available runs from the database
             next_runs = self.db.get_next_rngruns()
             available_results = [r for r in self.db.get_results()]
+
             for param_comb in param_list:
                 # Count how many param combinations we found, and remove them
                 # from the list of available_results for faster searching in the
@@ -385,7 +413,7 @@ class CampaignManager(object):
                 params_to_simulate += new_param_combs
         else:
             for param_comb in param_list:
-                previous_results = self.db.get_results(param_comb)
+                previous_results = self.db.get_results(param_comb,log_component)                                  
                 if not previous_results:
                     if with_time_estimate:
                         # Try and find results with different RngRun to provide
@@ -403,7 +431,7 @@ class CampaignManager(object):
 
         return params_to_simulate
 
-    def run_missing_simulations(self, param_list, runs=None):
+    def run_missing_simulations(self, param_list, runs=None, log_component=None):
         """
         Run the simulations from the parameter list that are not yet available
         in the database.
@@ -427,13 +455,19 @@ class CampaignManager(object):
         if isinstance(param_list, dict):
             param_list = list_param_combinations(param_list)
 
+        #If logging is enabled allow only a single run for a particular parameter combination
+        if log_component:
+            runs=1
+
         # If we are passed a list already, just run the missing simulations
         if isinstance(self.runner, LptRunner):
             self.run_simulations(
-                self.get_missing_simulations(param_list, runs, with_time_estimate=True))
+                self.get_missing_simulations(param_list, runs=runs, with_time_estimate=True,
+                                            log_component=log_component),log_component=log_component)
         else:
             self.run_simulations(
-                self.get_missing_simulations(param_list, runs))
+                self.get_missing_simulations(param_list, runs=runs, log_component=log_component),
+                                            log_component=log_component)
 
     #####################
     # Result management #
@@ -585,6 +619,12 @@ class CampaignManager(object):
             collections.OrderedDict([(k, v) for k, v in
                                      parameter_space.items()]),
             runs, result_parsing_function)
+        print(data)
+        print(self.db.get_results(log_component= {
+                'MixedWireless':'all'
+                }))
+        print(clean_parameter_space)
+
         xr_array = xr.DataArray(data, coords=clean_parameter_space,
                                 dims=list(clean_parameter_space.keys()))
 
@@ -660,6 +700,7 @@ class CampaignManager(object):
 
         space = []
         [key, value] = list(param_space.items())[0]
+    
         # Iterate over dictionary values
         for v in value:
             next_query = deepcopy(current_query)
@@ -671,6 +712,7 @@ class CampaignManager(object):
             temp_query[key] = v
             temp_result_list = [r for r in current_result_list if
                                 self.satisfies_query(r, temp_query)]
+
             space.append(self.get_space(temp_result_list, next_query,
                                         next_param_space, runs,
                                         result_parsing_function))

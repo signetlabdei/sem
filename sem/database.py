@@ -8,6 +8,7 @@ import shutil
 import collections
 import glob
 from pprint import pformat
+from git.refs import log
 from tinydb import TinyDB, where
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
@@ -198,7 +199,7 @@ class DatabaseManager(object):
                           self.get_results()]
         yield from DatabaseManager.get_next_values(self, available_runs)
 
-    def insert_results(self, results):
+    def insert_results(self, results, log_component):
 
         # This dictionary serves as a model for how the keys in the newly
         # inserted result should be structured.
@@ -206,6 +207,17 @@ class DatabaseManager(object):
             'params': {k: ['...'] for k in self.get_params() + ['RngRun']},
             'meta': {k: ['...'] for k in ['elapsed_time', 'id']},
         }
+
+        example_result['meta']['log_component'] = None
+
+        if log_component is not None:
+            lg = list(log_component.keys())
+            example_result['meta']['log_component'] = {
+                k: '...' for k in lg
+            }
+
+        # print(results)
+        # print(example_result)
 
         for result in results:
             # Verify result format is correct
@@ -219,7 +231,7 @@ class DatabaseManager(object):
         # Insert results
         self.db.table('results').insert_multiple(results)
 
-    def insert_result(self, result):
+    def insert_result(self, result, log_component):
         """
         Insert a new result in the database.
 
@@ -250,8 +262,19 @@ class DatabaseManager(object):
         # inserted result should be structured.
         example_result = {
             'params': {k: ['...'] for k in self.get_params() + ['RngRun']},
-            'meta': {k: ['...'] for k in ['elapsed_time', 'id']},
+            'meta': {k: ['...'] for k in ['elapsed_time', 'id', 'log_component']},
         }
+
+        lg = [None]
+        if log_component is not None:
+            lg = list(log_component.keys())
+
+        example_result['meta']['log_component'] = {
+            k: '...' for k in lg
+        }
+
+        # print(result)
+        # print(example_result)
 
         # Verify result format is correct
         if not(DatabaseManager.have_same_structure(result, example_result)):
@@ -264,7 +287,7 @@ class DatabaseManager(object):
         # Insert result
         self.db.table('results').insert(deepcopy(result))
 
-    def get_results(self, params=None, result_id=None):
+    def get_results(self, params=None, result_id=None, log_component=None):
         """
         Return all the results available from the database that fulfill some
         parameter combinations.
@@ -297,13 +320,20 @@ class DatabaseManager(object):
         # A cast to dict is necessary, since self.db.table() contains TinyDB's
         # Document object (which is simply a wrapper for a dictionary, thus the
         # simple cast).
+
+        
         if result_id is not None:
             return [dict(i) for i in self.db.table('results').all() if
                     i['meta']['id'] == result_id]
 
+        if params is None and log_component is not None:
+            return [dict(i) for i in self.db.table('results').all() if  
+                    i['meta']['log_component'] is not None]
+        
         if params is None:
-            return [dict(i) for i in self.db.table('results').all()]
-
+            return [dict(i) for i in self.db.table('results').all() if 
+                    i['meta']['log_component'] is None]
+        
         # Verify parameter format is correct
         all_params = set(['RngRun'] + self.get_params())
         param_subset = set(params.keys())
@@ -324,16 +354,26 @@ class DatabaseManager(object):
             else:
                 query_params[key] = params[key]
 
-        # Handle case where query params has no keys
+        # Handle case where query params has no keys                                                            #TODO - How will this case occur?
         if not query_params.keys():
             return [dict(i) for i in self.db.table('results').all()]
 
         # Create the TinyDB query
         # In the docstring example above, this is equivalent to:
         # AND(OR(param1 == value1), OR(param2 == value2, param2 == value3))
-        query = reduce(and_, [reduce(or_, [
-            where('params')[key] == v for v in value]) for key, value in
-                              query_params.items()])
+        if log_component is None:
+            query = reduce(and_, [reduce(or_, [
+                where('params')[key] == v for v in value]) for key, value in
+                                query_params.items()]) and where('meta')('log_component') is None
+        else:
+            query = reduce(and_, [reduce(or_, [
+                where('params')[key] == v for v in value]) for key, value in
+                                query_params.items()]) and where('meta')('log_component') is not None   
+
+        print('Query:')                                         
+        print(query)
+
+        print([dict(i) for i in self.db.table('results').search(query)])
 
         return [dict(i) for i in self.db.table('results').search(query)]
 
@@ -360,7 +400,7 @@ class DatabaseManager(object):
 
         return {k: v for k, v in filename_path_pairs}
 
-    def get_complete_results(self, params=None, result_id=None):
+    def get_complete_results(self, params=None, result_id=None, log_component=None):
         """
         Return available results, analogously to what get_results does, but
         also read the corresponding output files for each result, and
@@ -397,9 +437,9 @@ class DatabaseManager(object):
         """
 
         if result_id is not None:
-            results = deepcopy(self.get_results(result_id=result_id))
+            results = deepcopy(self.get_results(result_id=result_id,log_component=log_component))
         else:
-            results = deepcopy(self.get_results(params))
+            results = deepcopy(self.get_results(params,log_component=log_component))
 
         for r in results:
             r['output'] = {}

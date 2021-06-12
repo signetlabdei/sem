@@ -144,3 +144,25 @@ def test_save_to_folders(tmpdir, manager, result, parameter_combination_range):
     manager.save_to_folders(parameter_combination_range,
                             str(tmpdir.join('folder_export')),
                             2)
+
+def test_run_logging_simulation(ns_3_compiled_debug,config): 
+    params = {
+        'backboneNodes': 10,
+        'infraNodes': 2,
+        'lanNodes': 2,
+        'stopTime': 20,
+        'useCourseChangeCallback': False
+    }
+    log_component = {
+        'MixedWireless' : 'info'
+    }
+    new_campaign = sem.CampaignManager.new(ns_3_compiled_debug,
+                                            'mixed-wired-wireless',
+                                            config['campaign_dir'],
+                                            overwrite=True,
+                                            optimized=False)
+
+    #Ensure that the simulations run fine                                            
+    new_campaign.run_missing_simulations(params,log_component=log_component)                                        
+
+    #Assert the log file generated is correct

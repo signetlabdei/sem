@@ -228,7 +228,7 @@ class SimulationRunner(object):
     # Simulation running #
     ######################
 
-    def run_simulations(self, parameter_list, data_folder):
+    def run_simulations(self, parameter_list, data_folder, environment=None):
         """
         Run several simulations using a certain combination of parameters.
 
@@ -239,18 +239,26 @@ class SimulationRunner(object):
             data_folder (str): folder in which to save subfolders containing
                 simulation output.
         """
-
+        # print('param_list')
+        # print(parameter_list)
         for idx, parameter in enumerate(parameter_list):
-
             current_result = {
                 'params': {},
                 'meta': {}
                 }
+
             current_result['params'].update(parameter)
 
             command = [self.script_executable] + ['--%s=%s' % (param, value)
                                                   for param, value in
                                                   parameter.items()]
+
+            # Add the passed environment to self.environment, which contains
+            # the library path.
+            if environment is not None:
+                complete_environment = {**self.environment, **environment}                                                  
+            else:
+                complete_environment = self.environment
 
             # Run from dedicated temporary folder
             current_result['meta']['id'] = str(uuid.uuid4())
@@ -263,7 +271,7 @@ class SimulationRunner(object):
             with open(stdout_file_path, 'w') as stdout_file, open(
                     stderr_file_path, 'w') as stderr_file:
                 return_code = subprocess.call(command, cwd=temp_dir,
-                                              env=self.environment,
+                                              env=complete_environment,
                                               stdout=stdout_file,
                                               stderr=stderr_file)
             end = time.time()  # Time execution
