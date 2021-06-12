@@ -4,6 +4,7 @@ import itertools
 from operator import and_, or_
 from pathlib import Path
 from copy import deepcopy
+import re
 import shutil
 import collections
 import glob
@@ -13,7 +14,7 @@ from tinydb import TinyDB, where
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 
-REUSE_RNGRUN_VALUES = True
+REUSE_RNGRUN_VALUES = False
 
 class DatabaseManager(object):
     """
@@ -38,8 +39,6 @@ class DatabaseManager(object):
         """
         self.campaign_dir = campaign_dir
         self.db = db
-        self.maxrngrun = max([result['params']['RngRun'] for result in
-                              self.get_results()]) if self.get_results() else 0
 
     @classmethod
     def new(cls, script, commit, params, campaign_dir, overwrite=False):
@@ -95,7 +94,7 @@ class DatabaseManager(object):
         config = {
             'script': script,
             'commit': commit,
-            'params': sorted(params)
+            'params': params
         }
 
         tinydb.table('config').insert(config)
@@ -204,8 +203,8 @@ class DatabaseManager(object):
         # This dictionary serves as a model for how the keys in the newly
         # inserted result should be structured.
         example_result = {
-            'params': {k: ['...'] for k in self.get_params() + ['RngRun']},
-            'meta': {k: ['...'] for k in ['elapsed_time', 'id']},
+            'params': {k: ['...'] for k in list(self.get_params().keys()) + ['RngRun']},
+            'meta': {k: ['...'] for k in ['elapsed_time', 'id', 'exitcode']},
         }
 
         example_result['meta']['log_component'] = None
@@ -225,8 +224,8 @@ class DatabaseManager(object):
                 raise ValueError(
                     '%s:\nExpected: %s\nGot: %s' % (
                         "Result dictionary does not correspond to database format",
-                        pformat(example_result, depth=1),
-                        pformat(result, depth=1)))
+                        pformat(example_result, depth=2),
+                        pformat(result, depth=2)))
 
         # Insert results
         self.db.table('results').insert_multiple(results)
@@ -261,16 +260,9 @@ class DatabaseManager(object):
         # This dictionary serves as a model for how the keys in the newly
         # inserted result should be structured.
         example_result = {
-            'params': {k: ['...'] for k in self.get_params() + ['RngRun']},
-            'meta': {k: ['...'] for k in ['elapsed_time', 'id', 'log_component']},
-        }
-
-        lg = [None]
-        if log_component is not None:
-            lg = list(log_component.keys())
-
-        example_result['meta']['log_component'] = {
-            k: '...' for k in lg
+            'params': {k: ['...'] for k in list(self.get_params().keys()) +
+                       ['RngRun']},
+            'meta': {k: ['...'] for k in ['elapsed_time', 'id']},
         }
 
         # print(result)
@@ -331,11 +323,15 @@ class DatabaseManager(object):
                     i['meta']['log_component'] is not None]
         
         if params is None:
-            return [dict(i) for i in self.db.table('results').all() if 
-                    i['meta']['log_component'] is None]
-        
+            return [dict(i) for i in self.db.table('results').all()]
+
+        # If we are passed a list of parameter combinations, we concatenate
+        # results for the queries corresponding to each dictionary in the list
+        if isinstance(params, list):
+            return sum([self.get_results(x) for x in params], [])
+
         # Verify parameter format is correct
-        all_params = set(['RngRun'] + self.get_params())
+        all_params = set(['RngRun'] + list(self.get_params().keys()))
         param_subset = set(params.keys())
         if not all_params.issuperset(param_subset):
             raise ValueError(
@@ -370,11 +366,6 @@ class DatabaseManager(object):
                 where('params')[key] == v for v in value]) for key, value in
                                 query_params.items()]) and where('meta')('log_component') is not None   
 
-        print('Query:')                                         
-        print(query)
-
-        print([dict(i) for i in self.db.table('results').search(query)])
-
         return [dict(i) for i in self.db.table('results').search(query)]
 
     def get_result_files(self, result):
@@ -400,7 +391,7 @@ class DatabaseManager(object):
 
         return {k: v for k, v in filename_path_pairs}
 
-    def get_complete_results(self, params=None, result_id=None, log_component=None):
+    def get_complete_results(self, params=None, result_id=None, files_to_load=r'.*', log_component=None):
         """
         Return available results, analogously to what get_results does, but
         also read the corresponding output files for each result, and
@@ -445,9 +436,15 @@ class DatabaseManager(object):
             r['output'] = {}
             available_files = self.get_result_files(r['meta']['id'])
             for name, filepath in available_files.items():
-                with open(filepath, 'r') as file_contents:
-                    r['output'][name] = file_contents.read()
-
+                if ((isinstance(files_to_load, str) and re.search(files_to_load, name)) or
+                    (isinstance(files_to_load, list) and name in files_to_load)):
+                    with open(filepath, 'r') as file_contents:
+                        try:
+                            r['output'][name] = file_contents.read()
+                        except UnicodeDecodeError:
+                            # If this is not decodable, we leave this output alone
+                            # (but still insert its name in the result)
+                            r['output'][name] = 'RAW'
         return results
 
     def wipe_results(self):
@@ -457,7 +454,7 @@ class DatabaseManager(object):
         This also removes all output files, and cannot be undone.
         """
         # Clean results table
-        self.db.purge_table('results')
+        self.db.drop_table('results')
         self.write_to_disk()
 
         # Get rid of contents of data dir
@@ -467,8 +464,11 @@ class DatabaseManager(object):
         """
         Remove the specified result from the database, based on its id.
         """
-        self.db.table('results').remove(where('meta')['id'] ==
-                                        result['meta']['id'])
+        # Get rid of contents of data dir
+        shutil.rmtree(os.path.join(self.get_data_dir(), result['meta']['id']))
+        # Remove entry from results table
+        self.db.table('results').remove(where('meta')['id'] == result['meta']['id'])
+        self.write_to_disk()
 
     #############
     # Utilities #
@@ -494,14 +494,8 @@ class DatabaseManager(object):
 
         [2, 5, 6, ...]
         """
-        if REUSE_RNGRUN_VALUES:
-            yield from filter(lambda x: x not in values_list,
-                              itertools.count())
-        else:
-            for next_value in filter(lambda x: x not in values_list,
-                                     itertools.count(self.maxrngrun)):
-                self.maxrngrun += 1
-                yield next_value
+        yield from filter(lambda x: x not in values_list,
+                          itertools.count())
 
     def have_same_structure(d1, d2):
         """

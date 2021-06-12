@@ -19,9 +19,9 @@ In the following sections we will use `SEM` to go from a vanilla ns-3
 installation (assumed to be available at `./examples/ns-3`) to plots visualizing
 the results, in as few commands as possible. A script containing many commands
 of this section is available at the sem project github_, under
-`examples/wifi_plotting_xarray.py`.
+`examples/wifi_example.py`.
 
-.. _github: https://github.com/dvdmgr/sem
+.. _github: https://github.com/signetlabdei/sem
 
 Creating and loading a simulation campaign
 ------------------------------------------
@@ -76,10 +76,10 @@ Simulations can be run by specifying a list of parameter combinations.
   ...    'nWifi': 1,
   ...    'distance': 1,
   ...    'simulationTime': 10,
-  ...    'useRts': 'false',
+  ...    'useRts': False,
   ...    'mcs': 7,
   ...    'channelWidth': 20,
-  ...    'useShortGuardInterval': 'false',
+  ...    'useShortGuardInterval': False,
   ...    'RngRun': 0
   ... }
   >>> campaign.run_simulations([param_combination])
@@ -103,14 +103,13 @@ simulations both for the `true` and `false` values of the `useRts` parameter::
   ...     'nWifi': 1,
   ...     'distance': 1,
   ...     'simulationTime': 10,
-  ...     'useRts': ['false', 'true'],
+  ...     'useRts': [False, True],
   ...     'mcs': 7,
   ...     'channelWidth': 20,
-  ...     'useShortGuardInterval': 'false'
+  ...     'useShortGuardInterval': False
   ... }
-  >>> campaign.run_missing_simulations(
-  ...     sem.list_param_combinations(param_combinations),
-  ...     runs=1)
+  >>> campaign.run_missing_simulations(param_combinations,
+  ...                                  runs=1)
 
   Running simulations: 100% 1/1 [00:09<00:00,  9.63s/simulation]
 
@@ -139,14 +138,13 @@ dictionary, ranging the `mcs` parameter from 0 to 7 and turning on and off the
   ...     'nWifi': 1,
   ...     'distance': 1,
   ...     'simulationTime': 10,
-  ...     'useRts': ['false', 'true'],
+  ...     'useRts': [False, True],
   ...     'mcs': list(range(1, 8, 2)),
   ...     'channelWidth': 20,
-  ...     'useShortGuardInterval': ['false', 'true']
+  ...     'useShortGuardInterval': [False, True]
   ... }
-  >>> campaign.run_missing_simulations(
-  ...             sem.list_param_combinations(param_combinations),
-  ...             runs=2)
+  >>> campaign.run_missing_simulations(param_combinations,
+  ...                                  runs=2)
 
   Running simulations: 100% 32/32 [02:57<00:00,  3.86s/simulation]
 
@@ -169,10 +167,10 @@ For instance, let's check out the first result::
     'nWifi': 1,
     'distance': 1,
     'simulationTime': 10,
-    'useRts': 'false',
+    'useRts': False,
     'mcs': 7,
     'channelWidth': 20,
-    'useShortGuardInterval': 'false',
+    'useShortGuardInterval': False,
     'RngRun': 1,
     'id': '771e0511-43b9-4e33-aa6a-dc4266be24f1',
     'elapsed_time': 4.270819187164307,
@@ -196,20 +194,14 @@ throughput measured by the simulation. `SEM` will then use the function to
 automatically clean up the results before putting them in an `xarray`
 structure::
 
-  >>> import re  # Regular expressions to perform the parsing
   >>> def get_average_throughput(result):
   ...     # This function takes a result and parses its standard output to extract
   ...     # relevant information
-  ...     available_files = campaign.db.get_result_files(result['meta']['id'])
-  ...     with open(available_files['stdout'], 'r') as stdout:
-  ...         stdout = stdout.read()
-  ...         m = re.match('.*throughput: [-+]?([0-9]*\.?[0-9]+).*', stdout,
-  ...                     re.DOTALL).group(1)
-  ...         return float(m)
+  ...     return [float(result['output']['stdout'].split(" ")[-2])]
 
   >>> results = campaign.get_results_as_xarray(param_combinations,
   ...                                          get_average_throughput,
-  ...                                          'AvgThroughput', runs=2)
+  ...                                          ['AvgThroughput'], runs=2)
 
       <xarray.DataArray (useRts: 2, mcs: 8, useShortGuardInterval: 2, runs: 2)>
       array([[[[10.8351 , 10.8057 , 10.8163 ],
@@ -233,26 +225,18 @@ Finally, we can easily plot the obtained results by appropriately slicing the
   >>> import matplotlib.pyplot as plt
   >>> import numpy as np
   >>> # Iterate over all possible parameter values
-  >>> for useShortGuardInterval in ['false', 'true']:
-  ...   for useRts in ['false', 'true']:
-  ...       avg = results.sel(nWifi=1,
-  ...                         distance=1,
-  ...                         simulationTime=10,
-  ...                         channelWidth=20,
-  ...                         useShortGuardInterval=useShortGuardInterval,
+  >>> for useShortGuardInterval in [False, True]: # doctest: +SKIP
+  ...   for useRts in [False, True]:
+  ...       avg = results.sel(useShortGuardInterval=useShortGuardInterval,
   ...                         useRts=useRts).reduce(np.mean, 'runs')
-  ...       std = results.sel(nWifi= 1,
-  ...                         distance= 1,
-  ...                         simulationTime= 10,
-  ...                         channelWidth= 20,
-  ...                         useShortGuardInterval=useShortGuardInterval,
+  ...       std = results.sel(useShortGuardInterval=useShortGuardInterval,
   ...                         useRts=useRts).reduce(np.std, 'runs')
   ...       eb = plt.errorbar(x=param_combinations['mcs'], y=avg, yerr=6*std,
   ...                    label='SGI %s, RTS %s' % (useShortGuardInterval, useRts))
   ...       xlb = plt.xlabel('MCS')
   ...       ylb = plt.ylabel('Throughput [Mbit/s]')
-  >>> legend = plt.legend(loc='best')
-  >>> plt.savefig('docs/throughput.png')
+  >>> legend = plt.legend(loc='best') # doctest: +SKIP
+  >>> plt.savefig('docs/throughput.png') # doctest: +SKIP
 
 .. figure:: throughput.png
     :width: 100%

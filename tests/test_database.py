@@ -48,7 +48,7 @@ def test_db_loading(config, db, tmpdir):
     assert db.get_config() == config
 
     # Modify the campaign database, removing an entry
-    db.db.purge_table('config')
+    db.db.drop_table('config')
     db.db.storage.flush()
 
     # Wrong database format is currently detected
@@ -96,12 +96,12 @@ def test_get_next_rngruns(db, result):
     # First rngrun of a new campaign should be 0
     assert next(db.get_next_rngruns()) == 0
 
-    # If we add a result with RngRun 2, this should still return 0
+    # If we add a result with RngRun 2, this should still return a 0
     result['params']['RngRun'] = 2
     db.insert_result(result)
     assert next(db.get_next_rngruns()) == 0
 
-    # After inserting a run with index 0, we expect a 1
+    # After inserting a run with index 0, we still expect a 1
     result['params']['RngRun'] = 0
     db.insert_result(result)
     assert next(db.get_next_rngruns()) == 1
@@ -127,24 +127,24 @@ def test_results(db, result):
             db.insert_result({i: result[i] for i in result.keys() if i != k})
 
     # All inserted results are returned by get_results
-    assert db.get_results() == [result]
+    assert list(db.get_results()) == [result]
 
     db.insert_result(result)
     db.insert_result(result)
     db.insert_result(result)
 
-    assert db.get_results() == [result, result, result, result]
+    assert list(db.get_results()) == [result, result, result, result]
 
     # Ask for a non-existing parameter
     with pytest.raises(ValueError):
-        db.get_results({'non-existing': 0})
+        list(db.get_results({'non-existing': 0}))
 
     # An empty dictionary returns all results
-    assert db.get_results({}) == [result, result, result, result]
+    assert list(db.get_results({})) == [result, result, result, result]
 
     # wipe_results actually empties result list
     db.wipe_results()
-    assert db.get_results() == []
+    assert list(db.get_results()) == []
 
 
 def test_results_queries(db, result):
@@ -156,7 +156,7 @@ def test_results_queries(db, result):
         db.insert_result(result)
 
     # Query should return the previously saved results
-    results = db.get_results()
+    results = list(db.get_results())
     assert len(results) == 10
     assert sorted([d['params']['RngRun'] for d in results]) == list(range(10))
 
@@ -167,13 +167,13 @@ def test_results_queries(db, result):
         db.insert_result(result)
 
     # This query should return all results
-    results = db.get_results({'dict': ['/usr/share/dict/web2a',
-                                       '/usr/share/dict/web2']})
+    results = list(db.get_results({'dict': ['/usr/share/dict/web2a',
+                                       '/usr/share/dict/web2']}))
     assert len(results) == 20
     assert sorted([d['params']['RngRun'] for d in results]) == list(range(20))
 
     # This one should only return the second batch
-    results = db.get_results({'dict': ['/usr/share/dict/web2a']})
+    results = list(db.get_results({'dict': ['/usr/share/dict/web2a']}))
     assert len(results) == 10
     assert sorted([d['params']['RngRun'] for d in results]) == list(range(10,
                                                                           20,
@@ -182,8 +182,7 @@ def test_results_queries(db, result):
 
 def test_get_complete_results(manager, parameter_combination):
     manager.run_simulations([parameter_combination], show_progress=False)
-    assert manager.db.get_complete_results(
-        )[0].get('output').get('stdout') is not None
+    assert manager.db.get_complete_results()[0].get('output').get('stdout') is not None
     # Try getting complete results via id
     result = manager.db.get_complete_results()[0]
     result_id = result['meta']['id']

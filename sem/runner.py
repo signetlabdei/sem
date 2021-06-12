@@ -4,6 +4,7 @@ import re
 import subprocess
 import time
 import uuid
+import sem.utils
 
 from tqdm import tqdm
 
@@ -18,7 +19,8 @@ class SimulationRunner(object):
     # Initialization #
     ##################
 
-    def __init__(self, path, script, optimized=True, skip_configuration=False):
+    def __init__(self, path, script, optimized=True, skip_configuration=False,
+                 max_parallel_processes=None):
         """
         Initialization function.
 
@@ -35,6 +37,8 @@ class SimulationRunner(object):
         # Save member variables
         self.path = path
         self.script = script
+        self.optimized = optimized
+        self.max_parallel_processes = max_parallel_processes
 
         if optimized:
             # For old ns-3 installations, the library is in build, while for
@@ -100,12 +104,21 @@ class SimulationRunner(object):
                                      key=lambda x: x['percentage'])['path']
 
         if "scratch" in self.script_executable:
+            path_with_subdir = self.script_executable.split("/scratch/")[-1]
+            if ("/" in path_with_subdir):  # Script is in a subdir
+                executable_subpath = "%s/%s" % (self.script, self.script)
+            else:  # Script is in scratch root
+                executable_subpath = self.script
             if optimized:
                 self.script_executable = os.path.abspath(
-                    os.path.join(path, "build/optimized/scratch", self.script))
+                    os.path.join(path,
+                                 "build/optimized/scratch",
+                                 executable_subpath))
             else:
                 self.script_executable = os.path.abspath(
-                    os.path.join(path, "build/scratch", self.script))
+                    os.path.join(path,
+                                 "build/scratch",
+                                 executable_subpath))
 
     #############
     # Utilities #
@@ -127,7 +140,7 @@ class SimulationRunner(object):
 
         # Only configure if necessary
         if not skip_configuration:
-            configuration_command = ['python', 'waf', 'configure',
+            configuration_command = ['python3', 'waf', 'configure',
                                      '--enable-examples', '--disable-gtk',
                                      '--disable-python']
 
@@ -140,7 +153,9 @@ class SimulationRunner(object):
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         # Build ns-3
-        build_process = subprocess.Popen(['python', 'waf', 'build'],
+        j_argument = ['-j', str(self.max_parallel_processes)] if self.max_parallel_processes else []
+        build_process = subprocess.Popen(['python3', 'waf', 'build'] +
+                                         j_argument,
                                          cwd=self.path,
                                          stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE)
@@ -204,8 +219,8 @@ class SimulationRunner(object):
                                          cwd=self.path).decode('utf-8')
 
         # Isolate the list of parameters
-        options = re.findall('.*Program\s(?:Options|Arguments):'
-                             '(.*)General\sArguments.*',
+        options = re.findall(r'.*Program\s(?:Options|Arguments):'
+                             r'(.*)General\sArguments.*',
                              result, re.DOTALL)
 
         global_options = subprocess.check_output([self.script_executable,
@@ -214,21 +229,46 @@ class SimulationRunner(object):
                                                  cwd=self.path).decode('utf-8')
 
         # Get the single parameter names
-        args = []
+        params = {}
         if len(options):
-            args += re.findall('.*--(.*?)[?::|=].*', options[0], re.MULTILINE)
+            parsed = {}
+            for line in options[0].splitlines():
+                key = re.findall(r'.*--(.*?)[?::|=].*', line)
+                value = re.findall(r'.*\[(.*?)]', line)
+                if key:
+                    if not value:
+                        value = None
+                    else:
+                        value = value[0]
+                    parsed[key[0]] = value
+            for k, v in parsed.items():
+                if v is None:
+                    params[k] = None
+                elif str(v).lower() == 'true':
+                    params[k] = True
+                elif str(v).lower() == 'false':
+                    params[k] = False
+                else:
+                    try:
+                        params[k] = float(v)
+                    except ValueError:
+                        # Keep it as a string
+                        if str(v) == "" or any(not c.isalnum() for c in v):
+                            params[k] = None
+                        else:
+                            params[k] = str(v)
         if len(global_options):
-            args += [k for k in re.findall('.*--(.*?)[?::|=].*',
-                                           global_options, re.MULTILINE) if k
+            params.update({k:v for k, v in re.findall(r'.*--(.*?)[?::|=].*\[(.*?)\]',
+                                                      global_options, re.MULTILINE) if k
                      not in ['RngRun', 'RngSeed', 'SchedulerType',
-                             'SimulatorImplementationType', 'ChecksumEnabled']]
-        return sorted(args)  # Return a sorted list
+                             'SimulatorImplementationType', 'ChecksumEnabled']})
+        return params  # Return a sorted list
 
     ######################
     # Simulation running #
     ######################
 
-    def run_simulations(self, parameter_list, data_folder, environment=None):
+    def run_simulations(self, parameter_list, data_folder, stop_on_errors=False,environment=None):
         """
         Run several simulations using a certain combination of parameters.
 
@@ -276,23 +316,33 @@ class SimulationRunner(object):
                                               stderr=stderr_file)
             end = time.time()  # Time execution
 
-            if return_code > 0:
+            if return_code != 0:
                 complete_command = [self.script]
                 complete_command.extend(command[1:])
-                complete_command = "python waf --run \"%s\"" % (
+                complete_command = "python3 waf --run \"%s\"" % (
                     ' '.join(complete_command))
-
                 with open(stdout_file_path, 'r') as stdout_file, open(
                         stderr_file_path, 'r') as stderr_file:
-                    raise Exception(('Simulation exited with an error.\n'
+                    complete_command = sem.utils.get_command_from_result(self.script, current_result)
+                    complete_command_debug = sem.utils.get_command_from_result(self.script, current_result, debug=True)
+                    error_message = ('\nSimulation exited with an error.\n'
                                      'Params: %s\n'
-                                     '\nStderr: %s\n'
+                                     'Stderr: %s\n'
                                      'Stdout: %s\n'
                                      'Use this command to reproduce:\n'
+                                     '%s\n'
+                                     'Debug with gdb:\n'
                                      '%s'
-                                     % (parameter, stderr_file.read(),
-                                        stdout_file.read(), complete_command)))
+                                     % (parameter,
+                                        stderr_file.read(),
+                                        stdout_file.read(),
+                                        complete_command,
+                                        complete_command_debug))
+                    if stop_on_errors:
+                        raise Exception(error_message)
+                    print(error_message)
 
             current_result['meta']['elapsed_time'] = end-start
+            current_result['meta']['exitcode'] = return_code
 
             yield current_result

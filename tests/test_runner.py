@@ -43,6 +43,12 @@ def test_scratch_script(ns_3_compiled, config):
     list(runner.run_simulations([{}], data_dir))
 
 
+def test_scratch_script_in_subdir(ns_3_compiled, config):
+    data_dir = os.path.join(config['campaign_dir'], 'data')
+    runner = ParallelRunner(ns_3_compiled, 'subdir')
+    list(runner.run_simulations([{}], data_dir))
+
+
 def test_non_existent_script(ns_3_compiled):
     with pytest.raises(ValueError):
         ParallelRunner(ns_3_compiled, 'non_existing_script')
@@ -50,10 +56,3 @@ def test_non_existent_script(ns_3_compiled):
 
 def test_script_without_args(ns_3_compiled):
     ParallelRunner(ns_3_compiled, 'sample-random-variable')
-
-
-def test_empty_param_list(ns_3_compiled, config, parameter_combination):
-    runner = SimulationRunner(ns_3_compiled, 'error-throwing-example')
-    data_dir = os.path.join(config['campaign_dir'], 'data')
-    with pytest.raises(Exception):
-        list(runner.run_simulations([parameter_combination], data_dir))

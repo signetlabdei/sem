@@ -1,14 +1,14 @@
 language: python
 
-sudo: required
-dist: xenial
+os: linux
+
+dist: focal
 
 python:
-  - "3.5"
   - "3.6"
   - "3.7"
-
-sourceline: "ppa:ubuntu-toolchain-r/test"
+  - "3.8"
+  - "3.9"
 
 compiler: clang
 
@@ -20,7 +20,8 @@ install:
   - pip install poetry codecov
   - poetry build
   - poetry install
+
 script:
-  - travis_wait 30 poetry run pytest --doctest-glob='*.rst' docs/ # Check .rst documentation
-  - travis_wait 30 poetry run pytest -x --doctest-modules --cov=sem/ # Check code and docstrings
+  - travis_wait 40 poetry run pytest --doctest-glob='*.rst' docs/ # Check .rst documentation
+  - travis_wait 40 poetry run pytest -x --doctest-modules --cov=sem/ # Check code and docstrings
   - codecov

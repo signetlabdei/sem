@@ -20,7 +20,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'sem'
-copyright = '2018, Davide Magrin'
+copyright = '2021, Davide Magrin'
 author = 'Davide Magrin'
 
 # The short X.Y version

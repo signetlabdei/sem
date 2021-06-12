@@ -61,8 +61,8 @@ def ns_3_compiled_debug(tmpdir):
 def config(tmpdir, ns_3_compiled):
     return {
         'script': 'hash-example',
-        'commit': 'e060e93f468d32a5e0dab04cf780d30d4f5bd618',
-        'params': ['dict', 'time'],
+        'commit': Repo(ns_3_compiled).head.commit.hexsha,
+        'params': {'dict': None, 'time': False},
         'campaign_dir': str(tmpdir.join('test_campaign')),
     }
 
@@ -72,7 +72,7 @@ def result(config):
     r = {
         'params': collections.OrderedDict(
             [('dict', '/usr/share/dict/web2'),
-             ('time', 'false'),
+             ('time', False),
              ('RngRun', 10)]),
         'meta': {
             'elapsed_time': 10,
@@ -88,21 +88,21 @@ def parameter_combination_no_rngrun():
     # We need to explicitly state we want an OrderedDict here in order to
     # support Python < 3.6 - since Python 3.6, dicts are ordered by default
     return collections.OrderedDict([('dict', '/usr/share/dict/web2'),
-                                    ('time', 'false')])
+                                    ('time', False)])
 
 @pytest.fixture(scope='function')
 def parameter_combination():
     # We need to explicitly state we want an OrderedDict here in order to
     # support Python < 3.6 - since Python 3.6, dicts are ordered by default
     return collections.OrderedDict([('dict', '/usr/share/dict/web2'),
-                                    ('time', 'false'),
+                                    ('time', False),
                                     ('RngRun', '0')])
 
 
 @pytest.fixture(scope='function')
 def parameter_combination_2():
     return collections.OrderedDict([('dict', '/usr/share/dict/web2a'),
-                                    ('time', 'true'),
+                                    ('time', True),
                                     ('RngRun', '0')])
 
 
@@ -110,8 +110,7 @@ def parameter_combination_2():
 def parameter_combination_range():
     return collections.OrderedDict([('dict', ['/usr/share/dict/web2',
                                               '/usr/share/dict/web2a']),
-                                    ('time', ['false',
-                                              'true'])])
+                                    ('time', [False, True])])
 
 
 @pytest.fixture(scope='function')
@@ -134,28 +133,28 @@ def get_and_compile_ns_3():
     if not os.path.exists(ns_3_test_compiled_debug):
         shutil.copytree(ns_3_test, ns_3_test_compiled_debug, symlinks=True)
 
-    if subprocess.call(['python', 'waf', 'configure', '--disable-gtk',
+    if subprocess.call(['python3', 'waf', 'configure', '--disable-gtk',
                         '--disable-python', '--build-profile=optimized',
                         '--out=build/optimized', 'build'],
                        cwd=ns_3_test_compiled,
                        stdout=subprocess.DEVNULL,
-                       stderr=subprocess.STDOUT) > 0:
-        raise Exception("Test build failed.")
+                       stderr=subprocess.STDOUT) != 0:
+        raise Exception("Optimized test build failed.")
 
-    if subprocess.call(['python', 'waf', 'configure', '--disable-gtk',
+    if subprocess.call(['python3', 'waf', 'configure', '--disable-gtk',
                         '--disable-python', '--build-profile=debug',
                         '--out=build', 'build'],
                        cwd=ns_3_test_compiled_debug,
                        stdout=subprocess.DEVNULL,
-                       stderr=subprocess.STDOUT) > 0:
-        raise Exception("Test build failed.")
+                       stderr=subprocess.STDOUT) != 0:
+        raise Exception("Debug test build failed.")
 
-    if subprocess.call(['python', 'waf', 'configure', '--disable-gtk',
+    if subprocess.call(['python3', 'waf', 'configure', '--disable-gtk',
                         '--disable-python', '--build-profile=optimized',
                         '--out=build/optimized', 'build'],
                        cwd=ns_3_examples,
                        stdout=subprocess.DEVNULL,
-                       stderr=subprocess.STDOUT) > 0:
+                       stderr=subprocess.STDOUT) != 0:
         raise Exception("Examples build failed.")
 
 #########################################################################
@@ -164,11 +163,10 @@ def get_and_compile_ns_3():
 #########################################################################
 
 
-@pytest.yield_fixture(autouse=True, scope='function')
+@pytest.fixture(autouse=True, scope='function')
 def setup_and_cleanup(tmpdir):
     yield
     shutil.rmtree(str(tmpdir))
-
 
 def pytest_configure(config):
     print("Getting and compiling ns-3...")

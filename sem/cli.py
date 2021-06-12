@@ -103,8 +103,6 @@ def run(ns_3_path, results_dir, script, no_optimization, parameters,
     Run multiple simulations.
     """
 
-    sem.parallelrunner.MAX_PARALLEL_PROCESSES = max_processes
-
     # Create a campaign
     campaign = sem.CampaignManager.new(ns_3_path,
                                        script,
@@ -112,7 +110,8 @@ def run(ns_3_path, results_dir, script, no_optimization, parameters,
                                        overwrite=False,
                                        optimized=not no_optimization,
                                        runner_type=runner_type,
-                                       check_repo=skip_repo_check)
+                                       check_repo=skip_repo_check,
+                                       max_parallel_processes=max_processes)
 
     # Print campaign info
     click.echo(campaign)

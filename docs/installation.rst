@@ -4,22 +4,21 @@ Installation
 Via pip
 -------
 
-Since SEM is under active development, the recommended method to get all the
-latest features is using pip to install directly from the develop branch of the
-Github repository:
+You can easily install SEM using pip:
 
 .. code:: bash
 
-  pip3 install --user -U https://github.com/DvdMgr/sem/archive/develop.zip
+   pip3 install --user sem
+
+To get the latest development version, install directly from the develop branch
+of the Github repository:
+
+.. code:: bash
+
+  pip3 install --user -U https://github.com/signetlabdei/sem/archive/develop.zip
 
 This will install the sem package and its dependencies in your current python
 library path. This same command can also be re-issued to update the library.
-
-Alternatively, the master branch is more stable but also offers fewer features:
-
-.. code:: bash
-
-  pip3 install https://github.com/DvdMgr/sem/archive/master.zip
 
 In any case, SEM can be removed from the system by issuing:
 
@@ -46,4 +45,4 @@ release with the following command:
 
 .. code:: bash
 
-  git checkout ns-3.29
+  git checkout ns-3.33

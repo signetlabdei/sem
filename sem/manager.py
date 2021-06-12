@@ -8,6 +8,8 @@ from pathlib import Path
 from random import shuffle
 from git.refs import log
 
+from multiprocessing import Pool
+
 import numpy as np
 import xarray as xr
 from scipy.io import savemat
@@ -16,12 +18,38 @@ from tqdm import tqdm
 from .database import DatabaseManager
 from .lptrunner import LptRunner
 from .parallelrunner import ParallelRunner
+from .conditionalrunner import ConditionalRunner
 from .runner import SimulationRunner
 from .utils import DRMAA_AVAILABLE, list_param_combinations
+import pandas as pd
 
 if DRMAA_AVAILABLE:
     from .gridrunner import GridRunner
 
+def parse_result(param):
+    result, function_yields_multiple_results, result_parsing_function, param_columns = param
+    data = []
+    if function_yields_multiple_results:
+        for r in result_parsing_function(result):
+            param_values = list(deepcopy(result['params']).values())
+            if param_columns != 'all':
+                param_keys = list(deepcopy(result['params']).keys())
+                param_values_to_keep = [v for k, v in list(zip(param_keys, param_values)) if k in param_columns]
+            else:
+                param_values_to_keep = param_values
+            param_values_to_keep += [r] if not isinstance(r, list) else r
+            data += [param_values_to_keep]
+    else:
+        param_values = list(deepcopy(result['params']).values())
+        if param_columns != 'all':
+            param_keys = list(deepcopy(result['params']).keys())
+            param_values_to_keep = list([v for k, v in list(zip(param_keys, param_values)) if k in param_columns])
+        else:
+            param_values_to_keep = param_values
+        parsed = result_parsing_function(result)
+        param_values_to_keep += [parsed] if not isinstance(parsed, list) else parsed
+        data += [param_values_to_keep]
+    return data
 
 class CampaignManager(object):
     """
@@ -63,7 +91,7 @@ class CampaignManager(object):
     @classmethod
     def new(cls, ns_path, script, campaign_dir, runner_type='Auto',
             overwrite=False, optimized=True, check_repo=True,
-            skip_configuration=False):
+            skip_configuration=False, max_parallel_processes=None):
         """
         Create a new campaign from an ns-3 installation and a campaign
         directory.
@@ -118,7 +146,8 @@ class CampaignManager(object):
                                            runner_type=runner_type,
                                            optimized=optimized,
                                            check_repo=check_repo,
-                                           skip_configuration=skip_configuration)
+                                           skip_configuration=skip_configuration,
+                                           max_parallel_processes=max_parallel_processes)
 
             if manager.db.get_script() == script:
                 return manager
@@ -129,7 +158,8 @@ class CampaignManager(object):
         runner = CampaignManager.create_runner(ns_path, script,
                                                runner_type=runner_type,
                                                optimized=optimized,
-                                               skip_configuration=skip_configuration)
+                                               skip_configuration=skip_configuration,
+                                               max_parallel_processes=max_parallel_processes)
 
         # Get list of parameters to save in the DB
         params = runner.get_available_parameters()
@@ -154,7 +184,8 @@ class CampaignManager(object):
 
     @classmethod
     def load(cls, campaign_dir, ns_path=None, runner_type='Auto',
-             optimized=True, check_repo=True, skip_configuration=False):
+             optimized=True, check_repo=True, skip_configuration=False,
+             max_parallel_processes=None):
         """
         Load an existing simulation campaign.
 
@@ -191,12 +222,14 @@ class CampaignManager(object):
         if ns_path is not None:
             runner = CampaignManager.create_runner(ns_path, script,
                                                    runner_type, optimized,
-                                                   skip_configuration)
+                                                   skip_configuration,
+                                                   max_parallel_processes=max_parallel_processes)
 
         return cls(db, runner, check_repo)
 
     def create_runner(ns_path, script, runner_type='Auto',
-                      optimized=True, skip_configuration=False):
+                      optimized=True, skip_configuration=False,
+                      max_parallel_processes=None):
         """
         Create a SimulationRunner from a string containing the desired
         class implementation, and return it.
@@ -223,18 +256,42 @@ class CampaignManager(object):
         if runner_type == 'Auto' and DRMAA_AVAILABLE:
             runner_type = 'GridRunner'
         elif runner_type == 'Auto':
-            runner_type = 'LptRunner'
+            runner_type = 'ParallelRunner'
 
         return locals().get(runner_type,
                             globals().get(runner_type))(
                                 ns_path, script, optimized=optimized,
-                                skip_configuration=skip_configuration)
+                                skip_configuration=skip_configuration,
+                                max_parallel_processes=max_parallel_processes)
+
+    def check_and_fill_parameters(self, param_list, needs_rngrun):
+        # Check all parameter combinations fully specify the desired simulation
+        desired_params = list(self.db.get_params().keys())
+        for p in param_list:
+            # Besides the parameters that were actually passed, we add the ones
+            # that are always available in every script
+            if isinstance(p, list):
+                parameter = p[0]
+            else:
+                parameter = p
+            passed = list(parameter.keys())
+            available = ['RngRun'] + desired_params if needs_rngrun else desired_params
+            if set(passed) != set(available):
+                not_supported_parameters = set(passed) - set(available)
+                if not_supported_parameters:
+                    raise ValueError("The following parameters are "
+                                     "not supported by the script: %s\n" %
+                                     not_supported_parameters)
+            # Automatically fill remaining parameters with defaults
+            additional_required_parameters = set(available) - set(passed)
+            for additional_parameter in additional_required_parameters:
+                p[additional_parameter] = self.db.get_params()[additional_parameter]
 
     ######################
     # Simulation running #
     ######################
 
-    def run_simulations(self, param_list, show_progress=True, log_component=None):
+    def run_simulations(self, param_list, show_progress=True, stop_on_errors=True, log_component=None):
         """
         Run several simulations specified by a list of parameter combinations.
 
@@ -262,47 +319,7 @@ class CampaignManager(object):
         if param_list == []:
             return
 
-        environment = {}
-
-        #Create environment from the log_component passed
-        if log_component:
-            if isinstance(log_component,dict):
-                component_list = []
-                for component,level in log_component.items():
-                    component_list.append(component + '=' + level + '|prefix_all')
-                environment_varaible = ":".join(component_list)
-                #print(tmp)
-            if isinstance(log_component,str):
-                environment_varaible = log_component
-
-            environment = {"NS_LOG": environment_varaible}
-
-        # Check all parameter combinations fully specify the desired simulation
-        desired_params = self.db.get_params()
-        for p in param_list:
-            # Besides the parameters that were actually passed, we add the ones
-            # that are always available in every script
-            if isinstance(p, list):
-                parameter = p[0]
-            else:
-                parameter = p
-            passed = list(parameter.keys())
-            available = ['RngRun'] + desired_params
-            if set(passed) != set(available):
-                additional_required_parameters = set(available) - set(passed)
-                not_supported_parameters = set(passed) - set(available)
-                errormsg = ""
-                if additional_required_parameters:
-                    errormsg += ("Add the following parameters "
-                                 "to your specification: %s\n" %
-                                 additional_required_parameters)
-                if not_supported_parameters:
-                    errormsg += ("The following parameters are "
-                                 "not supported by the script: %s\n" %
-                                 not_supported_parameters)
-                raise ValueError("Specified parameter combination does not "
-                                 "match the supported parameters!\n" +
-                                 errormsg)
+        self.check_and_fill_parameters(param_list, needs_rngrun=True)
 
         #Add code to check if the passed environment is valid                                                       #TODO
         if log_component is not None:
@@ -329,7 +346,8 @@ class CampaignManager(object):
         # Note that this only creates a generator for the results, no
         # computation is performed on this line.
         results = self.runner.run_simulations(param_list,
-                                              self.db.get_data_dir(),environment=environment)
+                                              self.db.get_data_dir(),
+                                              stop_on_errors=stop_on_errors)
 
         # Wrap the result generator in the progress bar generator.
         if show_progress:
@@ -339,6 +357,9 @@ class CampaignManager(object):
         else:
             result_generator = results
 
+        self.run_and_save_results(result_generator)
+
+    def run_and_save_results(self, result_generator, batch_results=True):
         # Insert result object in db. Using the generator here ensures we
         # save results as they are finalized by the SimulationRunner, and
         # that they are kept even if execution is terminated abruptly by
@@ -347,21 +368,20 @@ class CampaignManager(object):
         last_save_time = datetime.now()
 
         for result in result_generator:
-            if environment:
-                result['meta']['log_component'] = log_component
-            else:
-                result['meta']['log_component'] = None
-
             results_batch += [result]
 
             # Save results to disk once every 60 seconds
-            if ((datetime.now() - last_save_time).total_seconds() > 60):
-                self.db.insert_results(results_batch,log_component)
+            if not batch_results:
+                self.db.insert_results(results_batch)
+                results_batch = []
+            elif (batch_results and
+                  (datetime.now() - last_save_time).total_seconds() > 60):
+                self.db.insert_results(results_batch)
                 self.db.write_to_disk()
                 results_batch = []
                 last_save_time = datetime.now()
 
-        self.db.insert_results(results_batch,log_component)
+        self.db.insert_results(results_batch)
         self.db.write_to_disk()
 
     def get_missing_simulations(self, param_list, runs=None,
@@ -379,6 +399,12 @@ class CampaignManager(object):
         """
 
         params_to_simulate = []
+
+        # Fill up a possibly impartial parameter definition with defaults
+        if runs is None:
+            self.check_and_fill_parameters (param_list, needs_rngrun=True)
+        else:
+            self.check_and_fill_parameters (param_list, needs_rngrun=False)
 
         if runs is not None:  # Get next available runs from the database
             next_runs = self.db.get_next_rngruns()
@@ -431,7 +457,9 @@ class CampaignManager(object):
 
         return params_to_simulate
 
-    def run_missing_simulations(self, param_list, runs=None, log_component=None):
+    def run_missing_simulations(self, param_list, runs=None,
+                                condition_checking_function=None,
+                                stop_on_errors=True):
         """
         Run the simulations from the parameter list that are not yet available
         in the database.
@@ -455,26 +483,145 @@ class CampaignManager(object):
         if isinstance(param_list, dict):
             param_list = list_param_combinations(param_list)
 
-        #If logging is enabled allow only a single run for a particular parameter combination
-        if log_component:
-            runs=1
+        # In this case, we need to run simulations in batches
+        if runs is None and condition_checking_function:
+            next_runs = self.db.get_next_rngruns()
+            # Create a ConditionalRunner
+            cr = ConditionalRunner(self.runner.path,
+                                   self.runner.script,
+                                   self.runner.optimized,
+                                   max_parallel_processes=self.runner.max_parallel_processes)
+            # Set up the runner's stopping condition function
+            cr.stopping_function = lambda x: condition_checking_function(self, x)
+            # Set up the runner's iterator for next runs
+            cr.next_runs = next_runs
 
-        # If we are passed a list already, just run the missing simulations
-        if isinstance(self.runner, LptRunner):
-            self.run_simulations(
-                self.get_missing_simulations(param_list, runs=runs, with_time_estimate=True,
-                                            log_component=log_component),log_component=log_component)
-        else:
-            self.run_simulations(
-                self.get_missing_simulations(param_list, runs=runs, log_component=log_component),
-                                            log_component=log_component)
+            # Fill up a possibly impartial parameter definition with defaults
+            self.check_and_fill_parameters (param_list, needs_rngrun=False)
+
+            self.run_and_save_results(cr.run_simulations(param_list,
+                                                         self.db.get_data_dir(),
+                                                         stop_on_errors=stop_on_errors),
+                                      batch_results=False)
+
+        # Otherwise, we just run all required runs for each combination
+        if condition_checking_function is None:
+            # If we are passed a list already, just run the missing simulations
+            if isinstance(self.runner, LptRunner):
+                self.run_simulations(
+                    self.get_missing_simulations(param_list,
+                                                 runs,
+                                                 with_time_estimate=True),
+                    stop_on_errors=stop_on_errors)
+            else:
+                self.run_simulations(
+                    self.get_missing_simulations(param_list, runs),
+                    stop_on_errors=stop_on_errors)
 
     #####################
     # Result management #
     #####################
 
+    def get_results_as_dataframe(self,
+                                 result_parsing_function,
+                                 columns=None,
+                                 params=None,
+                                 runs=None,
+                                 param_columns='all',
+                                 drop_constant_columns=False,
+                                 parallel_parsing=False,
+                                 verbose=False):
+        """
+        Return a Pandas DataFrame containing results parsed using a
+        user-specified function.
+
+        If function_yields_multiple_results if False, result_parsing_function is
+        expected to return a list of outputs for each parsed result, and column
+        should contain an equal number of labels describing the contents of the
+        output list.
+
+        If function_yields_multiple_results is True, instead,
+        result_parsing_function is expected to return multiple lists of outputs,
+        as described by the labels in columns, for each result. In this case,
+        each result in the database will yield a number of rows in the output
+        dataframe that is equal to the length of the result_parsing_function
+        output computed on that result.
+
+        Args:
+            result_parsing_function (function): user-defined function, taking a
+                result dictionary as input and returning a list of outputs or a list
+                of lists of outputs.
+        """
+
+        results_list = []
+        if params is not None:
+            for param_combination in list_param_combinations(params):
+                if runs is not None:
+                    results_list += list(self.db.get_results(param_combination))[:runs]
+                else:
+                    results_list += list(self.db.get_results(param_combination))
+        else:
+            results_list = list(self.db.get_results())
+
+        if result_parsing_function.__dict__.get('files_to_load', None) is not None:
+            files_to_load = result_parsing_function.__dict__['files_to_load']
+        else:
+            files_to_load = r".*"
+
+        if result_parsing_function.__dict__.get('yields_multiple_results', None) is not None:
+            function_yields_multiple_results = True
+        else:
+            function_yields_multiple_results = False
+
+        if columns is None and result_parsing_function.__dict__.get('output_labels', None) is None:
+            raise ValueError("Please either specify a column parameter or decorate your function with the @sem.utils.output_labels decorator")
+        elif columns is None:
+            columns = result_parsing_function.__dict__['output_labels']
+
+        data = []
+
+        if parallel_parsing:
+            with Pool(processes=self.runner.max_parallel_processes) as pool:
+                for parsed_result in tqdm(pool.imap_unordered(parse_result,
+                                                              [[self.db.get_complete_results(result_id=result['meta']['id'],
+                                                                                             files_to_load=files_to_load)[0],
+                                                                function_yields_multiple_results,
+                                                                result_parsing_function,
+                                                                param_columns] for result in results_list]),
+                                          total=len(results_list),
+                                          unit='result',
+                                          desc='Parsing Results',
+                                          disable=not verbose):
+                    data += parsed_result
+        else:
+            for parsed_result in tqdm((parse_result([self.db.get_complete_results(result_id=result['meta']['id'],
+                                                                                  files_to_load=files_to_load)[0],
+                                                     function_yields_multiple_results,
+                                                     result_parsing_function,
+                                                     param_columns]) for result in results_list),
+                                      total=len(results_list),
+                                      unit='result',
+                                      desc='Parsing Results',
+                                      disable=not verbose):
+                data += parsed_result
+
+        if param_columns == 'all':
+            param_columns = list(self.db.get_results()[0]['params'].keys())
+        all_columns = ([k for k in list(self.db.get_results()[0]['params'].keys()) if k in param_columns] + columns)
+
+        df = pd.DataFrame(data, columns=all_columns)
+
+        if drop_constant_columns:
+            nunique = df.apply(pd.Series.nunique)
+            cols_to_drop = nunique[nunique == 1].index
+            df = df.drop(cols_to_drop, axis=1)
+            return df
+        else:
+            return df
+
     def get_results_as_numpy_array(self, parameter_space,
-                                   result_parsing_function, runs):
+                                   result_parsing_function, runs=None,
+                                   extract_complete_results=True):
         """
         Return the results relative to the desired parameter space in the form
         of a numpy array.
@@ -488,9 +635,12 @@ class CampaignManager(object):
             runs (int): number of runs to gather for each parameter
                 combination.
         """
-        return np.array(self.get_space(self.db.get_results(), {},
-                                       parameter_space, runs,
-                                       result_parsing_function))
+        data = self.get_space(
+            self.db.get_results(), {},
+            collections.OrderedDict([(k, v) for k, v in
+                                     parameter_space.items()]),
+            result_parsing_function, runs, extract_complete_results)
+        return np.array(data)
 
     def save_to_mat_file(self, parameter_space,
                          result_parsing_function,
@@ -590,7 +740,8 @@ class CampaignManager(object):
 
     def get_results_as_xarray(self, parameter_space,
                               result_parsing_function,
-                              output_labels, runs):
+                              output_labels, runs=None,
+                              extract_complete_results=True):
         """
         Return the results relative to the desired parameter space in the form
         of an xarray data structure.
@@ -607,7 +758,7 @@ class CampaignManager(object):
         """
         # Create a parameter space only containing the variable parameters
         clean_parameter_space = collections.OrderedDict(
-            [(k, v) for k, v in parameter_space.items()])
+            [(k, v) if isinstance(v, list) else (k, [v]) for k, v in parameter_space.items()])
 
         clean_parameter_space['runs'] = range(runs)
 
@@ -618,13 +769,7 @@ class CampaignManager(object):
             self.db.get_results(), {},
             collections.OrderedDict([(k, v) for k, v in
                                      parameter_space.items()]),
-            runs, result_parsing_function)
-        print(data)
-        print(self.db.get_results(log_component= {
-                'MixedWireless':'all'
-                }))
-        print(clean_parameter_space)
-
+            result_parsing_function, runs)
         xr_array = xr.DataArray(data, coords=clean_parameter_space,
                                 dims=list(clean_parameter_space.keys()))
 
@@ -637,8 +782,10 @@ class CampaignManager(object):
         """
         return result['output']
 
-    def get_space(self, current_result_list, current_query, param_space, runs,
-                  result_parsing_function):
+    def get_space(self, current_result_list, current_query, param_space,
+                  result_parsing_function,
+                  runs=None,
+                  extract_complete_results=True):
         """
         Convert a parameter space specification to a nested array structure
         representing the space. In other words, if the parameter space is::
@@ -690,8 +837,11 @@ class CampaignManager(object):
                 r['output'] = {}
                 available_files = self.db.get_result_files(r['meta']['id'])
                 for name, filepath in available_files.items():
-                    with open(filepath, 'r') as file_contents:
-                        r['output'][name] = file_contents.read()
+                    if extract_complete_results:
+                        with open(filepath, 'r') as file_contents:
+                            r['output'][name] = file_contents.read()
+                    else:
+                        r['output'][name] = filepath
                 parsed.append(result_parsing_function(r))
                 del r
             del results
@@ -700,7 +850,8 @@ class CampaignManager(object):
 
         space = []
         [key, value] = list(param_space.items())[0]
-    
+        if not isinstance(value, list):
+            value = [value]
         # Iterate over dictionary values
         for v in value:
             next_query = deepcopy(current_query)
@@ -714,8 +865,9 @@ class CampaignManager(object):
                                 self.satisfies_query(r, temp_query)]
 
             space.append(self.get_space(temp_result_list, next_query,
-                                        next_param_space, runs,
-                                        result_parsing_function))
+                                        next_param_space,
+                                        result_parsing_function, runs,
+                                        extract_complete_results))
         return space
 
     def satisfies_query(self, result, query):

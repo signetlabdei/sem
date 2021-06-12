@@ -67,13 +67,6 @@ def test_load_campaign(manager, config, parameter_combination):
         loaded_manager.run_simulations([parameter_combination])
 
 
-def test_wrong_parameter_combination(manager, parameter_combination):
-    # Try running a parameter combination for which a parameter is missing
-    del parameter_combination['time']
-    with pytest.raises(ValueError):
-        manager.run_simulations([parameter_combination])
-
-
 def test_check_repo_ok(manager, config, ns_3_compiled):
     # This should execute no problem
     manager.check_repo_ok()
@@ -131,7 +124,7 @@ def test_get_results_as_numpy_array(tmpdir, manager,
 
 def test_save_to_mat_file(tmpdir, manager, result, parameter_combination):
     mat_file = str(tmpdir.join('results.mat'))
-    manager.run_missing_simulations(parameter_combination, 1)
+    manager.run_missing_simulations(parameter_combination)
     manager.save_to_mat_file({'time': 'false', 'dict': '/usr/share/dict/web2'},
                              sem.utils.constant_array_parser,
                              mat_file, 1)
@@ -166,3 +159,49 @@ def test_run_logging_simulation(ns_3_compiled_debug,config):
     new_campaign.run_missing_simulations(params,log_component=log_component)                                        
 
     #Assert the log file generated is correct
+
+def test_only_load_some_files_decorator(tmpdir, manager, result, parameter_combination_no_rngrun):
+    def parsing_function(result):
+        assert len(result['output'].keys()) == 2
+        return [0]
+
+    # Insert a first parameter combination
+    manager.run_missing_simulations(parameter_combination_no_rngrun, 1)
+    dataframe = manager.get_results_as_dataframe(
+        parsing_function,
+        columns=['Label'],
+        params=parameter_combination_no_rngrun,
+        runs=1)  # Get one run per combination
+
+    @sem.utils.only_load_some_files(['stdout'])
+    def decorated_parsing_function(result):
+        assert list(result['output'].keys()) == ['stdout']
+        return [0]
+
+    dataframe = manager.get_results_as_dataframe(
+        decorated_parsing_function,
+        columns=['Label'],
+        params=parameter_combination_no_rngrun,
+        runs=1)  # Get one run per combination
+
+    @sem.utils.only_load_some_files(r'.*err')
+    def another_decorated_parsing_function(result):
+        assert list(result['output'].keys()) == ['stderr']
+        return [0]
+
+    dataframe = manager.get_results_as_dataframe(
+        another_decorated_parsing_function,
+        columns=['Label'],
+        params=parameter_combination_no_rngrun,
+        runs=1)  # Get one run per combination
+
+    @sem.utils.only_load_some_files(['stderr', 'garbage'])
+    def yet_another_decorated_parsing_function(result):
+        assert list(result['output'].keys()) == ['stderr']
+        return [0]
+
+    dataframe = manager.get_results_as_dataframe(
+        yet_another_decorated_parsing_function,
+        columns=['Label'],
+        params=parameter_combination_no_rngrun,
+        runs=1)  # Get one run per combination

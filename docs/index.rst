@@ -35,7 +35,8 @@ Feature highlights
 * Supports Python 3.5+;
 * Runs multiple simulations in parallel;
 * Automatically leverages DRMAA_-compatible computing clusters when available;
-* Can export results to MATLAB .mat, Numpy .npy and directory tree formats;
+* Can parse results into Pandas dataframe, Xarray dataarray and Numpy ndarray.
+  Save results in MATLAB .mat, Numpy .npy and directory tree formats;
 * Enforces simulation reproducibility by requiring git-based codebase tracking.
 
   .. _DRMAA: https://en.wikipedia.org/wiki/DRMAA

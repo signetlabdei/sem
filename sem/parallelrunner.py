@@ -2,15 +2,14 @@ from os import environ
 from .runner import SimulationRunner
 from multiprocessing import Pool
 
-MAX_PARALLEL_PROCESSES = None  # If None, the number of CPUs is used
-
 
 class ParallelRunner(SimulationRunner):
 
     """
     A Runner which can perform simulations in parallel on the current machine.
     """
-    def run_simulations(self, parameter_list, data_folder, environment=None):
+
+    def run_simulations(self, parameter_list, data_folder, stop_on_errors=False, environment=None):
         """
         This function runs multiple simulations in parallel.
 
@@ -22,7 +21,8 @@ class ParallelRunner(SimulationRunner):
         # print(ps)
         
         self.data_folder = data_folder
-        with Pool(processes=MAX_PARALLEL_PROCESSES) as pool:
+        self.stop_on_errors = stop_on_errors
+        with Pool(processes=self.max_parallel_processes) as pool:
             for result in pool.imap_unordered(self.launch_simulation,
                                               ps):
                 yield result
@@ -37,14 +37,7 @@ class ParallelRunner(SimulationRunner):
         Args:
             parameter (dict): the parameter combination to simulate.
         """
-        # print('DC')
-        # print(parameter_and_environment_zipped[0])
-        # print(parameter_and_environment_zipped[1])
-
-        # print("Environment2:")
-        # print(environment)
-        # print("Parameter")
-        # print(parameter)
-        # print()
         return next(SimulationRunner.run_simulations(self, [parameter_and_environment[0]],
-                                                     self.data_folder,parameter_and_environment[1]))
+                                                     self.data_folder,
+                                                     stop_on_errors=self.stop_on_errors,
+                                                     parameter_and_environment[1]))
