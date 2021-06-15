@@ -198,7 +198,7 @@ class DatabaseManager(object):
                           self.get_results()]
         yield from DatabaseManager.get_next_values(self, available_runs)
 
-    def insert_results(self, results, log_component):
+    def insert_results(self, results, log_component=None):
 
         # This dictionary serves as a model for how the keys in the newly
         # inserted result should be structured.
@@ -207,16 +207,15 @@ class DatabaseManager(object):
             'meta': {k: ['...'] for k in ['elapsed_time', 'id', 'exitcode']},
         }
 
-        example_result['meta']['log_component'] = None
-
+        # If logging is enabled, the results should have a log_component 
+        # dictionary inside the meta dictionary
         if log_component is not None:
-            lg = list(log_component.keys())
+            log_component_list = list(log_component.keys())
             example_result['meta']['log_component'] = {
-                k: '...' for k in lg
+                k: '...' for k in log_component_list
             }
-
-        # print(results)
-        # print(example_result)
+        else:
+            example_result['meta']['log_component'] = None
 
         for result in results:
             # Verify result format is correct
@@ -230,7 +229,7 @@ class DatabaseManager(object):
         # Insert results
         self.db.table('results').insert_multiple(results)
 
-    def insert_result(self, result, log_component):
+    def insert_result(self, result, log_component=None):
         """
         Insert a new result in the database.
 
@@ -247,14 +246,20 @@ class DatabaseManager(object):
                            },
                 'meta': {
                           'elapsed_time': value4,
-                          'id': value5
+                          'id': value5,
+                          'log_component': {
+                                                '...' : '...'
+                                           }
                         }
             }
 
         Where elapsed time is a float representing the seconds the simulation
         execution took, and id is a UUID uniquely identifying the result, and
         which is used to locate the output files in the campaign_dir/data
-        folder.
+        folder. 
+        The log_component dictionary represents the enabled log_components along
+        with their respective log_levels. For simulations where logging was not 
+        enabled its value will be None. 
         """
 
         # This dictionary serves as a model for how the keys in the newly
@@ -265,8 +270,15 @@ class DatabaseManager(object):
             'meta': {k: ['...'] for k in ['elapsed_time', 'id']},
         }
 
-        # print(result)
-        # print(example_result)
+        # If logging is enabled, the results should have a log_component 
+        # dictionary inside the meta dictionary
+        if log_component is not None:
+            log_component_list = list(log_component.keys())
+            example_result['meta']['log_component'] = {
+                k: '...' for k in log_component_list
+            }
+        else:
+            example_result['meta']['log_component'] = None
 
         # Verify result format is correct
         if not(DatabaseManager.have_same_structure(result, example_result)):
@@ -284,7 +296,11 @@ class DatabaseManager(object):
         Return all the results available from the database that fulfill some
         parameter combinations.
 
-        If params is None (or not specified), return all results.
+        If params is None (or not specified) and log_component is specified,
+        return all results where the specified log_component is enabled.
+
+        If params is None (or not specified) and log_component is None 
+        (or not specified), return all results with logging disabled.
 
         If params is specified, it must be a dictionary specifying the result
         values we are interested in, with multiple values specified as lists.
@@ -312,7 +328,6 @@ class DatabaseManager(object):
         # A cast to dict is necessary, since self.db.table() contains TinyDB's
         # Document object (which is simply a wrapper for a dictionary, thus the
         # simple cast).
-
         
         if result_id is not None:
             return [dict(i) for i in self.db.table('results').all() if
@@ -320,10 +335,11 @@ class DatabaseManager(object):
 
         if params is None and log_component is not None:
             return [dict(i) for i in self.db.table('results').all() if  
-                    i['meta']['log_component'] is not None]
+                    i['meta']['log_component'] == log_component]
         
         if params is None:
-            return [dict(i) for i in self.db.table('results').all()]
+            return [dict(i) for i in self.db.table('results').all() if 
+                    i['meta']['log_component'] is None]
 
         # If we are passed a list of parameter combinations, we concatenate
         # results for the queries corresponding to each dictionary in the list
@@ -357,14 +373,22 @@ class DatabaseManager(object):
         # Create the TinyDB query
         # In the docstring example above, this is equivalent to:
         # AND(OR(param1 == value1), OR(param2 == value2, param2 == value3))
-        if log_component is None:
+        print('queryParams:')
+        print(query_params)
+    
+        if log_component is None:                                                                                #TODO - form a query of the sort AND(OR(param1 == value1), OR(param2 == value2, param2 == value3),AND(log_component==None))
             query = reduce(and_, [reduce(or_, [
-                where('params')[key] == v for v in value]) for key, value in
-                                query_params.items()]) and where('meta')('log_component') is None
+                (where('meta')['log_component']==None) and (where('params')[key] == v for v in value)]) for key, value in
+                                query_params.items()])  
+            print(query)
+            print(self.get_results())
         else:
             query = reduce(and_, [reduce(or_, [
                 where('params')[key] == v for v in value]) for key, value in
-                                query_params.items()]) and where('meta')('log_component') is not None   
+                                query_params.items()]) and where('meta')('log_component') == log_component   
+
+        # print("Query:")
+        # print(query)
 
         return [dict(i) for i in self.db.table('results').search(query)]
 
@@ -428,7 +452,7 @@ class DatabaseManager(object):
         """
 
         if result_id is not None:
-            results = deepcopy(self.get_results(result_id=result_id,log_component=log_component))
+            results = deepcopy(self.get_results(result_id=result_id))
         else:
             results = deepcopy(self.get_results(params,log_component=log_component))
 

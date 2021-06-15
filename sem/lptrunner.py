@@ -67,7 +67,7 @@ class LptRunner(SimulationRunner):
                     # print("processing", next_sim)
                 result = next(SimulationRunner.run_simulations(self, [next_sim],
                                                                self.data_folder),
-                                                               environment=environment)
+                                                               env=environment)
                 times[index] = float(result['meta']['elapsed_time'])
 
                 # with iolock:

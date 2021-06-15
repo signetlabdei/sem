@@ -38,6 +38,7 @@ class SimulationRunner(object):
         self.path = path
         self.script = script
         self.optimized = optimized
+        self.skip_configuration = skip_configuration
         self.max_parallel_processes = max_parallel_processes
 
         if optimized:
@@ -268,7 +269,7 @@ class SimulationRunner(object):
     # Simulation running #
     ######################
 
-    def run_simulations(self, parameter_list, data_folder, stop_on_errors=False,environment=None):
+    def run_simulations(self, parameter_list, data_folder, stop_on_errors=False,env=None):
         """
         Run several simulations using a certain combination of parameters.
 
@@ -279,8 +280,18 @@ class SimulationRunner(object):
             data_folder (str): folder in which to save subfolders containing
                 simulation output.
         """
-        # print('param_list')
-        # print(parameter_list)
+        # Add the passed environment to self.environment, which contains
+            # the library path.
+        if env is not None:
+            # TODO - this might not be the best approach, but we will need to reinitialize 
+            # the valriables called in the init() function if the user createsthe campaign 
+            # in optimized mode and tried to run simulations with logging enabled
+            # Other option might be to create a new runner only for logging
+            self.__init__(self.path,self.script,False,False,self.max_parallel_processes)                                               
+            complete_environment = {**self.environment, **env}   
+        else:
+            complete_environment = self.environment
+
         for idx, parameter in enumerate(parameter_list):
             current_result = {
                 'params': {},
@@ -292,13 +303,6 @@ class SimulationRunner(object):
             command = [self.script_executable] + ['--%s=%s' % (param, value)
                                                   for param, value in
                                                   parameter.items()]
-
-            # Add the passed environment to self.environment, which contains
-            # the library path.
-            if environment is not None:
-                complete_environment = {**self.environment, **environment}                                                  
-            else:
-                complete_environment = self.environment
 
             # Run from dedicated temporary folder
             current_result['meta']['id'] = str(uuid.uuid4())

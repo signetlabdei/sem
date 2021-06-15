@@ -306,6 +306,9 @@ class CampaignManager(object):
                 can be either a string or a number).
             show_progress (bool): whether or not to show a progress bar with
                 percentage and expected remaining time.
+            log_component (dict, str): Either a python dictionary with the 
+                log_components (to enable) as the key and their respective 
+                log_levels as the value or a string formatted in the NS_LOG variable format. 
         """
 
         # Make sure we have a runner to run simulations with.
@@ -319,11 +322,27 @@ class CampaignManager(object):
         if param_list == []:
             return
 
-        self.check_and_fill_parameters(param_list, needs_rngrun=True)
-
-        #Add code to check if the passed environment is valid                                                       #TODO
+        #Add code to check if the passed dictionary is valid                                                       #TODO
         if log_component is not None:
             pass # check
+
+        # If logging is enabled, convert the passed log_component
+        # dictionary or string to NS_LOG environment variable format
+        environment = {}
+        if log_component is not None:
+            if isinstance(log_component,dict):
+                component_list = []
+                for component,log_level in log_component.items():
+                    component_list.append(component + '=' + log_level + '|prefix_all')
+                environment_varaible = ":".join(component_list)
+    
+            if isinstance(log_component,str):
+                environment_varaible = log_component
+
+            environment = {"NS_LOG": environment_varaible}
+
+
+        self.check_and_fill_parameters(param_list, needs_rngrun=True)
 
         # Check that the current repo commit corresponds to the one specified
         # in the campaign
@@ -333,7 +352,7 @@ class CampaignManager(object):
         # Build ns-3 before running any simulations
         # At this point, we can assume the project was already configured
         if log_component is not None:
-            self.runner.configure_and_build(optimized=False,skip_configuration=True)    
+            self.runner.configure_and_build(optimized=False,skip_configuration=False)    
         else:
             self.runner.configure_and_build(skip_configuration=True)
 
@@ -347,7 +366,8 @@ class CampaignManager(object):
         # computation is performed on this line.
         results = self.runner.run_simulations(param_list,
                                               self.db.get_data_dir(),
-                                              stop_on_errors=stop_on_errors)
+                                              stop_on_errors=stop_on_errors,
+                                              env=environment)
 
         # Wrap the result generator in the progress bar generator.
         if show_progress:
@@ -357,9 +377,9 @@ class CampaignManager(object):
         else:
             result_generator = results
 
-        self.run_and_save_results(result_generator)
+        self.run_and_save_results(result_generator, log_component)
 
-    def run_and_save_results(self, result_generator, batch_results=True):
+    def run_and_save_results(self, result_generator, batch_results=True, log_component=None):
         # Insert result object in db. Using the generator here ensures we
         # save results as they are finalized by the SimulationRunner, and
         # that they are kept even if execution is terminated abruptly by
@@ -368,20 +388,25 @@ class CampaignManager(object):
         last_save_time = datetime.now()
 
         for result in result_generator:
+            if log_component is None:
+                result['meta']['log_component'] = None
+            else:
+                result['meta']['log_component'] = log_component
+
             results_batch += [result]
 
             # Save results to disk once every 60 seconds
             if not batch_results:
-                self.db.insert_results(results_batch)
+                self.db.insert_results(results_batch,log_component)
                 results_batch = []
             elif (batch_results and
                   (datetime.now() - last_save_time).total_seconds() > 60):
-                self.db.insert_results(results_batch)
+                self.db.insert_results(results_batch,log_component)
                 self.db.write_to_disk()
                 results_batch = []
                 last_save_time = datetime.now()
 
-        self.db.insert_results(results_batch)
+        self.db.insert_results(results_batch,log_component)
         self.db.write_to_disk()
 
     def get_missing_simulations(self, param_list, runs=None,
@@ -396,9 +421,19 @@ class CampaignManager(object):
             runs (int): an integer representing how many repetitions are wanted
                 for each parameter combination, None if the dictionaries in
                 param_list already feature the desired RngRun value.
+            log_component (dict): This dictionary contains {logComponent:LogLevel}
+                (to enable) as {key:value} pairs. Passing this parameter specifies 
+                the function to only look in the results with the logging flag enabled 
+                (This ensures that the results of simulations ran without run_with_log
+                API are left untouched).
         """
 
         params_to_simulate = []
+
+        # For simulations where logging is enabled it does not make sense to run
+        # simulations more than one time
+        if log_component is not None:
+            runs=1
 
         # Fill up a possibly impartial parameter definition with defaults
         if runs is None:
@@ -408,7 +443,7 @@ class CampaignManager(object):
 
         if runs is not None:  # Get next available runs from the database
             next_runs = self.db.get_next_rngruns()
-            available_results = [r for r in self.db.get_results()]
+            available_results = [r for r in self.db.get_results(log_component=log_component)]
 
             for param_comb in param_list:
                 # Count how many param combinations we found, and remove them
@@ -459,7 +494,7 @@ class CampaignManager(object):
 
     def run_missing_simulations(self, param_list, runs=None,
                                 condition_checking_function=None,
-                                stop_on_errors=True):
+                                stop_on_errors=True, log_component=None):
         """
         Run the simulations from the parameter list that are not yet available
         in the database.
@@ -478,6 +513,9 @@ class CampaignManager(object):
             runs (int): the number of runs to perform for each parameter
                 combination. This parameter is only allowed if the param_list
                 specification doesn't feature an 'RngRun' key already.
+            log_component (dict, str): Either a python dictionary with the 
+                log_components (to enable) as the key and their respective 
+                log_levels as the value or a string formatted in the NS_LOG variable format.
         """
         # If we are passed a dictionary, we need to expand this
         if isinstance(param_list, dict):
@@ -501,8 +539,10 @@ class CampaignManager(object):
 
             self.run_and_save_results(cr.run_simulations(param_list,
                                                          self.db.get_data_dir(),
-                                                         stop_on_errors=stop_on_errors),
-                                      batch_results=False)
+                                                         stop_on_errors=stop_on_errors,
+                                                         log_component=log_component),
+                                      batch_results=False,
+                                      log_component=log_component)
 
         # Otherwise, we just run all required runs for each combination
         if condition_checking_function is None:
@@ -511,12 +551,17 @@ class CampaignManager(object):
                 self.run_simulations(
                     self.get_missing_simulations(param_list,
                                                  runs,
-                                                 with_time_estimate=True),
-                    stop_on_errors=stop_on_errors)
+                                                 with_time_estimate=True,
+                                                 log_component=log_component),
+                    stop_on_errors=stop_on_errors,
+                    log_component=log_component)
             else:
                 self.run_simulations(
-                    self.get_missing_simulations(param_list, runs),
-                    stop_on_errors=stop_on_errors)
+                    self.get_missing_simulations(param_list, 
+                                                runs,
+                                                log_component=log_component),
+                    stop_on_errors=stop_on_errors,
+                    log_component=log_component)
 
     #####################
     # Result management #
@@ -830,6 +875,7 @@ class CampaignManager(object):
             results = [r for r in current_result_list if
                        self.satisfies_query(r, current_query)]
             parsed = []
+
             for r in results[:runs]:
 
                 # Make results complete, by reading the output from file

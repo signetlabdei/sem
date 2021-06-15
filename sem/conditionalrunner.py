@@ -24,7 +24,7 @@ class ConditionalRunner(SimulationRunner):
                                   skip_configuration, max_parallel_processes)
         self.parameter_runtime_map = {}
 
-    def run_simulations(self, parameter_list, data_folder, stop_on_errors=True):
+    def run_simulations(self, parameter_list, data_folder, stop_on_errors=True, environment=None):
         """
         This function runs multiple simulations in parallel.
 

@@ -9,7 +9,7 @@ class ParallelRunner(SimulationRunner):
     A Runner which can perform simulations in parallel on the current machine.
     """
 
-    def run_simulations(self, parameter_list, data_folder, stop_on_errors=False, environment=None):
+    def run_simulations(self, parameter_list, data_folder, stop_on_errors=False, env=None):
         """
         This function runs multiple simulations in parallel.
 
@@ -17,14 +17,13 @@ class ParallelRunner(SimulationRunner):
             parameter_list (list): list of parameter combinations to simulate.
             data_folder (str): folder in which to create output folders.
         """
-        ps = [tuple((x,environment)) for x in parameter_list]
-        # print(ps)
-        
+
+        parameter_and_environment = [tuple((x,env)) for x in parameter_list]
         self.data_folder = data_folder
         self.stop_on_errors = stop_on_errors
         with Pool(processes=self.max_parallel_processes) as pool:
             for result in pool.imap_unordered(self.launch_simulation,
-                                              ps):
+                                              parameter_and_environment):
                 yield result
 
     def launch_simulation(self, parameter_and_environment):
@@ -40,4 +39,4 @@ class ParallelRunner(SimulationRunner):
         return next(SimulationRunner.run_simulations(self, [parameter_and_environment[0]],
                                                      self.data_folder,
                                                      stop_on_errors=self.stop_on_errors,
-                                                     parameter_and_environment[1]))
+                                                     env=parameter_and_environment[1]))
