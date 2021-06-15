@@ -373,15 +373,13 @@ class DatabaseManager(object):
         # Create the TinyDB query
         # In the docstring example above, this is equivalent to:
         # AND(OR(param1 == value1), OR(param2 == value2, param2 == value3))
-        print('queryParams:')
-        print(query_params)
     
         if log_component is None:                                                                                #TODO - form a query of the sort AND(OR(param1 == value1), OR(param2 == value2, param2 == value3),AND(log_component==None))
             query = reduce(and_, [reduce(or_, [
                 (where('meta')['log_component']==None) and (where('params')[key] == v for v in value)]) for key, value in
                                 query_params.items()])  
-            print(query)
-            print(self.get_results())
+            #print(query)
+
         else:
             query = reduce(and_, [reduce(or_, [
                 where('params')[key] == v for v in value]) for key, value in
