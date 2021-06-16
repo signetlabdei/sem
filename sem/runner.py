@@ -282,9 +282,9 @@ class SimulationRunner(object):
         """
         # Add the passed environment to self.environment, which contains
             # the library path.
-        if env is not None:
-            # TODO - this might not be the best approach, but we will need to reinitialize 
-            # the valriables called in the init() function if the user createsthe campaign 
+        if env:
+            #TODO - this might not be the best approach, but we will need to reinitialize 
+            # the valriables called in the init() function if the user creates the campaign 
             # in optimized mode and tried to run simulations with logging enabled
             # Other option might be to create a new runner only for logging
             self.__init__(self.path,self.script,False,False,self.max_parallel_processes)                                               

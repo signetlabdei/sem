@@ -2,6 +2,7 @@ import collections
 import gc
 import os
 import shutil
+import re
 from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
@@ -291,6 +292,31 @@ class CampaignManager(object):
     # Simulation running #
     ######################
 
+    def parse_log_component(self,log_component):
+        #Verifies if the log levels passed in the log_component dictionary are correct 
+        # and removes the level_ prefix (if present) from the log levels and converts 
+        # the levels to corresponding levels without the level_prefix
+        # For example,
+        # 'level_debug' get converted to 'warn|error|debug'
+        ret_dict = {}
+        log_level_list = ['error','warn','debug','info','function','logic','all']
+        for component,levels in log_component.items():
+            log_levels_comp = set()
+            for level in levels.split('|'):
+                match = re.match(r"(?=("+'|'.join([r'^' + lvl + r'$' for lvl in log_level_list])+r"))",level)
+                lvl_match = re.match(r"(?=("+'|'.join([r'^level_' + lvl + r'$'for lvl in log_level_list])+r"))",level)
+                if match:
+                    log_levels_comp.add(match.group(1))
+                elif  lvl_match:
+                    for lvl in log_level_list:
+                        log_levels_comp.add(lvl)
+                        if lvl_match.group(1).split('_')[1] == lvl:
+                            break
+                else:
+                    raise Exception("Log level for component %s is not valid" % component)
+            ret_dict[component] = "|".join(log_levels_comp)
+        return ret_dict
+
     def run_simulations(self, param_list, show_progress=True, stop_on_errors=True, log_component=None):
         """
         Run several simulations specified by a list of parameter combinations.
@@ -322,15 +348,18 @@ class CampaignManager(object):
         if param_list == []:
             return
 
-        #Add code to check if the passed dictionary is valid                                                       #TODO
-        if log_component is not None:
-            pass # check
+            # check
 
         # If logging is enabled, convert the passed log_component
         # dictionary or string to NS_LOG environment variable format
         environment = {}
         if log_component is not None:
             if isinstance(log_component,dict):
+                #Add code to check if the passed dictionary is valid                                                       #TODO
+                # the log level should be of the form debug,info or level_debug,level_info
+                # where 'level_' prefix indicates the specified log level along with 
+                log_component = self.parse_log_component(log_component)
+
                 component_list = []
                 for component,log_level in log_component.items():
                     component_list.append(component + '=' + log_level + '|prefix_all')
@@ -338,6 +367,8 @@ class CampaignManager(object):
     
             if isinstance(log_component,str):
                 environment_varaible = log_component
+                #TODO convert the string to log_component dictionary format
+                # to store in the database later
 
             environment = {"NS_LOG": environment_varaible}
 
@@ -377,7 +408,11 @@ class CampaignManager(object):
         else:
             result_generator = results
 
-        self.run_and_save_results(result_generator, log_component)
+        result_ids = self.run_and_save_results(result_generator, log_component)
+
+        if log_component:
+            return [os.path.join(self.db.campaign_dir,file_path,'stderr') for file_path in result_ids]
+        return None
 
     def run_and_save_results(self, result_generator, batch_results=True, log_component=None):
         # Insert result object in db. Using the generator here ensures we
@@ -385,6 +420,7 @@ class CampaignManager(object):
         # that they are kept even if execution is terminated abruptly by
         # crashes or by a KeyboardInterrupt.
         results_batch = []
+        result_ids = []
         last_save_time = datetime.now()
 
         for result in result_generator:
@@ -394,6 +430,7 @@ class CampaignManager(object):
                 result['meta']['log_component'] = log_component
 
             results_batch += [result]
+            result_ids += [result['meta']['id']]
 
             # Save results to disk once every 60 seconds
             if not batch_results:
@@ -408,6 +445,7 @@ class CampaignManager(object):
 
         self.db.insert_results(results_batch,log_component)
         self.db.write_to_disk()
+        return result_ids
 
     def get_missing_simulations(self, param_list, runs=None,
                                 with_time_estimate=False,log_component=None):
@@ -548,7 +586,7 @@ class CampaignManager(object):
         if condition_checking_function is None:
             # If we are passed a list already, just run the missing simulations
             if isinstance(self.runner, LptRunner):
-                self.run_simulations(
+                log_path = self.run_simulations(
                     self.get_missing_simulations(param_list,
                                                  runs,
                                                  with_time_estimate=True,
@@ -556,12 +594,17 @@ class CampaignManager(object):
                     stop_on_errors=stop_on_errors,
                     log_component=log_component)
             else:
-                self.run_simulations(
+                log_path = self.run_simulations(
                     self.get_missing_simulations(param_list, 
                                                 runs,
                                                 log_component=log_component),
                     stop_on_errors=stop_on_errors,
                     log_component=log_component)
+
+        if log_path:
+            return log_path
+        else:
+            return []
 
     #####################
     # Result management #
