@@ -471,9 +471,8 @@ class CampaignManager(object):
                 combination. This parameter is only allowed if the param_list
                 specification doesn't feature an 'RngRun' key already.
         """
-        # If we are passed a dictionary, we need to expand this
-        if isinstance(param_list, dict):
-            param_list = list_param_combinations(param_list)
+        # Expand the parameter specification
+        param_list = list_param_combinations(param_list)
 
         # In this case, we need to run simulations in batches
         if runs is None and condition_checking_function:
