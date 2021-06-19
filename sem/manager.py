@@ -160,7 +160,7 @@ class CampaignManager(object):
                                                runner_type=runner_type,
                                                optimized=optimized,
                                                skip_configuration=skip_configuration,
-                                               max_parallel_processes=max_parallel_processes)
+                                               max_parallel_processes=max_parallel_processes)                                                       
 
         # Get list of parameters to save in the DB
         params = runner.get_available_parameters()
@@ -292,34 +292,87 @@ class CampaignManager(object):
     # Simulation running #
     ######################
 
-    def parse_log_component(self,log_component):
-        #Verifies if the log levels passed in the log_component dictionary are correct 
-        # and removes the level_ prefix (if present) from the log levels and converts 
-        # the levels to corresponding levels without the level_prefix
-        # For example,
-        # 'level_debug' get converted to 'warn|error|debug'
+    def parse_log_component(self,log_component,ns3_log_components):
+        """
+        Verifies if the log levels/log classes passed in the log_component dictionary are valid
+        and converts log levels to corresponding log classes. Returns a dictionary with the 
+        valid components and log classes.
+        For example,
+        'level_debug' get converted to 'warn|error|debug'
+
+        Args:
+            log_component (dict): a python dictionary with the 
+                log_components (to enable) as the key and the log_levels 
+                as the value. Log levels are to be mentioned in similar format to how 
+                log levels are mentioned in NS_LOG.
+                
+                For example, 
+                log_component = {
+                    'compoennt1' : 'info',
+                    'component2' : 'level_debug|info' 
+                }
+            ns3_log_components (list): A list containing all the valid log components supported by ns-3. 
+        """
         ret_dict = {}
-        log_level_list = ['error','warn','debug','info','function','logic','all']
+        log_level_list = ['error', 'warn', 'debug', 'info', 'function', 'logic', 'all']
+        converter = {
+            'error': ['error'],
+            'warn': ['warn'],
+            'debug': ['debug'],
+            'info': ['info'],
+            'function': ['function'],
+            'logic': ['logic'],
+            'all': ['all'],
+            'level_error': ['error'],
+            'level_warn': ['error','warn'],
+            'level_debug': ['error','warn','debug'],
+            'level_info': ['error','warn','debug','info'],
+            'level_function': ['error','warn','debug','info','function'],
+            'level_logic': ['error','warn','debug','info','function','logic'],
+            'level_all': ['error','warn','debug','info','function','logic','all'],
+            'prefix_func': None,
+            'prefix_time': None,
+            'prefix_node': None,
+            'prefix_level': None,
+            'prefix_all': None
+        }
         for component,levels in log_component.items():
-            log_levels_comp = set()
+            log_level_complete = set()
             for level in levels.split('|'):
-                match = re.match(r"(?=("+'|'.join([r'^' + lvl + r'$' for lvl in log_level_list])+r"))",level)
-                lvl_match = re.match(r"(?=("+'|'.join([r'^level_' + lvl + r'$'for lvl in log_level_list])+r"))",level)
-                if match:
-                    log_levels_comp.add(match.group(1))
-                elif  lvl_match:
-                    for lvl in log_level_list:
-                        log_levels_comp.add(lvl)
-                        if lvl_match.group(1).split('_')[1] == lvl:
-                            break
-                else:
+                if level not in converter.keys() or component not in ns3_log_components:
                     raise Exception("Log level for component %s is not valid" % component)
-            ret_dict[component] = "|".join(log_levels_comp)
+
+                #Drop prefixes if mentioned by user here
+                if converter[level] is not None:
+                    log_level_complete.update(converter[level])
+
+            # Sort the log classes for consistency 
+            log_level_sorted = [level for level in log_level_list if level in log_level_complete]
+
+            ret_dict[component] = "|".join(log_level_sorted)
+
         return ret_dict
+    
+    def convert_environment_str_to_dict(self,log_component):
+        #Converts NS_LOG formatted string to the corresponding dictionary.      #TODO - Docstring
+
+        # Droppping NS_LOG prefix and loosely checking the format
+        log_component = re.match(r'^NS_LOG="([\w=|:]+)"$',log_component).group(1)
+
+        # convert the string to log_component dictionary format
+        # to store in the database later
+        ret_dict = {}
+        for component in log_component.split(':'):
+            component_and_level = component.split('=')
+            ret_dict[component_and_level[0]] = component_and_level[1]
+        
+        return ret_dict            
 
     def run_simulations(self, param_list, show_progress=True, stop_on_errors=True, log_component=None):
         """
-        Run several simulations specified by a list of parameter combinations.
+        Run several simulations specified by a list of parameter combinations. 
+        Returns a list containing the paths to log files(stderr) if logging is enabled;
+        else returns empty list. 
 
         Note: this function does not verify whether we already have the
         required simulations in the database - it just runs all the parameter
@@ -332,9 +385,16 @@ class CampaignManager(object):
                 can be either a string or a number).
             show_progress (bool): whether or not to show a progress bar with
                 percentage and expected remaining time.
-            log_component (dict, str): Either a python dictionary with the 
-                log_components (to enable) as the key and their respective 
-                log_levels as the value or a string formatted in the NS_LOG variable format. 
+            log_component (dict): a python dictionary with the 
+                log_components (to enable) as the key and the log levels/log classes
+                as the value. Log levels/log classes are to be mentioned in a similar format to that
+                of NS_LOG.
+                
+                For example, 
+                log_component = {
+                    'compoennt1' : 'info',
+                    'component2' : 'level_debug|info' 
+                } 
         """
 
         # Make sure we have a runner to run simulations with.
@@ -344,34 +404,32 @@ class CampaignManager(object):
             raise Exception("No runner was ever specified"
                             " for this CampaignManager.")
 
+        if log_component is not None and self.runner.optimized:
+            raise Exception("Log components cannot be enabled in optimized mode. Plese re-initialize the campaign again using 'optimized=False'.")                            
+
         # Return if the list is empty
         if param_list == []:
             return
-
-            # check
 
         # If logging is enabled, convert the passed log_component
         # dictionary or string to NS_LOG environment variable format
         environment = {}
         if log_component is not None:
-            if isinstance(log_component,dict):
-                #Add code to check if the passed dictionary is valid                                                       #TODO
-                # the log level should be of the form debug,info or level_debug,level_info
-                # where 'level_' prefix indicates the specified log level along with 
-                log_component = self.parse_log_component(log_component)
+            # Get all availabe log components
+            ns3_log_components = self.runner.get_available_log_components()
 
-                component_list = []
-                for component,log_level in log_component.items():
-                    component_list.append(component + '=' + log_level + '|prefix_all')
-                environment_varaible = ":".join(component_list)
-    
-            if isinstance(log_component,str):
-                environment_varaible = log_component
-                #TODO convert the string to log_component dictionary format
-                # to store in the database later
+            # Add code to check if the passed dictionary is valid                                                       
+            # the log level should be of the form info or level_debug|info 
+            # or level_info where 'level_' prefix indicates the specified 
+            # log class along with all the log classes above it
+            log_component = self.parse_log_component(log_component,ns3_log_components)
 
-            environment = {"NS_LOG": environment_varaible}
+            environment_variable = ":".join (
+                                        [component + '=' + log_level + '|prefix_all' 
+                                        for component, log_level in log_component.items()]
+                                            )
 
+            environment = {"NS_LOG": environment_variable}
 
         self.check_and_fill_parameters(param_list, needs_rngrun=True)
 
@@ -382,10 +440,7 @@ class CampaignManager(object):
 
         # Build ns-3 before running any simulations
         # At this point, we can assume the project was already configured
-        if log_component is not None:
-            self.runner.configure_and_build(optimized=False,skip_configuration=False)    
-        else:
-            self.runner.configure_and_build(skip_configuration=True)
+        self.runner.configure_and_build(skip_configuration=True)
 
         # Shuffle simulations
         # This mixes up long and short simulations, and gives better time
@@ -398,7 +453,7 @@ class CampaignManager(object):
         results = self.runner.run_simulations(param_list,
                                               self.db.get_data_dir(),
                                               stop_on_errors=stop_on_errors,
-                                              env=environment)
+                                              environment=environment)
 
         # Wrap the result generator in the progress bar generator.
         if show_progress:
@@ -410,9 +465,9 @@ class CampaignManager(object):
 
         result_ids = self.run_and_save_results(result_generator, log_component)
 
-        if log_component:
-            return [os.path.join(self.db.campaign_dir,file_path,'stderr') for file_path in result_ids]
-        return None
+        if log_component is not None:
+            return [os.path.join(self.db.campaign_dir,'data',result_id,'stderr') for result_id in result_ids]
+        return []
 
     def run_and_save_results(self, result_generator, batch_results=True, log_component=None):
         # Insert result object in db. Using the generator here ensures we
@@ -459,19 +514,19 @@ class CampaignManager(object):
             runs (int): an integer representing how many repetitions are wanted
                 for each parameter combination, None if the dictionaries in
                 param_list already feature the desired RngRun value.
-            log_component (dict): This dictionary contains {logComponent:LogLevel}
-                (to enable) as {key:value} pairs. Passing this parameter specifies 
-                the function to only look in the results with the logging flag enabled 
-                (This ensures that the results of simulations ran without run_with_log
-                API are left untouched).
+            log_component (dict): a python dictionary with the 
+                log_components (to enable) as the key and the log levels/log classes
+                as the value. Log levels/log classes are to be mentioned in a similar format to that
+                of NS_LOG.
+                
+                For example, 
+                log_component = {
+                    'compoennt1' : 'info',
+                    'component2' : 'level_debug|info' 
+                }
         """
 
         params_to_simulate = []
-
-        # For simulations where logging is enabled it does not make sense to run
-        # simulations more than one time
-        if log_component is not None:
-            runs=1
 
         # Fill up a possibly impartial parameter definition with defaults
         if runs is None:
@@ -544,6 +599,9 @@ class CampaignManager(object):
         parameter combinations or a dictionary containing multiple values for
         each parameter, to be expanded into a list.
 
+        Returns a list containing the paths to log files(stderr) if logging is enabled;
+        else returns empty list.
+
         Args:
             param_list (list, dict): either a list of parameter combinations or
                 a dictionary to be expanded into a list through the
@@ -551,13 +609,25 @@ class CampaignManager(object):
             runs (int): the number of runs to perform for each parameter
                 combination. This parameter is only allowed if the param_list
                 specification doesn't feature an 'RngRun' key already.
-            log_component (dict, str): Either a python dictionary with the 
-                log_components (to enable) as the key and their respective 
-                log_levels as the value or a string formatted in the NS_LOG variable format.
+            log_component (dict, str): a python dictionary with the 
+                log_components (to enable) as the key and the log levels/log classes
+                as the value. Log levels/log classes are to be mentioned in a similar format to that
+                of NS_LOG.
+                
+                For example, 
+                log_component = {
+                    'compoennt1' : 'info',
+                    'component2' : 'level_debug|info' 
+                } 
+                Or a string formatted in the NS_LOG variable format.
         """
         # If we are passed a dictionary, we need to expand this
         if isinstance(param_list, dict):
             param_list = list_param_combinations(param_list)
+
+        # If the log_component is passed in a string(NS_LOG) format convert it to a dictionary
+        if log_component is not None and isinstance(log_component, str):
+            log_component = self.convert_environment_str_to_dict(log_component)
 
         # In this case, we need to run simulations in batches
         if runs is None and condition_checking_function:
