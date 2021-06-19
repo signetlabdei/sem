@@ -9,16 +9,21 @@ class ParallelRunner(SimulationRunner):
     A Runner which can perform simulations in parallel on the current machine.
     """
 
-    def run_simulations(self, parameter_list, data_folder, stop_on_errors=False, env=None):
+    def run_simulations(self, parameter_list, data_folder, stop_on_errors=False, environment=None):
         """
         This function runs multiple simulations in parallel.
 
         Args:
             parameter_list (list): list of parameter combinations to simulate.
             data_folder (str): folder in which to create output folders.
+            environment (dict): a dictionary containing the value of NS_LOG environment variable 
+                to enable logging. 
+                Format: {'NS_LOG': 'environment_variable'}
+                
+                If logging is disabled this parameter will be None.
         """
 
-        parameter_and_environment = [tuple((x,env)) for x in parameter_list]
+        parameter_and_environment = [tuple((x,environment)) for x in parameter_list]
         self.data_folder = data_folder
         self.stop_on_errors = stop_on_errors
         with Pool(processes=self.max_parallel_processes) as pool:
@@ -39,4 +44,4 @@ class ParallelRunner(SimulationRunner):
         return next(SimulationRunner.run_simulations(self, [parameter_and_environment[0]],
                                                      self.data_folder,
                                                      stop_on_errors=self.stop_on_errors,
-                                                     env=parameter_and_environment[1]))
+                                                     environment=parameter_and_environment[1]))
