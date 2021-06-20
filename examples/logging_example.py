@@ -39,9 +39,9 @@ def main():
     }
     # Log Component in both formats
 
-    # log_component = {
-    #     'PowerAdaptationDistance':'debug'
-    # }
+    log_component = {
+        'PowerAdaptationDistance':'debug'
+    }
     # log_component = 'NS_LOG="PowerAdaptationDistance=debug"'
     runs = 1  # Number of runs to perform for each combination
 
@@ -49,7 +49,7 @@ def main():
     # This will also print a progress bar
     log_path = campaign.run_missing_simulations(
         sem.list_param_combinations(params),
-            runs=runs)
+            runs=runs,log_component=log_component)
 
     if log_path:
         print(log_path)

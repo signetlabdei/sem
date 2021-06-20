@@ -308,7 +308,7 @@ class CampaignManager(object):
                 
                 For example, 
                 log_component = {
-                    'compoennt1' : 'info',
+                    'component1' : 'info',
                     'component2' : 'level_debug|info' 
                 }
             ns3_log_components (list): A list containing all the valid log components supported by ns-3. 
@@ -339,10 +339,17 @@ class CampaignManager(object):
         for component,levels in log_component.items():
             log_level_complete = set()
             for level in levels.split('|'):
-                if level not in converter.keys() or component not in ns3_log_components:
+                if level not in converter.keys():
                     raise Exception("Log level for component %s is not valid" % component)
+                
+                if component not in ns3_log_components:
+                    raise Exception(
+                        'Log component %s is not a valid ns-3 log component.Valid log components: \n%ls' % (
+                        component,
+                        ns3_log_components
+                        ))
 
-                #Drop prefixes if mentioned by user here
+                # Do not update the dictionary if prefixes are mentioned
                 if converter[level] is not None:
                     log_level_complete.update(converter[level])
 
@@ -354,8 +361,20 @@ class CampaignManager(object):
         return ret_dict
     
     def convert_environment_str_to_dict(self,log_component):
-        #Converts NS_LOG formatted string to the corresponding dictionary.      #TODO - Docstring
+        """
+        Converts NS_LOG formatted string to a dictionary. 
 
+        For example,
+            log_component = 'NS_LOG="component1=info:component2=level_debug|info"'
+        will be converted to 
+            dict = {
+                'component1': 'info',
+                'component2': 'level_debug|info'
+            }
+
+        Args:
+            log_component (str): a string formatted in the NS_LOG variable format.
+        """
         # Droppping NS_LOG prefix and loosely checking the format
         log_component = re.match(r'^NS_LOG="([\w=|:]+)"$',log_component).group(1)
 
@@ -392,7 +411,7 @@ class CampaignManager(object):
                 
                 For example, 
                 log_component = {
-                    'compoennt1' : 'info',
+                    'component1' : 'info',
                     'component2' : 'level_debug|info' 
                 } 
         """
@@ -418,10 +437,12 @@ class CampaignManager(object):
             # Get all availabe log components
             ns3_log_components = self.runner.get_available_log_components()
 
-            # Add code to check if the passed dictionary is valid                                                       
-            # the log level should be of the form info or level_debug|info 
-            # or level_info where 'level_' prefix indicates the specified 
-            # log class along with all the log classes above it
+            # Add code to check if the passed dictionary is valid 
+            # the key should be a valid log component                                                      
+            # and the value should be a valid log level or a valid log class 
+            # or a combination of log levels and log classes.
+            # For example, 
+            # <level1> or <class1> or <level1|level2> or <level1|class1|level2>
             log_component = self.parse_log_component(log_component,ns3_log_components)
 
             environment_variable = ":".join (
@@ -521,7 +542,7 @@ class CampaignManager(object):
                 
                 For example, 
                 log_component = {
-                    'compoennt1' : 'info',
+                    'component1' : 'info',
                     'component2' : 'level_debug|info' 
                 }
         """
@@ -616,10 +637,13 @@ class CampaignManager(object):
                 
                 For example, 
                 log_component = {
-                    'compoennt1' : 'info',
+                    'component1' : 'info',
                     'component2' : 'level_debug|info' 
                 } 
                 Or a string formatted in the NS_LOG variable format.
+
+                For example,
+                log_component = 'NS_LOG="component1=info:component2=level_debug|info"'
         """
         # If we are passed a dictionary, we need to expand this
         if isinstance(param_list, dict):
