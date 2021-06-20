@@ -9,7 +9,6 @@ import shutil
 import collections
 import glob
 from pprint import pformat
-from git.refs import log
 from tinydb import TinyDB, where
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
@@ -200,38 +199,8 @@ class DatabaseManager(object):
 
     def insert_results(self, results, log_component=None):
 
-        # This dictionary serves as a model for how the keys in the newly
-        # inserted result should be structured.
-        example_result = {
-            'params': {k: ['...'] for k in list(self.get_params().keys()) + ['RngRun']},
-            'meta': {k: ['...'] for k in ['elapsed_time', 'id', 'exitcode']},
-        }
-
-        # If logging is enabled, the results should have a log_component 
-        # dictionary inside the meta dictionary
-        if log_component is not None:
-            log_component_list = list(log_component.keys())
-            example_result['meta']['log_component'] = {
-                k: '...' for k in log_component_list
-            }
-        else:
-            example_result['meta']['log_component'] = None
-
-        for result in results:
-            # Verify result format is correct
-            if not(DatabaseManager.have_same_structure(result, example_result)):
-                raise ValueError(
-                    '%s:\nExpected: %s\nGot: %s' % (
-                        "Result dictionary does not correspond to database format",
-                        pformat(example_result, depth=2),
-                        pformat(result, depth=2)))
-
-        # Insert results
-        self.db.table('results').insert_multiple(results)
-
-    def insert_result(self, result, log_component=None):
         """
-        Insert a new result in the database.
+        Insert a list of new results in the database.
 
         This function also verifies that the result dictionaries saved in the
         database have the following structure (with {'a': 1} representing a
@@ -248,7 +217,7 @@ class DatabaseManager(object):
                           'elapsed_time': value4,
                           'id': value5,
                           'log_component': {
-                                                '...' : '...'
+                                              '...' : '...'
                                            }
                         }
             }
@@ -259,37 +228,30 @@ class DatabaseManager(object):
         folder. 
         The log_component dictionary represents the enabled log_components along
         with their respective log_levels. For simulations where logging was not 
-        enabled its value will be None. 
+        enabled its value will be None.
         """
 
         # This dictionary serves as a model for how the keys in the newly
         # inserted result should be structured.
         example_result = {
-            'params': {k: ['...'] for k in list(self.get_params().keys()) +
-                       ['RngRun']},
-            'meta': {k: ['...'] for k in ['elapsed_time', 'id']},
+            'params': {k: ['...'] for k in list(self.get_params().keys()) + ['RngRun']},
+            'meta': {k: ['...'] for k in ['elapsed_time', 'id', 'exitcode', 'log_component']},
         }
 
-        # If logging is enabled, the results should have a log_component 
-        # dictionary inside the meta dictionary
-        if log_component is not None:
-            log_component_list = list(log_component.keys())
-            example_result['meta']['log_component'] = {
-                k: '...' for k in log_component_list
-            }
-        else:
-            example_result['meta']['log_component'] = None
+        for result in results:
+            # Verify result format is correct
+            # Onl check the if the keys are consistent
+            if not(set(result.keys())==set(['params','meta'])
+                   and set(example_result['params'].keys())==set(result['params'].keys()) 
+                   and set(example_result['meta'].keys())==set(result['meta'].keys())):
+                raise ValueError(
+                    '%s:\nExpected: %s\nGot: %s' % (
+                        "Result dictionary does not correspond to database format",
+                        pformat(example_result, depth=2),
+                        pformat(result, depth=2)))
 
-        # Verify result format is correct
-        if not(DatabaseManager.have_same_structure(result, example_result)):
-            raise ValueError(
-                '%s:\nExpected: %s\nGot: %s' % (
-                    "Result dictionary does not correspond to database format",
-                    pformat(example_result, depth=1),
-                    pformat(result, depth=1)))
-
-        # Insert result
-        self.db.table('results').insert(deepcopy(result))
+        # Insert results
+        self.db.table('results').insert_multiple(deepcopy(results))
 
     def get_results(self, params=None, result_id=None, log_component=None):
         """
@@ -366,7 +328,7 @@ class DatabaseManager(object):
             else:
                 query_params[key] = params[key]
 
-        # Handle case where query params has no keys                                                            #TODO - How will this case occur?
+        # Handle case where query params has no keys                                                            
         if not query_params.keys():
             return [dict(i) for i in self.db.table('results').all()]
 
@@ -452,7 +414,7 @@ class DatabaseManager(object):
         if result_id is not None:
             results = deepcopy(self.get_results(result_id=result_id))
         else:
-            results = deepcopy(self.get_results(params,log_component=log_component))
+            results = deepcopy(self.get_results(params, log_component=log_component))
 
         for r in results:
             r['output'] = {}
