@@ -290,102 +290,7 @@ class CampaignManager(object):
 
     ######################
     # Simulation running #
-    ######################
-
-    def parse_log_component(self,log_component,ns3_log_components):
-        """
-        Verifies if the log levels/log classes passed in the log_component dictionary are valid
-        and converts log levels to corresponding log classes. Returns a dictionary with the 
-        valid components and log classes.
-        For example,
-        'level_debug' get converted to 'warn|error|debug'
-
-        Args:
-            log_component (dict): a python dictionary with the 
-                log_components (to enable) as the key and the log_levels 
-                as the value. Log levels are to be mentioned in similar format to how 
-                log levels are mentioned in NS_LOG.
-                
-                For example, 
-                log_component = {
-                    'component1' : 'info',
-                    'component2' : 'level_debug|info' 
-                }
-            ns3_log_components (list): A list containing all the valid log components supported by ns-3. 
-        """
-        ret_dict = {}
-        log_level_list = ['error', 'warn', 'debug', 'info', 'function', 'logic', 'all']
-        converter = {
-            'error': ['error'],
-            'warn': ['warn'],
-            'debug': ['debug'],
-            'info': ['info'],
-            'function': ['function'],
-            'logic': ['logic'],
-            'all': ['all'],
-            'level_error': ['error'],
-            'level_warn': ['error','warn'],
-            'level_debug': ['error','warn','debug'],
-            'level_info': ['error','warn','debug','info'],
-            'level_function': ['error','warn','debug','info','function'],
-            'level_logic': ['error','warn','debug','info','function','logic'],
-            'level_all': ['error','warn','debug','info','function','logic','all'],
-            'prefix_func': None,
-            'prefix_time': None,
-            'prefix_node': None,
-            'prefix_level': None,
-            'prefix_all': None
-        }
-        for component,levels in log_component.items():
-            log_level_complete = set()
-            for level in levels.split('|'):
-                if level not in converter.keys():
-                    raise Exception("Log level for component %s is not valid" % component)
-                
-                if component not in ns3_log_components:
-                    raise Exception(
-                        'Log component %s is not a valid ns-3 log component.Valid log components: \n%ls' % (
-                        component,
-                        ns3_log_components
-                        ))
-
-                # Do not update the dictionary if prefixes are mentioned
-                if converter[level] is not None:
-                    log_level_complete.update(converter[level])
-
-            # Sort the log classes for consistency 
-            log_level_sorted = [level for level in log_level_list if level in log_level_complete]
-
-            ret_dict[component] = "|".join(log_level_sorted)
-
-        return ret_dict
-    
-    def convert_environment_str_to_dict(self,log_component):
-        """
-        Converts NS_LOG formatted string to a dictionary. 
-
-        For example,
-            log_component = 'NS_LOG="component1=info:component2=level_debug|info"'
-        will be converted to 
-            dict = {
-                'component1': 'info',
-                'component2': 'level_debug|info'
-            }
-
-        Args:
-            log_component (str): a string formatted in the NS_LOG variable format.
-        """
-        # Droppping NS_LOG prefix and loosely checking the format
-        log_component = re.match(r'^NS_LOG="([\w=|:]+)"$',log_component).group(1)
-
-        # convert the string to log_component dictionary format
-        # to store in the database later
-        ret_dict = {}
-        for component in log_component.split(':'):
-            component_and_level = component.split('=')
-            ret_dict[component_and_level[0]] = component_and_level[1]
-        
-        return ret_dict            
+    ######################          
 
     def run_simulations(self, param_list, show_progress=True, stop_on_errors=True, log_component=None):
         """
@@ -443,7 +348,7 @@ class CampaignManager(object):
             # or a combination of log levels and log classes.
             # For example, 
             # <level1> or <class1> or <level1|level2> or <level1|class1|level2>
-            log_component = self.parse_log_component(log_component,ns3_log_components)
+            log_component = self.db.parse_log_component(log_component,ns3_log_components)
 
             environment_variable = ":".join (
                                         [component + '=' + log_level + '|prefix_all' 
@@ -487,7 +392,7 @@ class CampaignManager(object):
         result_ids = self.run_and_save_results(result_generator, log_component)
 
         if log_component is not None:
-            return [os.path.join(self.db.campaign_dir,'data',result_id,'stderr') for result_id in result_ids]
+            return [os.path.join(self.db.campaign_dir,'data',result_id,'stderr') for result_id in result_ids]       #TODO - Return only the paths of recent simulations ran or all the log simulations that are stored in the database
         return []
 
     def run_and_save_results(self, result_generator, batch_results=True, log_component=None):
@@ -510,16 +415,16 @@ class CampaignManager(object):
 
             # Save results to disk once every 60 seconds
             if not batch_results:
-                self.db.insert_results(results_batch,log_component)
+                self.db.insert_results(results_batch)
                 results_batch = []
             elif (batch_results and
                   (datetime.now() - last_save_time).total_seconds() > 60):
-                self.db.insert_results(results_batch,log_component)
+                self.db.insert_results(results_batch)
                 self.db.write_to_disk()
                 results_batch = []
                 last_save_time = datetime.now()
 
-        self.db.insert_results(results_batch,log_component)
+        self.db.insert_results(results_batch)
         self.db.write_to_disk()
         return result_ids
 
@@ -602,7 +507,7 @@ class CampaignManager(object):
                             time_prediction = float("Inf")
                         params_to_simulate += [[param_comb, time_prediction]]
                     else:
-                        params_to_simulate += [param_comb]
+                        params_to_simulate += [param_comb]                       
 
         return params_to_simulate
 
@@ -1102,3 +1007,30 @@ class CampaignManager(object):
             if current_commit != campaign_commit:
                 raise Exception("ns-3 repository is on a different commit "
                                 "from the one specified in the campaign")
+    
+    def convert_environment_str_to_dict(self,log_component):
+        """
+        Converts NS_LOG formatted string to a dictionary. 
+
+        For example,
+            log_component = 'NS_LOG="component1=info:component2=level_debug|info"'
+        will be converted to 
+            dict = {
+                'component1': 'info',
+                'component2': 'level_debug|info'
+            }
+
+        Args:
+            log_component (str): a string formatted in the NS_LOG variable format.
+        """
+        # Droppping NS_LOG prefix and loosely checking the format
+        log_component = re.match(r'^NS_LOG="([\w=|:]+)"$',log_component).group(1)
+
+        # convert the string to log_component dictionary format
+        # to store in the database later
+        ret_dict = {}
+        for component in log_component.split(':'):
+            component_and_level = component.split('=')
+            ret_dict[component_and_level[0]] = component_and_level[1]
+        
+        return ret_dict                                  

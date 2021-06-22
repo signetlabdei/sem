@@ -21,7 +21,7 @@ class GridRunner(SimulationRunner):
     cluster architecture.
     """
 
-    def run_simulations(self, parameter_list, data_folder, environment=None):                                       #TODO - Check if we need to modify this runner
+    def run_simulations(self, parameter_list, data_folder, environment=None):                                       
         """
         This function runs multiple simulations in parallel.
         """
