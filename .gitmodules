@@ -1,4 +1,4 @@
 [submodule "examples/ns-3"]
 	path = examples/ns-3
-	url = https://github.com/DvdMgr/ns-3-dev
+	url = https://github.com/signetlabdei/sem-ns-3-dev
 	branch = sem-examples
