@@ -122,7 +122,7 @@ def manager(ns_3_compiled, config):
 def get_and_compile_ns_3():
     # Clone ns-3
     if not os.path.exists(ns_3_test):
-        Repo.clone_from('http://github.com/DvdMgr/ns-3-dev.git', ns_3_test,
+        Repo.clone_from('http://github.com/signetlabdei/sem-ns-3-dev.git', ns_3_test,
                         branch='sem-tests')
 
     # Copy folder to compile in optimized mode
