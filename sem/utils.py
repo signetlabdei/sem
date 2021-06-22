@@ -300,7 +300,7 @@ def compute_sensitivity_analysis(
 
     campaign.run_missing_simulations(sem_parameter_list)
     results = np.array(
-        [result_parsing_function(campaign.db.get_complete_results(p)[0])
+        [result_parsing_function(campaign.db.get_complete_results(p)[0])[0]
          for p in sem_parameter_list])
     return salib_analyze_function(problem, results)
 
