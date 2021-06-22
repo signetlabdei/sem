@@ -389,7 +389,7 @@ class CampaignManager(object):
         else:
             result_generator = results
 
-        result_ids = self.run_and_save_results(result_generator, log_component)
+        result_ids = self.run_and_save_results(result_generator, log_component=log_component)
 
         if log_component is not None:
             return [os.path.join(self.db.campaign_dir,'data',result_id,'stderr') for result_id in result_ids]       #TODO - Return only the paths of recent simulations ran or all the log simulations that are stored in the database
