@@ -77,6 +77,8 @@ def result(config):
         'meta': {
             'elapsed_time': 10,
             'id': '98f89356-3682-4cb4-b6c3-3c792979a8fc',
+            'exitcode': 0,
+            'log_component': None
         }
     }
 

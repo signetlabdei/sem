@@ -18,7 +18,7 @@ def test_campaign_creation(ns_3_compiled, config):
 
 def test_new_campaign_reload(ns_3_compiled, config, manager, result):
     # Insert a result in the already available sem.CampaignManager
-    manager.db.insert_result(result)
+    manager.db.insert_results([result])
     manager.db.write_to_disk()
 
     # Try creating a new sem.CampaignManager with the same settings
@@ -32,7 +32,7 @@ def test_new_campaign_reload(ns_3_compiled, config, manager, result):
 
 def test_new_campaign_reload_fail(ns_3_compiled, config, manager, result):
     # Insert a result in the already available sem.CampaignManager
-    manager.db.insert_result(result)
+    manager.db.insert_results([result])
 
     # Try creating a new sem.CampaignManager with the same settings and
     # different script. This should fail.
@@ -45,7 +45,7 @@ def test_new_campaign_reload_fail(ns_3_compiled, config, manager, result):
 
 def test_new_campaign_reload_overwrite(ns_3_compiled, config, manager, result):
     # Insert a result in the already available sem.CampaignManager
-    manager.db.insert_result(result)
+    manager.db.insert_results([result])
 
     # Try creating a new sem.CampaignManager with the same settings
     new_campaign = sem.CampaignManager.new(ns_3_compiled,
@@ -138,57 +138,47 @@ def test_save_to_folders(tmpdir, manager, result, parameter_combination_range):
                             str(tmpdir.join('folder_export')),
                             2)
 
-def test_run_logging_simulation(ns_3_compiled_debug,config):        #TODO cannot find the scripts in /examples folder(even if --enable-examples is passed in the ns_3_compiled_debug fixture in conftest.py). Why does this happen?
-    params = {
-        'powerLevels': 18.0,
-        'manager': 'ns3::ParfWifiManager',
-        'AP1_y': 0,
-        'STA1_y': 0,
-        'maxPower': 17,
-        'outputFileName': 'parf',
-        'AP1_x': 0,
-        'STA1_x': 5.0,
-        'stepsTime': 1,
-        'minPower': 0,
-        'steps':200,
-        'rtsThreshold': 2346,
-        'stepsSize':1
-    }
+def test_run_logging_simulation(ns_3_compiled_debug,config):        
     log_component = {
-        'PowerAdaptationDistance':'debug'
+        'Logger':'all'
     }
+    # This should raise an exception as the campaign in built in optimized mode and logging is enabled                                            
     new_campaign = sem.CampaignManager.new(ns_3_compiled_debug,
-                                            'wifi-power-adaptation-distance',
+                                            'logging-ns3-script',
                                             config['campaign_dir'],
                                             overwrite=True)
 
-    #Ensure that the simulations run fine                                            
-    log_path = new_campaign.run_missing_simulations(params,log_component=log_component)                                        
+    with pytest.raises(Exception):
+        log_path = new_campaign.run_missing_simulations({},runs=1,log_component=log_component)   
 
-    #Assert log_path list contains exctly one entry as only one parameter 
+    
+    new_campaign = sem.CampaignManager.new(ns_3_compiled_debug,
+                                            'logging-ns3-script',
+                                            config['campaign_dir'],
+                                            overwrite=True,
+                                            optimized=False)
+
+    # This should run fine as the campaign in built in debug mode and logging is enabled                                            
+    log_path = new_campaign.run_missing_simulations({},runs=1,log_component=log_component)                                     
+
+    # Assert log_path list contains exctly one entry as only one parameter 
     # combination is passed
     assert len(log_path) == 1
 
-    #Assert the log file generated is correct
+    # Assert the log file generated is correct
 
-    sample_logs = ['+0.000000000s -1 PowerAdaptationDistance:SetupPhy(): [DEBUG] OfdmRate6Mbps 0.00192 6000000bps'
-                    '+0.000000000s -1 PowerAdaptationDistance:SetupPhy(): [DEBUG] OfdmRate9Mbps 0.001288 9000000bps',
-                    '+0.000000000s -1 PowerAdaptationDistance:SetupPhy(): [DEBUG] OfdmRate12Mbps 0.000972 12000000bps',
-                    '+0.000000000s -1 PowerAdaptationDistance:SetupPhy(): [DEBUG] OfdmRate18Mbps 0.000656 18000000bps',
-                    '+0.000000000s -1 PowerAdaptationDistance:SetupPhy(): [DEBUG] OfdmRate24Mbps 0.000496 24000000bps',
-                    '+0.000000000s -1 PowerAdaptationDistance:SetupPhy(): [DEBUG] OfdmRate36Mbps 0.00034 36000000bps',
-                    '+0.000000000s -1 PowerAdaptationDistance:SetupPhy(): [DEBUG] OfdmRate48Mbps 0.00026 48000000bps',
-                    '+0.000000000s -1 PowerAdaptationDistance:SetupPhy(): [DEBUG] OfdmRate54Mbps 0.000232 54000000bps'
+    sample_logs = ['+0.000000000s -1 Logger:main(): [DEBUG] Debug',
+                    '+0.000000000s -1 Logger:main(): [INFO ] Info',
+                    '+0.000000000s -1 Logger:main(): [WARN ] Warn',
+                    '+0.000000000s -1 Logger:main(): [ERROR] Error',
+                    '+0.000000000s -1 Logger:main(): [LOGIC] Logic'
                 ]
 
     with open(log_path[0]) as f:
-        logs = f.readlines
-    actual_logs = logs.split('\n')
+        logs = f.readlines()
+    actual_logs = [x.strip() for x in logs]
 
-    assert (sample_logs == actual_logs)
-            
-
-
+    assert (sample_logs == actual_logs)                                    
 
 def test_only_load_some_files_decorator(tmpdir, manager, result, parameter_combination_no_rngrun):
     def parsing_function(result):
