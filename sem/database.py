@@ -296,15 +296,15 @@ class DatabaseManager(object):
             same structure as results inserted with the insert_result method.
         """
 
+        if log_component:
+            # Make the passed log_component consistent with the format stored in database
+            log_component = self.parse_log_component(log_component)
+
         # In this case, return all results
         # A cast to dict is necessary, since self.db.table() contains TinyDB's
         # Document object (which is simply a wrapper for a dictionary, thus the
         # simple cast).
 
-        if log_component:
-            # Make the passed log_component consistent with the format stored in database
-            log_component = self.parse_log_component(log_component)
-        
         if result_id is not None:
             return [dict(i) for i in self.db.table('results').all() if
                     i['meta']['id'] == result_id]
