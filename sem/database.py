@@ -322,7 +322,7 @@ class DatabaseManager(object):
             # Match the simulations only with the provided log components enabled at the given log levels.
             else:
                 query = reduce(or_,[
-                    where('meta')['log_component'][component]==value for component,value in 
+                    where('meta')['log_component'][component] == value for component,value in 
                                                             log_component.items()])
                 return [dict(i) for i in self.db.table('results').search(query)]
 

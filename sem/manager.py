@@ -309,11 +309,11 @@ class CampaignManager(object):
                 can be either a string or a number).
             show_progress (bool): whether or not to show a progress bar with
                 percentage and expected remaining time.
-            log_component (dict): a python dictionary with the 
-                log_components (to enable) as the key and the log levels/log classes
+            log_component (dict): a python dictionary with the log_components 
+                (to enable) as the key and the log levels/log classes
                 as the value. Log levels/log classes are to be mentioned in a similar format to that
                 of NS_LOG.
-                
+                        
                 For example, 
                 log_component = {
                     'component1' : 'info',
@@ -339,17 +339,6 @@ class CampaignManager(object):
         # dictionary or string to NS_LOG environment variable format
         environment = {}
         if log_component is not None:
-            # Get all availabe log components
-            ns3_log_components = self.runner.get_available_log_components()
-
-            # Add code to check if the passed dictionary is valid 
-            # the key should be a valid log component                                                      
-            # and the value should be a valid log level or a valid log class 
-            # or a combination of log levels and log classes.
-            # For example, 
-            # <level1> or <class1> or <level1|level2> or <level1|class1|level2>
-            log_component = self.db.parse_log_component(log_component,ns3_log_components)
-
             environment_variable = ":".join (
                                         [component + '=' + log_level + '|prefix_all' 
                                         for component, log_level in log_component.items()]
@@ -473,7 +462,7 @@ class CampaignManager(object):
                     time_prediction = float("Inf")
                 for i, r in enumerate(available_results):
                     if param_comb == {k: r['params'][k] for k in
-                                      r['params'].keys() if k != "RngRun"}:
+                                      r['params'].keys() if k != "RngRun"} and log_component == r['meta']['log_component']:
                         needed_runs -= 1
                         if with_time_estimate:
                             time_prediction = float(r['meta']['elapsed_time'])
@@ -500,7 +489,7 @@ class CampaignManager(object):
                         # a time prediction
                         param_comb_no_rngrun = {k:param_comb[k] for k in
                                                 param_comb.keys() if k != "RngRun"}
-                        prev_results_different_rngrun = self.db.get_results(param_comb_no_rngrun)
+                        prev_results_different_rngrun = self.db.get_results(param_comb_no_rngrun,log_component)
                         if prev_results_different_rngrun:
                             time_prediction = float(prev_results_different_rngrun[0]['meta']['elapsed_time'])
                         else:
@@ -557,6 +546,18 @@ class CampaignManager(object):
         # If the log_component is passed in a string(NS_LOG) format convert it to a dictionary
         if log_component is not None and isinstance(log_component, str):
             log_component = self.convert_environment_str_to_dict(log_component)
+
+        if log_component is not None:
+            # Get all availabe log components
+            ns3_log_components = self.runner.get_available_log_components()
+
+            # Check if the passed dictionary is valid 
+            # the key should be a valid log component                                                      
+            # and the value should be a valid log level or a valid log class 
+            # or a combination of log levels and log classes.
+            # For example, 
+            # <level1> or <class1> or <level1|level2> or <level1|class1|level2>
+            log_component = self.db.parse_log_component(log_component,ns3_log_components)
 
         # In this case, we need to run simulations in batches
         if runs is None and condition_checking_function:
