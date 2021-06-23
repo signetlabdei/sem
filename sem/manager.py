@@ -21,7 +21,7 @@ from .lptrunner import LptRunner
 from .parallelrunner import ParallelRunner
 from .conditionalrunner import ConditionalRunner
 from .runner import SimulationRunner
-from .utils import DRMAA_AVAILABLE, list_param_combinations
+from .utils import DRMAA_AVAILABLE, list_param_combinations, parse_log_component
 import pandas as pd
 
 if DRMAA_AVAILABLE:
@@ -290,13 +290,17 @@ class CampaignManager(object):
 
     ######################
     # Simulation running #
-    ######################          
+    ######################
 
-    def run_simulations(self, param_list, show_progress=True, stop_on_errors=True, log_component=None):
+    def run_simulations(self,
+                        param_list,
+                        show_progress=True,
+                        stop_on_errors=True,
+                        log_component=None):
         """
-        Run several simulations specified by a list of parameter combinations. 
-        Returns a list containing the paths to log files(stderr) if logging is enabled;
-        else returns empty list. 
+        Run several simulations specified by a list of parameter combinations.
+        Returns a list containing the paths to log files(stderr) if logging is
+        enabled; else returns empty list.
 
         Note: this function does not verify whether we already have the
         required simulations in the database - it just runs all the parameter
@@ -309,16 +313,16 @@ class CampaignManager(object):
                 can be either a string or a number).
             show_progress (bool): whether or not to show a progress bar with
                 percentage and expected remaining time.
-            log_component (dict): a python dictionary with the log_components 
+            log_component (dict): a python dictionary with the log_components
                 (to enable) as the key and the log levels/log classes
-                as the value. Log levels/log classes are to be mentioned in a similar format to that
-                of NS_LOG.
-                        
-                For example, 
+                as the value. Log levels/log classes are to be mentioned in a
+                similar format to that of NS_LOG.
+
+                For example,
                 log_component = {
                     'component1' : 'info',
-                    'component2' : 'level_debug|info' 
-                } 
+                    'component2' : 'level_debug|info'
+                }
         """
 
         # Make sure we have a runner to run simulations with.
@@ -339,9 +343,11 @@ class CampaignManager(object):
         # dictionary or string to NS_LOG environment variable format
         environment = {}
         if log_component is not None:
-            environment_variable = ":".join (
-                                        [component + '=' + log_level + '|prefix_all' 
-                                        for component, log_level in log_component.items()]
+            environment_variable = ":".join(
+                                        [component + '=' + log_level +
+                                         '|prefix_all'
+                                         for component, log_level in
+                                         log_component.items()]
                                             )
 
             environment = {"NS_LOG": environment_variable}
@@ -378,13 +384,20 @@ class CampaignManager(object):
         else:
             result_generator = results
 
-        result_ids = self.run_and_save_results(result_generator, log_component=log_component)
+        result_ids = self.run_and_save_results(result_generator,
+                                               log_component=log_component)
 
+        # TODO - Return only the paths of recent simulations ran or all the
+        # log simulations that are stored in the database
         if log_component is not None:
-            return [os.path.join(self.db.campaign_dir,'data',result_id,'stderr') for result_id in result_ids]       #TODO - Return only the paths of recent simulations ran or all the log simulations that are stored in the database
+            return [os.path.join(self.db.campaign_dir, 'data', result_id, 'stderr')
+                    for result_id in result_ids]
         return []
 
-    def run_and_save_results(self, result_generator, batch_results=True, log_component=None):
+    def run_and_save_results(self,
+                             result_generator,
+                             batch_results=True,
+                             log_component=None):
         # Insert result object in db. Using the generator here ensures we
         # save results as they are finalized by the SimulationRunner, and
         # that they are kept even if execution is terminated abruptly by
@@ -418,7 +431,7 @@ class CampaignManager(object):
         return result_ids
 
     def get_missing_simulations(self, param_list, runs=None,
-                                with_time_estimate=False,log_component=None):
+                                with_time_estimate=False, log_component=None):
         """
         Return a list of the simulations among the required ones that are not
         available in the database.
@@ -429,15 +442,15 @@ class CampaignManager(object):
             runs (int): an integer representing how many repetitions are wanted
                 for each parameter combination, None if the dictionaries in
                 param_list already feature the desired RngRun value.
-            log_component (dict): a python dictionary with the 
-                log_components (to enable) as the key and the log levels/log classes
-                as the value. Log levels/log classes are to be mentioned in a similar format to that
-                of NS_LOG.
-                
-                For example, 
+            log_component (dict): a python dictionary with the
+                log_components (to enable) as the key and the log levels/log
+                classes as the value. Log levels/log classes are to be
+                mentioned in a similar format to that of NS_LOG.
+
+                For example,
                 log_component = {
                     'component1' : 'info',
-                    'component2' : 'level_debug|info' 
+                    'component2' : 'level_debug|info'
                 }
         """
 
@@ -445,18 +458,19 @@ class CampaignManager(object):
 
         # Fill up a possibly impartial parameter definition with defaults
         if runs is None:
-            self.check_and_fill_parameters (param_list, needs_rngrun=True)
+            self.check_and_fill_parameters(param_list, needs_rngrun=True)
         else:
-            self.check_and_fill_parameters (param_list, needs_rngrun=False)
+            self.check_and_fill_parameters(param_list, needs_rngrun=False)
 
         if runs is not None:  # Get next available runs from the database
             next_runs = self.db.get_next_rngruns()
-            available_results = [r for r in self.db.get_results(log_component=log_component)]
+            available_results = [r for r in self.db.get_results(
+                                log_component=log_component)]
 
             for param_comb in param_list:
                 # Count how many param combinations we found, and remove them
-                # from the list of available_results for faster searching in the
-                # future
+                # from the list of available_results for faster searching in
+                # the future
                 needed_runs = runs
                 if with_time_estimate:
                     time_prediction = float("Inf")
@@ -482,22 +496,27 @@ class CampaignManager(object):
                 params_to_simulate += new_param_combs
         else:
             for param_comb in param_list:
-                previous_results = self.db.get_results(param_comb,log_component)                                  
+                previous_results = self.db.get_results(param_comb,
+                                                       log_component)
                 if not previous_results:
                     if with_time_estimate:
                         # Try and find results with different RngRun to provide
                         # a time prediction
-                        param_comb_no_rngrun = {k:param_comb[k] for k in
-                                                param_comb.keys() if k != "RngRun"}
-                        prev_results_different_rngrun = self.db.get_results(param_comb_no_rngrun,log_component)
+                        param_comb_no_rngrun = {k: param_comb[k] for k in
+                                                param_comb.keys()
+                                                if k != "RngRun"}
+                        prev_results_different_rngrun = self.db.get_results(
+                                                        param_comb_no_rngrun,
+                                                        log_component)
                         if prev_results_different_rngrun:
-                            time_prediction = float(prev_results_different_rngrun[0]['meta']['elapsed_time'])
+                            time_prediction = float(
+                                                prev_results_different_rngrun[0]['meta']['elapsed_time']
+                                                )
                         else:
                             time_prediction = float("Inf")
                         params_to_simulate += [[param_comb, time_prediction]]
                     else:
-                        params_to_simulate += [param_comb]                       
-
+                        params_to_simulate += [param_comb]
         return params_to_simulate
 
     def run_missing_simulations(self, param_list, runs=None,
@@ -514,8 +533,8 @@ class CampaignManager(object):
         parameter combinations or a dictionary containing multiple values for
         each parameter, to be expanded into a list.
 
-        Returns a list containing the paths to log files(stderr) if logging is enabled;
-        else returns empty list.
+        Returns a list containing the paths to log files(stderr) if logging is
+        enabled; else returns empty list.
 
         Args:
             param_list (list, dict): either a list of parameter combinations or
@@ -524,26 +543,28 @@ class CampaignManager(object):
             runs (int): the number of runs to perform for each parameter
                 combination. This parameter is only allowed if the param_list
                 specification doesn't feature an 'RngRun' key already.
-            log_component (dict, str): a python dictionary with the 
-                log_components (to enable) as the key and the log levels/log classes
-                as the value. Log levels/log classes are to be mentioned in a similar format to that
-                of NS_LOG.
-                
-                For example, 
+            log_component (dict, str): a python dictionary with the
+                log_components (to enable) as the key and the log levels/log
+                classes as the value. Log levels/log classes are to be
+                mentioned in a similar format to that of NS_LOG.
+
+                For example,
                 log_component = {
                     'component1' : 'info',
-                    'component2' : 'level_debug|info' 
-                } 
+                    'component2' : 'level_debug|info'
+                }
                 Or a string formatted in the NS_LOG variable format.
 
                 For example,
-                log_component = 'NS_LOG="component1=info:component2=level_debug|info"'
+                log_component =
+                    'NS_LOG="component1=info:component2=level_debug|info"'
         """
         # If we are passed a dictionary, we need to expand this
         if isinstance(param_list, dict):
             param_list = list_param_combinations(param_list)
 
-        # If the log_component is passed in a string(NS_LOG) format convert it to a dictionary
+        # If the log_component is passed in a string(NS_LOG) format convert it
+        # to a dictionary
         if log_component is not None and isinstance(log_component, str):
             log_component = self.convert_environment_str_to_dict(log_component)
 
@@ -551,13 +572,13 @@ class CampaignManager(object):
             # Get all availabe log components
             ns3_log_components = self.runner.get_available_log_components()
 
-            # Check if the passed dictionary is valid 
-            # the key should be a valid log component                                                      
-            # and the value should be a valid log level or a valid log class 
-            # or a combination of log levels and log classes.
-            # For example, 
-            # <level1> or <class1> or <level1|level2> or <level1|class1|level2>
-            log_component = self.db.parse_log_component(log_component,ns3_log_components)
+            # Check if the passed dictionary is valid the key should be a
+            # valid log component and the value should be a valid log level or
+            # a valid log class or a combination of log levels and log classes.
+            # For example, <level1> or <class1> or <level1|level2> or
+            # <level1|class1|level2>
+            log_component = parse_log_component(log_component,
+                                                ns3_log_components)
 
         # In this case, we need to run simulations in batches
         if runs is None and condition_checking_function:
@@ -568,12 +589,13 @@ class CampaignManager(object):
                                    self.runner.optimized,
                                    max_parallel_processes=self.runner.max_parallel_processes)
             # Set up the runner's stopping condition function
-            cr.stopping_function = lambda x: condition_checking_function(self, x)
+            cr.stopping_function = lambda x: condition_checking_function(self,
+                                                                         x)
             # Set up the runner's iterator for next runs
             cr.next_runs = next_runs
 
             # Fill up a possibly impartial parameter definition with defaults
-            self.check_and_fill_parameters (param_list, needs_rngrun=False)
+            self.check_and_fill_parameters(param_list, needs_rngrun=False)
 
             self.run_and_save_results(cr.run_simulations(param_list,
                                                          self.db.get_data_dir(),
@@ -595,9 +617,9 @@ class CampaignManager(object):
                     log_component=log_component)
             else:
                 log_path = self.run_simulations(
-                    self.get_missing_simulations(param_list, 
-                                                runs,
-                                                log_component=log_component),
+                    self.get_missing_simulations(param_list,
+                                                 runs,
+                                                 log_component=log_component),
                     stop_on_errors=stop_on_errors,
                     log_component=log_component)
 
@@ -1008,24 +1030,26 @@ class CampaignManager(object):
             if current_commit != campaign_commit:
                 raise Exception("ns-3 repository is on a different commit "
                                 "from the one specified in the campaign")
-    
-    def convert_environment_str_to_dict(self,log_component):
+
+    def convert_environment_str_to_dict(self, log_component):
         """
-        Converts NS_LOG formatted string to a dictionary. 
+        Converts NS_LOG formatted string to a dictionary.
 
         For example,
-            log_component = 'NS_LOG="component1=info:component2=level_debug|info"'
-        will be converted to 
+            log_component =
+                'NS_LOG="component1=info:component2=level_debug|info"'
+        will be converted to
             dict = {
                 'component1': 'info',
                 'component2': 'level_debug|info'
             }
 
         Args:
-            log_component (str): a string formatted in the NS_LOG variable format.
+            log_component (str): a string formatted in the NS_LOG variable
+                format.
         """
         # Droppping NS_LOG prefix and loosely checking the format
-        log_component = re.match(r'^NS_LOG="([\w=|:]+)"$',log_component).group(1)
+        log_component = re.match(r'^NS_LOG="([\w=|:]+)"$', log_component).group(1)
 
         # convert the string to log_component dictionary format
         # to store in the database later
@@ -1033,5 +1057,5 @@ class CampaignManager(object):
         for component in log_component.split(':'):
             component_and_level = component.split('=')
             ret_dict[component_and_level[0]] = component_and_level[1]
-        
-        return ret_dict                                  
+
+        return ret_dict

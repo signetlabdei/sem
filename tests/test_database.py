@@ -124,7 +124,8 @@ def test_results(db, result):
     # Test insertion of result missing any other key
     for k in result.keys():
         with pytest.raises(ValueError):
-            db.insert_results([{i: result[i] for i in result.keys() if i != k}])
+            db.insert_results([{i: result[i] for i in result.keys()
+                                if i != k}])
 
     # All inserted results are returned by get_results
     assert list(db.get_results()) == [result]
@@ -160,15 +161,18 @@ def test_results(db, result):
     # This should return only the logging result
     assert list(db.get_results(log_component=log_component)) == [result]
 
-    # This should also return the logging result as level_info is same as info|error|warn|debug
-    assert list(db.get_results(log_component={'component1':'info|error|warn|debug'})) == [result]
+    # This should also return the logging result as level_info is same as
+    # info|error|warn|debug
+    assert list(db.get_results(log_component={'component1': 'info|error|warn|debug'})) == [result]
 
-    # This should return an empty list as there are no results that match the provided log_component
-    assert list(db.get_results(log_component={'component1':'logic'})) == []
+    # This should return an empty list as there are no results that match the
+    # provided log_component
+    assert not list(db.get_results(log_component={'component1': 'logic'}))
 
     result['meta']['log_component'] = None
     # This should return all the non-logging results
     assert list(db.get_results()) == [result, result]
+
 
 def test_results_queries(db, result):
     # Insert multiple runs for a set parameter combination
@@ -191,7 +195,7 @@ def test_results_queries(db, result):
 
     # This query should return all results
     results = list(db.get_results({'dict': ['/usr/share/dict/web2a',
-                                       '/usr/share/dict/web2']}))
+                                            '/usr/share/dict/web2']}))
     assert len(results) == 20
     assert sorted([d['params']['RngRun'] for d in results]) == list(range(20))
 
@@ -203,38 +207,38 @@ def test_results_queries(db, result):
                                                                           1))
 
     # result['params']['dict'] = '/usr/share/dict/web2b'
-    result['meta']['log_component'] = {'Hasher':'debug'}
+    result['meta']['log_component'] = {'Hasher': 'debug'}
     for runIdx in range(20, 30, 1):
         result['params']['RngRun'] = runIdx
-        db.insert_results([result])   
+        db.insert_results([result])
 
-    result['meta']['log_component'] = {'Hasher2':'info'}
+    result['meta']['log_component'] = {'Hasher2': 'info'}
     for runIdx in range(30, 40, 1):
         result['params']['RngRun'] = runIdx
-        db.insert_results([result])   
+        db.insert_results([result])
 
     # This query should return all results except the last two batches
     results = list(db.get_results({'dict': ['/usr/share/dict/web2a',
-                                       '/usr/share/dict/web2']}))
+                                            '/usr/share/dict/web2']}))
     assert len(results) == 20
-    assert sorted([d['params']['RngRun'] for d in results]) == list(range(20))  
+    assert sorted([d['params']['RngRun'] for d in results]) == list(range(20))
 
     # This query should return all results where logging is enabled
     results = list(db.get_results({'dict': ['/usr/share/dict/web2a',
-                                       '/usr/share/dict/web2']},log_component={}))
+                                            '/usr/share/dict/web2']},
+                                  log_component={}))
     assert len(results) == 20
     assert sorted([d['params']['RngRun'] for d in results]) == list(range(20,
                                                                           40,
                                                                           1))
 
     # This query should only return the third batch
-    results = list(db.get_results({'dict': ['/usr/share/dict/web2a']},log_component={'Hasher':'debug'}))
+    results = list(db.get_results({'dict': ['/usr/share/dict/web2a']},
+                                  log_component={'Hasher': 'debug'}))
     assert len(results) == 10
     assert sorted([d['params']['RngRun'] for d in results]) == list(range(20,
                                                                           30,
                                                                           1))
-
-
 
 
 def test_get_complete_results(manager, parameter_combination):

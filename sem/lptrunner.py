@@ -25,7 +25,6 @@ class LptRunner(SimulationRunner):
         SimulationRunner.__init__(self, path, script, optimized, max_parallel_processes)
         self.parameter_runtime_map = {}
 
-
     def run_simulations(self, parameter_list, data_folder, environment=None):
         """
         This function runs multiple simulations in parallel.

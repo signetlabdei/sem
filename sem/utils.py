@@ -330,3 +330,86 @@ def compute_sensitivity_analysis(
 #                  np.array(xarray.sel(**kwargs)).squeeze())
 #     interact(plot_line, **{k: v for k, v in param_ranges.items() if k != x_axis
 #                            and len(v) > 1})
+
+def parse_log_component(log_component, ns3_log_components=None):
+    """
+    Verifies if the log levels/log classes passed in the log_component
+    dictionary are valid and converts log levels to corresponding log classes.
+    Returns a dictionary with the valid components and log classes.
+    For example,
+    'level_debug' gets converted to 'warn|error|debug'
+
+    Args:
+        log_component (dict): a python dictionary with the
+            log_components (to enable) as the key and the log_levels
+            as the value. Log levels should be written in the same format as
+            the one specified by the ns-3 manual for the environment variable
+            NS_LOG.
+            Note: If any prefix is mentioned, it will be dropped and
+            prefix_all will always be appended.
+
+            For example,
+            log_component = {
+                'component1' : 'info',
+                'component2' : 'level_debug|info'
+            }
+        ns3_log_components (list): A list containing all the valid log
+            components supported by ns-3.
+    """
+    if not log_component:
+        return None
+
+    ret_dict = {}
+    log_level_list = ['error',
+                      'warn',
+                      'debug',
+                      'info',
+                      'function',
+                      'logic',
+                      'all']
+    converter = {
+        'error': ['error'],
+        'warn': ['warn'],
+        'debug': ['debug'],
+        'info': ['info'],
+        'function': ['function'],
+        'logic': ['logic'],
+        'all': ['all'],
+        'level_error': ['error'],
+        'level_warn': ['error', 'warn'],
+        'level_debug': ['error', 'warn', 'debug'],
+        'level_info': ['error', 'warn', 'debug', 'info'],
+        'level_function': ['error', 'warn', 'debug', 'info', 'function'],
+        'level_logic': ['error', 'warn', 'debug', 'info', 'function', 'logic'],
+        'level_all': ['error', 'warn', 'debug', 'info', 'function', 'logic', 'all'],
+        'prefix_func': None,
+        'prefix_time': None,
+        'prefix_node': None,
+        'prefix_level': None,
+        'prefix_all': None
+    }
+    for component, levels in log_component.items():
+        log_level_complete = set()
+        for level in levels.split('|'):
+            if level not in converter:
+                raise ValueError("Log level for component %s is not valid"
+                                 % component)
+
+            if (ns3_log_components is not None) and component not in ns3_log_components:
+                raise ValueError(
+                    "Log component '%s' is not a valid ns-3 log component. Valid log components: \n%ls" % (
+                        component,
+                        ns3_log_components
+                    ))
+
+            # Do not update the dictionary if prefixes are mentioned
+            if converter[level] is not None:
+                log_level_complete.update(converter[level])
+
+        # Sort the log classes for consistency
+        log_level_sorted = [level for level in log_level_list
+                            if level in log_level_complete]
+
+        ret_dict[component] = "|".join(log_level_sorted)
+
+    return ret_dict

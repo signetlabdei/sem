@@ -138,47 +138,54 @@ def test_save_to_folders(tmpdir, manager, result, parameter_combination_range):
                             str(tmpdir.join('folder_export')),
                             2)
 
-def test_run_logging_simulation(ns_3_compiled_debug,config):        
+
+def test_run_logging_simulation(ns_3_compiled_debug, config):
     log_component = {
-        'Logger':'all'
+        'Logger': 'all'
     }
-    # This should raise an exception as the campaign in built in optimized mode and logging is enabled                                            
+    # This should raise an exception as the campaign in built in optimized
+    # mode and logging is enabled
     new_campaign = sem.CampaignManager.new(ns_3_compiled_debug,
-                                            'logging-ns3-script',
-                                            config['campaign_dir'],
-                                            overwrite=True)
+                                           'logging-ns3-script',
+                                           config['campaign_dir'],
+                                           overwrite=True)
 
     with pytest.raises(Exception):
-        log_path = new_campaign.run_missing_simulations({},runs=1,log_component=log_component)   
+        log_path = new_campaign.run_missing_simulations({},
+                                                        runs=1,
+                                                        log_component=log_component)   
 
-    
     new_campaign = sem.CampaignManager.new(ns_3_compiled_debug,
-                                            'logging-ns3-script',
-                                            config['campaign_dir'],
-                                            overwrite=True,
-                                            optimized=False)
+                                           'logging-ns3-script',
+                                           config['campaign_dir'],
+                                           overwrite=True,
+                                           optimized=False)
 
-    # This should run fine as the campaign in built in debug mode and logging is enabled                                            
-    log_path = new_campaign.run_missing_simulations({},runs=1,log_component=log_component)                                     
+    # This should run fine as the campaign in built in debug mode and logging
+    # is enabled
+    log_path = new_campaign.run_missing_simulations({},
+                                                    runs=1,
+                                                    log_component=log_component)                                     
 
-    # Assert log_path list contains exctly one entry as only one parameter 
+    # Assert log_path list contains exctly one entry as only one parameter
     # combination is passed
     assert len(log_path) == 1
 
     # Assert the log file generated is correct
 
     sample_logs = ['+0.000000000s -1 Logger:main(): [DEBUG] Debug',
-                    '+0.000000000s -1 Logger:main(): [INFO ] Info',
-                    '+0.000000000s -1 Logger:main(): [WARN ] Warn',
-                    '+0.000000000s -1 Logger:main(): [ERROR] Error',
-                    '+0.000000000s -1 Logger:main(): [LOGIC] Logic'
-                ]
+                   '+0.000000000s -1 Logger:main(): [INFO ] Info',
+                   '+0.000000000s -1 Logger:main(): [WARN ] Warn',
+                   '+0.000000000s -1 Logger:main(): [ERROR] Error',
+                   '+0.000000000s -1 Logger:main(): [LOGIC] Logic'
+                   ]
 
     with open(log_path[0]) as f:
         logs = f.readlines()
     actual_logs = [x.strip() for x in logs]
 
-    assert (sample_logs == actual_logs)                                    
+    assert (sample_logs == actual_logs)
+
 
 def test_only_load_some_files_decorator(tmpdir, manager, result, parameter_combination_no_rngrun):
     def parsing_function(result):

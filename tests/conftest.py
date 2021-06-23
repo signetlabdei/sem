@@ -170,6 +170,7 @@ def setup_and_cleanup(tmpdir):
     yield
     shutil.rmtree(str(tmpdir))
 
+
 def pytest_configure(config):
     print("Getting and compiling ns-3...")
     get_and_compile_ns_3()

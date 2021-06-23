@@ -13,6 +13,8 @@ from tinydb import TinyDB, where
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 
+from .utils import parse_log_component
+
 REUSE_RNGRUN_VALUES = False
 
 class DatabaseManager(object):
@@ -198,7 +200,6 @@ class DatabaseManager(object):
         yield from DatabaseManager.get_next_values(self, available_runs)
 
     def insert_results(self, results):
-
         """
         Insert a list of new results in the database.
 
@@ -225,40 +226,44 @@ class DatabaseManager(object):
         Where elapsed time is a float representing the seconds the simulation
         execution took, and id is a UUID uniquely identifying the result, and
         which is used to locate the output files in the campaign_dir/data
-        folder. 
-        The log_component dictionary represents the enabled log_components along
-        with their respective log_levels. For simulations where logging was not 
-        enabled its value will be None.
+        folder.
+        The log_component dictionary represents the enabled log_components
+        along with their respective log_levels. For simulations where logging
+        was not enabled its value will be None.
         """
 
         # This dictionary serves as a model for how the keys in the newly
         # inserted result should be structured.
         example_result = {
-            'params': {k: ['...'] for k in list(self.get_params().keys()) + ['RngRun']},
-            'meta': {k: ['...'] for k in ['elapsed_time', 'id', 'exitcode', 'log_component']},
+            'params': {k: ['...'] for k in list(self.get_params().keys()) +
+                       ['RngRun']},
+            'meta': {k: ['...'] for k in
+                     ['elapsed_time', 'id', 'exitcode', 'log_component']},
         }
 
         for result in results:
             # Verify result format is correct
             # Only check the if the keys are consistent
-            if not(set(result.keys())==set(['params','meta'])
-                   and set(example_result['params'].keys())==set(result['params'].keys()) 
-                   and set(example_result['meta'].keys())==set(result['meta'].keys())):
+            if not(set(result.keys()) == set(['params', 'meta'])
+                   and set(example_result['params'].keys()) ==
+                    set(result['params'].keys())
+                   and set(example_result['meta'].keys()) ==
+                    set(result['meta'].keys())):
                 raise ValueError(
                     '%s:\nExpected: %s\nGot: %s' % (
                         "Result dictionary does not correspond to database format",
                         pformat(example_result, depth=2),
                         pformat(result, depth=2)))
-            result['meta']['log_component'] = self.parse_log_component(result['meta']['log_component']) 
+            result['meta']['log_component'] = parse_log_component(
+                                               result['meta']['log_component'])
 
-        
         # Insert results
         self.db.table('results').insert_multiple(deepcopy(results))
 
     def get_results(self, params=None, result_id=None, log_component=None):
         """
         Return all the results available from the database that fulfill some
-        parameter combinations or logging combination based on some rules.
+        parameter combinations or logging combination.
 
         Rules on params:
         - If params is None (or not specified), return all the results.
@@ -266,11 +271,16 @@ class DatabaseManager(object):
         values we are interested in, with multiple values specified as lists.
 
         Rules on log_component:
-        - If log_component is None (or not specified), return only the results where logging is not enabled.
-        - If log component is {} (Empty dictionary), return all the results where is logging is enabled.
-        - If log_component is a non-empty dictionary, return all the results where the passed log_component matches the log_component used during simulations.
-    
-        The rules params and log_component will be applied simulataneously. 
+        - If log_component is None (or not specified), return only the results
+            where logging is not enabled.
+        - If log component is {} (Empty dictionary), return all the results
+            where logging is enabled.
+        - If log_component is a non-empty dictionary, return all the results
+            where the passed log_component matches the log_component used
+            during simulations.
+
+        The rules of both params and log_component will be applied
+        simultaneously.
 
         For example, if the following params value is used::
 
@@ -280,13 +290,17 @@ class DatabaseManager(object):
             }
 
         One of three cases can occur:
-        - If log_component is None: the database will be queried for results having param1 equal to value1,
-        and param2 equal to value2 or value3.
-        - If log_component is {}: the database will be queried for results having param1 equal to value1,
-        and param2 equal to value2 or value3 and log_component is not None (i.e. logging is enabled)
-        - If log_component is {'component1':'level1|level2'}: the database will be queried for results having param1 equal to value1,
-        and param2 equal to value2 or value3 and log_component = {'component1':'level1|level2'}
-        
+        - If log_component is None: the database will be queried for results
+            having param1 equal to value1, and param2 equal to value2 or
+            value3.
+        - If log_component is {}: the database will be queried for results
+            having param1 equal to value1, and param2 equal to value2 or
+            value3 and log_component is not None (i.e. logging is enabled)
+        - If log_component is {'component1':'level1|level2'}: the database
+            will be queried for results having param1 equal to value1, and
+            param2 equal to value2 or value3 and
+            log_component = {'component1':'level1|level2'}
+
         Not specifying a value for all the available parameters is allowed:
         unspecified parameters are assumed to be 'free', and can take any
         value.
@@ -297,8 +311,9 @@ class DatabaseManager(object):
         """
 
         if log_component:
-            # Make the passed log_component consistent with the format stored in database
-            log_component = self.parse_log_component(log_component)
+            # Make the passed log_component consistent with the format stored
+            # in database
+            log_component = parse_log_component(log_component)
 
         # In this case, return all results
         # A cast to dict is necessary, since self.db.table() contains TinyDB's
@@ -309,22 +324,25 @@ class DatabaseManager(object):
             return [dict(i) for i in self.db.table('results').all() if
                     i['meta']['id'] == result_id]
 
-        # If params is None or params is {} match the results based only on log_component
-        if not params:
+        # If params is None or params is {} match the results based only on
+        # log_component
+        if params is None or params == {}:
             # Match all non-logging simulations
             if log_component is None:
-                return [dict(i) for i in self.db.table('results').all() if  
-                    i['meta']['log_component'] is None]
+                return [dict(i) for i in self.db.table('results').all() if
+                        i['meta']['log_component'] is None]
             # Match all simulations where logging is enabled
             elif log_component == {}:
-                return [dict(i) for i in self.db.table('results').all() if  
-                    i['meta']['log_component'] is not None]
-            # Match the simulations only with the provided log components enabled at the given log levels.
+                return [dict(i) for i in self.db.table('results').all() if
+                        i['meta']['log_component'] is not None]
+            # Match the simulations only with the provided log components
+            # enabled at the given log levels.
             else:
-                query = reduce(or_,[
-                    where('meta')['log_component'][component] == value for component,value in 
-                                                            log_component.items()])
-                return [dict(i) for i in self.db.table('results').search(query)]
+                query = reduce(or_, [
+                    where('meta')['log_component'][component] == value for
+                    component, value in log_component.items()])
+                return [dict(i) for i in self.db.table('results')
+                        .search(query)]
 
         # If we are passed a list of parameter combinations, we concatenate
         # results for the queries corresponding to each dictionary in the list
@@ -351,40 +369,47 @@ class DatabaseManager(object):
             else:
                 query_params[key] = params[key]
 
-        # Handle case where query params has no keys                            #TODO - This is equivalent to params={}, right?                                                           
+        # Handle case where query params has no keys
+        # TODO - This is equivalent to params={}, right?
         if not query_params.keys():
             return [dict(i) for i in self.db.table('results').all()]
 
         # Create the TinyDB query
         # In the docstring example above, this is equivalent to:
-        # If log_component is None: AND(OR(param1 == value1), OR(param2 == value2, param2 == value3), OR(log_component == None))
-        # If log_component is {}: AND(OR(param1 == value1), OR(param2 == value2, param2 == value3), OR(log_component != None))
-        # If log_cpmonent is {'component1':'level1|level2'}: AND(OR(param1 == value1), OR(param2 == value2, param2 == value3), OR(log_component == {'component1':'level1|level2'}))
-    
-        if log_component is None:                                                                                
+        # If log_component is None:
+        #   AND(OR(param1 == value1), OR(param2 == value2, param2 == value3),
+        #   OR(log_component == None))
+        # If log_component is {}:
+        #   AND(OR(param1 == value1), OR(param2 == value2, param2 == value3),
+        #   OR(log_component != None))
+        # If log_component is {'component1':'level1|level2'}:
+        #   AND(OR(param1 == value1), OR(param2 == value2, param2 == value3),
+        #   OR(log_component == {'component1':'level1|level2'}))
+
+        if log_component is None:
             query = reduce(and_, [reduce(or_, [
                 where('params')[key] == v for v in value]) for key, value in
-                                query_params.items()])  
-            query2 = (where('meta')['log_component'] == None)         
+                                query_params.items()])
+            query2 = (where('meta')['log_component'] == None)
             query = query & query2
 
         elif log_component == {}:
             query = reduce(and_, [reduce(or_, [
                 where('params')[key] == v for v in value]) for key, value in
                                 query_params.items()])
-            query2 = (where('meta')['log_component'] != None)  
-            query = query & query2                              
+            query2 = (where('meta')['log_component'] != None)
+            query = query & query2
 
         else:
             query = reduce(and_, [reduce(or_, [
                 where('params')[key] == v for v in value]) for key, value in
-                                query_params.items()]) 
+                                query_params.items()])
             query2 = reduce(or_, [
-                where('meta')['log_component'][component] == level for component,level 
-                                in log_component.items()])
+                where('meta')['log_component'][component] == level
+                for component, level in log_component.items()])
             query = query & query2
 
-        return  [dict(i) for i in self.db.table('results').search(query)]
+        return [dict(i) for i in self.db.table('results').search(query)]
 
     def get_result_files(self, result):
         """
@@ -409,7 +434,8 @@ class DatabaseManager(object):
 
         return {k: v for k, v in filename_path_pairs}
 
-    def get_complete_results(self, params=None, result_id=None, files_to_load=r'.*', log_component=None):
+    def get_complete_results(self, params=None, result_id=None,
+                             files_to_load=r'.*', log_component=None):
         """
         Return available results, analogously to what get_results does, but
         also read the corresponding output files for each result, and
@@ -448,7 +474,8 @@ class DatabaseManager(object):
         if result_id is not None:
             results = deepcopy(self.get_results(result_id=result_id))
         else:
-            results = deepcopy(self.get_results(params, log_component=log_component))
+            results = deepcopy(self.get_results(params,
+                                                log_component=log_component))
 
         for r in results:
             r['output'] = {}
@@ -579,74 +606,3 @@ class DatabaseManager(object):
                 sorted_values[k] = None
 
         return sorted_values
-
-    def parse_log_component(self,log_component,ns3_log_components=None):
-        """
-        Verifies if the log levels/log classes passed in the log_component dictionary are valid
-        and converts log levels to corresponding log classes. Returns a dictionary with the 
-        valid components and log classes.
-        For example,
-        'level_debug' get converted to 'warn|error|debug'
-
-        Args:
-            log_component (dict): a python dictionary with the 
-                log_components (to enable) as the key and the log_levels 
-                as the value. Log levels are to be mentioned in similar format to how 
-                log levels are mentioned in NS_LOG.
-                
-                For example, 
-                log_component = {
-                    'component1' : 'info',
-                    'component2' : 'level_debug|info' 
-                }
-            ns3_log_components (list): A list containing all the valid log components supported by ns-3. 
-        """
-        if not log_component:
-            return None
-
-        ret_dict = {}
-        log_level_list = ['error', 'warn', 'debug', 'info', 'function', 'logic', 'all']
-        converter = {
-            'error': ['error'],
-            'warn': ['warn'],
-            'debug': ['debug'],
-            'info': ['info'],
-            'function': ['function'],
-            'logic': ['logic'],
-            'all': ['all'],
-            'level_error': ['error'],
-            'level_warn': ['error','warn'],
-            'level_debug': ['error','warn','debug'],
-            'level_info': ['error','warn','debug','info'],
-            'level_function': ['error','warn','debug','info','function'],
-            'level_logic': ['error','warn','debug','info','function','logic'],
-            'level_all': ['error','warn','debug','info','function','logic','all'],
-            'prefix_func': None,
-            'prefix_time': None,
-            'prefix_node': None,
-            'prefix_level': None,
-            'prefix_all': None
-        }
-        for component,levels in log_component.items():
-            log_level_complete = set()
-            for level in levels.split('|'):
-                if level not in converter.keys():
-                    raise Exception("Log level for component %s is not valid" % component)
-                
-                if ns3_log_components and component not in ns3_log_components:
-                    raise Exception(
-                        'Log component %s is not a valid ns-3 log component.Valid log components: \n%ls' % (
-                        component,
-                        ns3_log_components
-                        ))
-
-                # Do not update the dictionary if prefixes are mentioned
-                if converter[level] is not None:
-                    log_level_complete.update(converter[level])
-
-            # Sort the log classes for consistency 
-            log_level_sorted = [level for level in log_level_list if level in log_level_complete]
-
-            ret_dict[component] = "|".join(log_level_sorted)
-
-        return ret_dict        
