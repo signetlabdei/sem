@@ -365,8 +365,7 @@ def parse_log_component(log_component, ns3_log_components=None):
                       'debug',
                       'info',
                       'function',
-                      'logic',
-                      'all']
+                      'logic']
     converter = {
         'error': ['error'],
         'warn': ['warn'],
@@ -374,14 +373,16 @@ def parse_log_component(log_component, ns3_log_components=None):
         'info': ['info'],
         'function': ['function'],
         'logic': ['logic'],
-        'all': ['all'],
+        'all': ['error', 'warn', 'debug', 'info', 'function', 'logic'],
         'level_error': ['error'],
         'level_warn': ['error', 'warn'],
         'level_debug': ['error', 'warn', 'debug'],
         'level_info': ['error', 'warn', 'debug', 'info'],
         'level_function': ['error', 'warn', 'debug', 'info', 'function'],
         'level_logic': ['error', 'warn', 'debug', 'info', 'function', 'logic'],
-        'level_all': ['error', 'warn', 'debug', 'info', 'function', 'logic', 'all'],
+        'level_all': ['error', 'warn', 'debug', 'info', 'function', 'logic'],
+        '**': ['error', 'warn', 'debug', 'info', 'function', 'logic'],
+        '*': None,
         'prefix_func': None,
         'prefix_time': None,
         'prefix_node': None,
@@ -390,26 +391,42 @@ def parse_log_component(log_component, ns3_log_components=None):
     }
     for component, levels in log_component.items():
         log_level_complete = set()
+        if (ns3_log_components is not None) and not (component not in ns3_log_components or component != '*'):
+            raise ValueError(
+                "Log component '%s' is not a valid ns-3 log component. Valid log components: \n%ls" % (
+                    component,
+                    ns3_log_components
+                ))
         for level in levels.split('|'):
             if level not in converter:
                 raise ValueError("Log level for component %s is not valid"
                                  % component)
 
-            if (ns3_log_components is not None) and component not in ns3_log_components:
-                raise ValueError(
-                    "Log component '%s' is not a valid ns-3 log component. Valid log components: \n%ls" % (
-                        component,
-                        ns3_log_components
-                    ))
+            # '*' represents level_all only if it occurs before the first '|'
+            if levels.split('|')[0] == '*':
+                log_level_complete.update(converter['all'])
+                continue
 
             # Do not update the dictionary if prefixes are mentioned
             if converter[level] is not None:
                 log_level_complete.update(converter[level])
 
+        # Update log_level_complete if entry for components exists
+        if component in ret_dict:
+            log_level_complete.update([log_level
+                                      for log_level in ret_dict[component].split('|')
+                                      if log_level not in log_level_complete])
+
         # Sort the log classes for consistency
         log_level_sorted = [level for level in log_level_list
                             if level in log_level_complete]
 
-        ret_dict[component] = "|".join(log_level_sorted)
+        if component == '*':
+            if ns3_log_components is None:
+                raise ValueError('No list of ns-3 supported log components passed.\n')
+            for comp in ns3_log_components:
+                ret_dict[comp] = "|".join(log_level_sorted)
+        else:
+            ret_dict[component] = "|".join(log_level_sorted)
 
     return ret_dict

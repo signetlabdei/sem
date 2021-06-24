@@ -1048,14 +1048,27 @@ class CampaignManager(object):
             log_component (str): a string formatted in the NS_LOG variable
                 format.
         """
-        # Droppping NS_LOG prefix and loosely checking the format
-        log_component = re.match(r'^NS_LOG="([\w=|:]+)"$', log_component).group(1)
+        # Droppping 'NS_LOG=' prefix and check if the format of the provided
+        # string is valid. The validation of log components and log levels is
+        # done in Utils.parse_log_component.
+        match = re.match(r'^NS_LOG="((?:(\*\*\*)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*)(:(?:(\*\*\*)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*))*)"$', log_component).group(1)
+
+        if match is None:
+            raise ValueError("Provided log_component string '%s' is invalid\n" % log_component)
 
         # convert the string to log_component dictionary format
         # to store in the database later
         ret_dict = {}
-        for component in log_component.split(':'):
+        for component in match.split(':'):
             component_and_level = component.split('=')
-            ret_dict[component_and_level[0]] = component_and_level[1]
+            if len(component_and_level) == 1:
+                if component_and_level[0] == '***':
+                    ret_dict['*'] = 'all'
+                    return ret_dict
+                else:
+                    ret_dict[component_and_level[0]] = 'all'
+
+            if len(component_and_level) == 2:
+                ret_dict[component_and_level[0]] = component_and_level[1]
 
         return ret_dict
