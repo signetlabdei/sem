@@ -5,7 +5,7 @@ import sem
 #######################
 
 script = 'wifi-power-adaptation-distance'
-ns_path = './ns-3'
+ns_path = './examples/ns-3'
 campaign_dir = "/tmp/sem-test/wifi-plotting-example"
 
 campaign = sem.CampaignManager.new(ns_path, script, campaign_dir,
@@ -41,7 +41,7 @@ log_component = {
     'PowerAdaptationDistance': 'debug',
     'ParfWifiManager': 'info'
 }
-# log_component = 'NS_LOG="PowerAdaptationDistance=debug"'
+# log_component = 'NS_LOG="PowerAdaptationDistance=debug:ParfWifiManager=info"'
 runs = 1  # Number of runs to perform for each combination
 
 # Actually run the simulations

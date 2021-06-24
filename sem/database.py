@@ -332,17 +332,16 @@ class DatabaseManager(object):
                 return [dict(i) for i in self.db.table('results').all() if
                         i['meta']['log_component'] is None]
             # Match all simulations where logging is enabled
-            elif log_component == {}:
+            if log_component == {}:
                 return [dict(i) for i in self.db.table('results').all() if
                         i['meta']['log_component'] is not None]
             # Match the simulations only with the provided log components
             # enabled at the given log levels.
-            else:
-                query = reduce(or_, [
-                    where('meta')['log_component'][component] == value for
-                    component, value in log_component.items()])
-                return [dict(i) for i in self.db.table('results')
-                        .search(query)]
+            query = reduce(or_, [
+                where('meta')['log_component'][component] == value for
+                component, value in log_component.items()])
+            return [dict(i) for i in self.db.table('results')
+                    .search(query)]
 
         # If we are passed a list of parameter combinations, we concatenate
         # results for the queries corresponding to each dictionary in the list

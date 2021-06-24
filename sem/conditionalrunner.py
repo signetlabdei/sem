@@ -35,10 +35,10 @@ class ConditionalRunner(SimulationRunner):
         Args:
             parameter_list (list): list of parameter combinations to simulate.
             data_folder (str): folder in which to create output folders.
-            environment (dict): a dictionary containing the value of NS_LOG environment variable 
-                to enable logging. 
+            environment (dict): a dictionary containing the value of NS_LOG
+                environment variable to enable logging.
                 Format: {'NS_LOG': 'environment_variable'}
-                
+
                 If logging is disabled this parameter will be None.
         """
 
