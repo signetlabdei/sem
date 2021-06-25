@@ -2,6 +2,7 @@ import io
 import math
 import copy
 import warnings
+from pathlib import Path
 from itertools import product
 from functools import wraps
 
@@ -399,8 +400,9 @@ def parse_log_component(log_component, ns3_log_components=None):
                 ))
         for level in levels.split('|'):
             if level not in converter:
-                raise ValueError("Log level for component %s is not valid"
-                                 % component)
+                raise ValueError("Log level '%s' for component '%s' is not valid"
+                                 % (level,
+                                    component))
 
             # '*' represents level_all only if it occurs before the first '|'
             if levels.split('|')[0] == '*':

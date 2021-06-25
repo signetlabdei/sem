@@ -292,7 +292,7 @@ class DatabaseManager(object):
         One of three cases can occur:
         - If log_component is None: the database will be queried for results
             having param1 equal to value1, and param2 equal to value2 or
-            value3.
+            value3, and log_component is None (i.e. logging is disabled).
         - If log_component is {}: the database will be queried for results
             having param1 equal to value1, and param2 equal to value2 or
             value3 and log_component is not None (i.e. logging is enabled)

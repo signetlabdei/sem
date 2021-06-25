@@ -1051,7 +1051,7 @@ class CampaignManager(object):
         # Droppping 'NS_LOG=' prefix and check if the format of the provided
         # string is valid. The validation of log components and log levels is
         # done in Utils.parse_log_component.
-        match = re.match(r'^NS_LOG="((?:(\*\*\*)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*)(:(?:(\*\*\*)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*))*)"$', log_component).group(1)
+        match = re.match(r'^NS_LOG="((?:(\*\*\*)|([a-zA-Z]+)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*)(:(?:(\*\*\*)|([a-zA-Z]+)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*))*)"$', log_component).group(1)
 
         if match is None:
             raise ValueError("Provided log_component string '%s' is invalid\n" % log_component)
