@@ -341,6 +341,8 @@ def parse_log_component(log_component, ns3_log_components=None):
     For example,
     'level_debug' gets converted to 'warn|error|debug'
 
+    Note: If log_component is None or {}(Empty dictionary), None is returned.
+
     Args:
         log_component (dict): a python dictionary with the
             log_components (to enable) as the key and the log_levels
@@ -359,7 +361,7 @@ def parse_log_component(log_component, ns3_log_components=None):
             components supported by ns-3.
     """
     if not log_component:
-        return {}
+        return None
 
     log_component_dict = {}
     log_level_list = ['error',
