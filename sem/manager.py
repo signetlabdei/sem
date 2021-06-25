@@ -572,11 +572,7 @@ class CampaignManager(object):
             # Get all availabe log components
             ns3_log_components = self.runner.get_available_log_components()
 
-            # Check if the passed dictionary is valid the key should be a
-            # valid log component and the value should be a valid log level or
-            # a valid log class or a combination of log levels and log classes.
-            # For example, <level1> or <class1> or <level1|level2> or
-            # <level1|class1|level2>
+            # Check if the passed dictionary is valid
             log_component = parse_log_component(log_component,
                                                 ns3_log_components)
 
@@ -1051,6 +1047,7 @@ class CampaignManager(object):
         # Droppping 'NS_LOG=' prefix and check if the format of the provided
         # string is valid. The validation of log components and log levels is
         # done in Utils.parse_log_component.
+        # TODO - Use split() instead of regex
         match = re.match(r'^NS_LOG="((?:(\*\*\*)|([a-zA-Z]+)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*)(:(?:(\*\*\*)|([a-zA-Z]+)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*))*)"$', log_component).group(1)
 
         if match is None:
@@ -1068,7 +1065,10 @@ class CampaignManager(object):
                 else:
                     ret_dict[component_and_level[0]] = 'all'
 
-            if len(component_and_level) == 2:
+            elif len(component_and_level) == 2:
                 ret_dict[component_and_level[0]] = component_and_level[1]
+
+            else:
+                raise ValueError("Provided log_component string '%s' is invalid\n" % log_component)
 
         return ret_dict

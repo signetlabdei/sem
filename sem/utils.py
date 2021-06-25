@@ -18,6 +18,7 @@ try:
 except(RuntimeError):
     DRMAA_AVAILABLE = False
 
+
 def output_labels(argument):
     def decorator(function):
         function.__dict__["output_labels"] = argument
@@ -358,9 +359,9 @@ def parse_log_component(log_component, ns3_log_components=None):
             components supported by ns-3.
     """
     if not log_component:
-        return None
+        return {}
 
-    ret_dict = {}
+    log_component_dict = {}
     log_level_list = ['error',
                       'warn',
                       'debug',
@@ -392,7 +393,7 @@ def parse_log_component(log_component, ns3_log_components=None):
     }
     for component, levels in log_component.items():
         log_level_complete = set()
-        if (ns3_log_components is not None) and not (component not in ns3_log_components or component != '*'):
+        if (ns3_log_components is not None) and component not in ns3_log_components and component != '*':
             raise ValueError(
                 "Log component '%s' is not a valid ns-3 log component. Valid log components: \n%ls" % (
                     component,
@@ -414,10 +415,8 @@ def parse_log_component(log_component, ns3_log_components=None):
                 log_level_complete.update(converter[level])
 
         # Update log_level_complete if entry for components exists
-        if component in ret_dict:
-            log_level_complete.update([log_level
-                                      for log_level in ret_dict[component].split('|')
-                                      if log_level not in log_level_complete])
+        if component in log_component_dict:
+            log_level_complete.update(log_component_dict[component].split('|'))
 
         # Sort the log classes for consistency
         log_level_sorted = [level for level in log_level_list
@@ -427,8 +426,8 @@ def parse_log_component(log_component, ns3_log_components=None):
             if ns3_log_components is None:
                 raise ValueError('No list of ns-3 supported log components passed.\n')
             for comp in ns3_log_components:
-                ret_dict[comp] = "|".join(log_level_sorted)
+                log_component_dict[comp] = "|".join(log_level_sorted)
         else:
-            ret_dict[component] = "|".join(log_level_sorted)
+            log_component_dict[component] = "|".join(log_level_sorted)
 
-    return ret_dict
+    return log_component_dict

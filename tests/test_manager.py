@@ -177,7 +177,8 @@ def test_run_logging_simulation(ns_3_compiled_debug, config):
                    '+0.000000000s -1 Logger:main(): [INFO ] Info',
                    '+0.000000000s -1 Logger:main(): [WARN ] Warn',
                    '+0.000000000s -1 Logger:main(): [ERROR] Error',
-                   '+0.000000000s -1 Logger:main(): [LOGIC] Logic'
+                   '+0.000000000s -1 Logger:main(): [LOGIC] Logic',
+                   '+0.000000000s -1 Logger:main("Function")'
                    ]
 
     with open(log_path[0]) as f:
