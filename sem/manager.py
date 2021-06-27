@@ -1048,27 +1048,27 @@ class CampaignManager(object):
         # string is valid. The validation of log components and log levels is
         # done in Utils.parse_log_component.
         # TODO - Use split() instead of regex
-        match = re.match(r'^NS_LOG="((?:(\*\*\*)|([a-zA-Z]+)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*)(:(?:(\*\*\*)|([a-zA-Z]+)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*))*)"$', log_component).group(1)
+        groups = re.match(r'^NS_LOG="((?:(\*\*\*)|([a-zA-Z]+)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*)(:(?:(\*\*\*)|([a-zA-Z]+)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*))*)"$', log_component)
 
-        if match is None:
+        if groups is None:
             raise ValueError("Provided log_component string '%s' is invalid\n" % log_component)
 
         # convert the string to log_component dictionary format
         # to store in the database later
-        ret_dict = {}
-        for component in match.split(':'):
+        log_component_dict = {}
+        for component in groups.group(1).split(':'):
             component_and_level = component.split('=')
             if len(component_and_level) == 1:
                 if component_and_level[0] == '***':
-                    ret_dict['*'] = 'all'
-                    return ret_dict
+                    log_component_dict['*'] = 'all'
+                    return log_component_dict
                 else:
-                    ret_dict[component_and_level[0]] = 'all'
+                    log_component_dict[component_and_level[0]] = 'all'
 
             elif len(component_and_level) == 2:
-                ret_dict[component_and_level[0]] = component_and_level[1]
+                log_component_dict[component_and_level[0]] = component_and_level[1]
 
             else:
                 raise ValueError("Provided log_component string '%s' is invalid\n" % log_component)
 
-        return ret_dict
+        return log_component_dict

@@ -272,6 +272,9 @@ class SimulationRunner(object):
         collects all the valid log components supported by ns-3.
         If logging is not enabled, this function is never called.
         """
+        if self.optimized:
+            raise ValueError('Log components cannot be obtained in optimized mode.\n')
+
         ns_3_log_components = []
         environment = {'NS_LOG': 'NonExistentLogComponent'}
         complete_environment = {**self.environment, **environment}
