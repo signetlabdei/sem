@@ -233,3 +233,72 @@ def test_only_load_some_files_decorator(tmpdir, manager, result, parameter_combi
         columns=['Label'],
         params=parameter_combination_no_rngrun,
         runs=1)  # Get one run per combination
+
+
+def test_convert_str_to_dict(manager):
+    # Valid examples along with wildcards
+    env_variable = 'NS_LOG="***"'
+    log_component = manager.convert_environment_str_to_dict(env_variable)
+    assert(log_component == {
+        '*': 'all'
+    })
+
+    env_variable = 'NS_LOG="*=**"'
+    log_component = manager.convert_environment_str_to_dict(env_variable)
+    assert(log_component == {
+        '*': '**'
+    })
+
+    env_variable = 'NS_LOG="*=*|*"'
+    log_component = manager.convert_environment_str_to_dict(env_variable)
+    assert(log_component == {
+        '*': '*|*'
+    })
+
+    env_variable = 'NS_LOG="*=all|*"'
+    log_component = manager.convert_environment_str_to_dict(env_variable)
+    assert(log_component == {
+        '*': 'all|*'
+    })
+
+    env_variable = 'NS_LOG="*=level_all|*"'
+    log_component = manager.convert_environment_str_to_dict(env_variable)
+    assert(log_component == {
+        '*': 'level_all|*'
+    })
+
+    env_variable = 'NS_LOG="*=*|all"'
+    log_component = manager.convert_environment_str_to_dict(env_variable)
+    assert(log_component == {
+        '*': '*|all'
+    })
+
+    env_variable = 'NS_LOG="*=*|prefix_all"'
+    log_component = manager.convert_environment_str_to_dict(env_variable)
+    assert(log_component == {
+        '*': '*|prefix_all'
+    })
+
+    env_variable = 'NS_LOG="component"'
+    log_component = manager.convert_environment_str_to_dict(env_variable)
+    assert(log_component == {
+        'component': 'all'
+    })
+
+    # Invalid examples
+
+    env_variable = 'NS_LOG="component="'
+    with pytest.raises(ValueError):
+        log_component = manager.convert_environment_str_to_dict(env_variable)
+
+    env_variable = 'NS_LOG="*=*|***"'
+    with pytest.raises(ValueError):
+        log_component = manager.convert_environment_str_to_dict(env_variable)
+
+    env_variable = 'NS_LOG="component=info=warn"'
+    with pytest.raises(ValueError):
+        log_component = manager.convert_environment_str_to_dict(env_variable)
+
+    env_variable = 'NS_LOG="NetDevice=**;Simulator:Node=level_info-prefix_time"'
+    with pytest.raises(ValueError):
+        log_component = manager.convert_environment_str_to_dict(env_variable)

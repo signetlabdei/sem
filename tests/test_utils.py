@@ -1,6 +1,9 @@
-from sem import list_param_combinations, automatic_parser, stdout_automatic_parser
+import sem
+from math import log
+from sem import list_param_combinations, automatic_parser, stdout_automatic_parser, parse_log_component
 import json
 import numpy as np
+import pytest
 from operator import getitem
 
 
@@ -101,3 +104,62 @@ def test_automatic_parser(result):
                                        [6, 7, 8, 9, 10]])
     assert parsed['stderr'] == []
 
+
+def test_parse_log_component(ns_3_compiled_debug, config):
+    log_component = {
+                'component1': 'info|prefix_level',
+                'component2': 'level_debug|info',
+                'component3': 'all|prefix_all',
+                'component4': '**',
+                'component5': '*|info',
+                'component6': 'info|*',
+                'component7': 'prefix_all'
+            }
+
+    new_component = parse_log_component(log_component=log_component)
+
+    assert new_component == {
+        'component1': 'info',
+        'component2': 'error|warn|debug|info',
+        'component3': 'error|warn|debug|info|function|logic',
+        'component4': 'error|warn|debug|info|function|logic',
+        'component5': 'error|warn|debug|info|function|logic',
+        'component6': 'info',
+        'component7': ''
+    }
+
+    log_component = {
+        'component1': 'info|err'
+    }
+
+    with pytest.raises(ValueError):
+        new_component = parse_log_component(log_component=log_component)
+
+    new_campaign = sem.CampaignManager.new(ns_3_compiled_debug,
+                                           'logging-ns3-script',
+                                           config['campaign_dir'],
+                                           overwrite=True,
+                                           optimized=False)
+
+    log_component = {
+        '*': 'info',
+        'Simulator': 'level_info'
+    }
+
+    with pytest.raises(ValueError):
+        new_component = parse_log_component(log_component=log_component)
+
+    ns3_log_components = new_campaign.runner.get_available_log_components()
+
+    new_component = parse_log_component(log_component=log_component,
+                                        ns3_log_components=ns3_log_components)
+
+    assert new_component['Simulator'] == 'error|warn|debug|info'
+
+    log_component = {
+        'NonExistentLogComponent': 'info'
+    }
+
+    with pytest.raises(ValueError):
+        new_component = parse_log_component(log_component=log_component,
+                                            ns3_log_components=ns3_log_components)
