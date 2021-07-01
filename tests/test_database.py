@@ -212,12 +212,18 @@ def test_results_queries(db, result):
         result['params']['RngRun'] = runIdx
         db.insert_results([result])
 
-    result['meta']['log_component'] = {'Hasher2': 'info'}
+    result['meta']['log_component'] = {'HasherB': 'info'}
     for runIdx in range(30, 40, 1):
         result['params']['RngRun'] = runIdx
         db.insert_results([result])
 
-    # This query should return all results except the last two batches
+    result['meta']['log_component'] = {'Hasher': 'debug',
+                                       'HasherB': 'info'}
+    for runIdx in range(40, 50, 1):
+        result['params']['RngRun'] = runIdx
+        db.insert_results([result])
+
+    # This query should return all results except the last three batches
     results = list(db.get_results({'dict': ['/usr/share/dict/web2a',
                                             '/usr/share/dict/web2']}))
     assert len(results) == 20
@@ -227,18 +233,24 @@ def test_results_queries(db, result):
     results = list(db.get_results({'dict': ['/usr/share/dict/web2a',
                                             '/usr/share/dict/web2']},
                                   log_component={}))
-    assert len(results) == 20
+    assert len(results) == 30
     assert sorted([d['params']['RngRun'] for d in results]) == list(range(20,
-                                                                          40,
+                                                                          50,
                                                                           1))
 
     # This query should only return the third batch
     results = list(db.get_results({'dict': ['/usr/share/dict/web2a']},
-                                  log_component={'Hasher': 'debug'}))
-    assert len(results) == 10
-    assert sorted([d['params']['RngRun'] for d in results]) == list(range(20,
-                                                                          30,
+                                  log_component='NS_LOG="HasherB=info"'))
+    assert len(results) == 20
+    assert sorted([d['params']['RngRun'] for d in results]) == list(range(30,
+                                                                          50,
                                                                           1))
+
+    # This query should not return any match
+    results = list(db.get_results({'dict': ['/usr/share/dict/web2a']},
+                                  log_component={'Hasher': 'info',
+                                                 'HasherB': 'info'}))
+    assert len(results) == 0
 
 
 def test_get_complete_results(manager, parameter_combination):

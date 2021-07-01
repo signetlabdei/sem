@@ -342,7 +342,7 @@ class DatabaseManager(object):
                         i['meta']['log_component'] is not None]
             # Match the simulations only with the provided log components
             # enabled at the given log levels.
-            query = reduce(or_, [
+            query = reduce(and_, [
                 where('meta')['log_component'][component] == value for
                 component, value in log_component.items()])
             return [dict(i) for i in self.db.table('results')
@@ -403,7 +403,7 @@ class DatabaseManager(object):
             query = reduce(and_, [reduce(or_, [
                 where('params')[key] == v for v in value]) for key, value in
                                 query_params.items()])
-            query2 = reduce(or_, [
+            query2 = reduce(and_, [
                 where('meta')['log_component'][component] == level
                 for component, level in log_component.items()])
             query = query & query2
