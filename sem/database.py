@@ -13,7 +13,7 @@ from tinydb import TinyDB, where
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 
-from .utils import parse_log_component
+from .utils import parse_log_component, convert_environment_str_to_dict
 
 REUSE_RNGRUN_VALUES = False
 
@@ -298,8 +298,8 @@ class DatabaseManager(object):
             value3 and log_component is not None (i.e. logging is enabled)
         - If log_component is {'component1':'level1|level2'}: the database
             will be queried for results having param1 equal to value1, and
-            param2 equal to value2 or value3 and
-            log_component = {'component1':'level1|level2'}
+            param2 equal to value2 or value3 and component1 equal to level1 or
+            level2.
 
         Not specifying a value for all the available parameters is allowed:
         unspecified parameters are assumed to be 'free', and can take any
@@ -311,6 +311,11 @@ class DatabaseManager(object):
         """
 
         if log_component:
+            # If the log_component is passed in a string(NS_LOG) format
+            # convert it to a dictionary
+            if isinstance(log_component, str):
+                log_component = convert_environment_str_to_dict(log_component)
+
             # Make the passed log_component consistent with the format stored
             # in database
             log_component = parse_log_component(log_component)

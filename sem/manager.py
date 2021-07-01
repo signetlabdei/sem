@@ -21,7 +21,7 @@ from .lptrunner import LptRunner
 from .parallelrunner import ParallelRunner
 from .conditionalrunner import ConditionalRunner
 from .runner import SimulationRunner
-from .utils import DRMAA_AVAILABLE, list_param_combinations, parse_log_component
+from .utils import DRMAA_AVAILABLE, list_param_combinations, parse_log_component, convert_environment_str_to_dict
 import pandas as pd
 
 if DRMAA_AVAILABLE:
@@ -566,7 +566,7 @@ class CampaignManager(object):
         # If the log_component is passed in a string(NS_LOG) format convert it
         # to a dictionary
         if log_component is not None and isinstance(log_component, str):
-            log_component = self.convert_environment_str_to_dict(log_component)
+            log_component = convert_environment_str_to_dict(log_component)
 
         if log_component is not None:
             # Get all availabe log components
@@ -1026,49 +1026,3 @@ class CampaignManager(object):
             if current_commit != campaign_commit:
                 raise Exception("ns-3 repository is on a different commit "
                                 "from the one specified in the campaign")
-
-    def convert_environment_str_to_dict(self, log_component):
-        """
-        Converts NS_LOG formatted string to a dictionary.
-
-        For example,
-            log_component =
-                'NS_LOG="component1=info:component2=level_debug|info"'
-        will be converted to
-            dict = {
-                'component1': 'info',
-                'component2': 'level_debug|info'
-            }
-
-        Args:
-            log_component (str): a string formatted in the NS_LOG variable
-                format.
-        """
-        # Droppping 'NS_LOG=' prefix and check if the format of the provided
-        # string is valid. The validation of log components and log levels is
-        # done in Utils.parse_log_component.
-        # TODO - Use split() instead of regex
-        groups = re.match(r'^NS_LOG="((?:(\*\*\*)|([a-zA-Z]+)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*)(:(?:(\*\*\*)|([a-zA-Z]+)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*))*)"$', log_component)
-
-        if groups is None:
-            raise ValueError("Provided log_component string '%s' is invalid\n" % log_component)
-
-        # convert the string to log_component dictionary format
-        # to store in the database later
-        log_component_dict = {}
-        for component in groups.group(1).split(':'):
-            component_and_level = component.split('=')
-            if len(component_and_level) == 1:
-                if component_and_level[0] == '***':
-                    log_component_dict['*'] = 'all'
-                    return log_component_dict
-                else:
-                    log_component_dict[component_and_level[0]] = 'all'
-
-            elif len(component_and_level) == 2:
-                log_component_dict[component_and_level[0]] = component_and_level[1]
-
-            else:
-                raise ValueError("Provided log_component string '%s' is invalid\n" % log_component)
-
-        return log_component_dict
