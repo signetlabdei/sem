@@ -2,6 +2,7 @@ import importlib
 import os
 import re
 import subprocess
+from sys import stdout
 import time
 import uuid
 import sem.utils
@@ -38,6 +39,7 @@ class SimulationRunner(object):
         self.path = path
         self.script = script
         self.optimized = optimized
+        self.skip_configuration = skip_configuration
         self.max_parallel_processes = max_parallel_processes
 
         if optimized:
@@ -264,11 +266,43 @@ class SimulationRunner(object):
                              'SimulatorImplementationType', 'ChecksumEnabled']})
         return params  # Return a sorted list
 
+    def get_available_log_components(self):
+        """
+        Runs a dummy simulation (only when logging is enabled) and
+        collects all the valid log components supported by ns-3.
+        If logging is not enabled, this function is never called.
+        """
+        if self.optimized:
+            raise ValueError('Log components cannot be obtained in optimized mode.\n')
+
+        ns_3_log_components = []
+        environment = {'NS_LOG': 'NonExistentLogComponent'}
+        complete_environment = {**self.environment, **environment}
+
+        try:
+            result = subprocess.check_output([self.script_executable],
+                                             env=complete_environment,
+                                             stderr=subprocess.STDOUT).decode()
+        except subprocess.CalledProcessError as e:
+            result = e.output.decode()
+
+        for log_components in result.split('\n'):
+            # TODO will this be enough to mark the end of log components
+            if (re.match(r'^msg=".+', log_components)):
+                break
+            ns_3_log_components += [log_components.split("=")[0]]
+
+        return ns_3_log_components
+
     ######################
     # Simulation running #
     ######################
 
-    def run_simulations(self, parameter_list, data_folder, stop_on_errors=False):
+    def run_simulations(self,
+                        parameter_list,
+                        data_folder,
+                        stop_on_errors=False,
+                        environment=None):
         """
         Run several simulations using a certain combination of parameters.
 
@@ -278,14 +312,25 @@ class SimulationRunner(object):
             parameter_list (list): list of parameter combinations to simulate.
             data_folder (str): folder in which to save subfolders containing
                 simulation output.
+            environment (dict): a dictionary containing the value of NS_LOG
+                environment variable to enable logging.
+                Format: {'NS_LOG': 'environment_variable'}
+
+                If logging is disabled this parameter will be None.
         """
+        # Add the passed environment to self.environment, which contains
+        # the library path.
+        if environment:
+            complete_environment = {**self.environment, **environment}
+        else:
+            complete_environment = self.environment
 
         for idx, parameter in enumerate(parameter_list):
-
             current_result = {
                 'params': {},
                 'meta': {}
                 }
+
             current_result['params'].update(parameter)
 
             command = [self.script_executable] + ['--%s=%s' % (param, value)
@@ -303,7 +348,7 @@ class SimulationRunner(object):
             with open(stdout_file_path, 'w') as stdout_file, open(
                     stderr_file_path, 'w') as stderr_file:
                 return_code = subprocess.call(command, cwd=temp_dir,
-                                              env=self.environment,
+                                              env=complete_environment,
                                               stdout=stdout_file,
                                               stderr=stderr_file)
             end = time.time()  # Time execution

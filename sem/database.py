@@ -13,6 +13,8 @@ from tinydb import TinyDB, where
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 
+from .utils import parse_log_components, convert_environment_str_to_dict
+
 REUSE_RNGRUN_VALUES = False
 
 class DatabaseManager(object):
@@ -198,29 +200,8 @@ class DatabaseManager(object):
         yield from DatabaseManager.get_next_values(self, available_runs)
 
     def insert_results(self, results):
-
-        # This dictionary serves as a model for how the keys in the newly
-        # inserted result should be structured.
-        example_result = {
-            'params': {k: ['...'] for k in list(self.get_params().keys()) + ['RngRun']},
-            'meta': {k: ['...'] for k in ['elapsed_time', 'id', 'exitcode']},
-        }
-
-        for result in results:
-            # Verify result format is correct
-            if not(DatabaseManager.have_same_structure(result, example_result)):
-                raise ValueError(
-                    '%s:\nExpected: %s\nGot: %s' % (
-                        "Result dictionary does not correspond to database format",
-                        pformat(example_result, depth=2),
-                        pformat(result, depth=2)))
-
-        # Insert results
-        self.db.table('results').insert_multiple(results)
-
-    def insert_result(self, result):
         """
-        Insert a new result in the database.
+        Insert a list of new results in the database.
 
         This function also verifies that the result dictionaries saved in the
         database have the following structure (with {'a': 1} representing a
@@ -235,7 +216,10 @@ class DatabaseManager(object):
                            },
                 'meta': {
                           'elapsed_time': value4,
-                          'id': value5
+                          'id': value5,
+                          'log_components': {
+                                              '...' : '...'
+                                           }
                         }
             }
 
@@ -243,6 +227,9 @@ class DatabaseManager(object):
         execution took, and id is a UUID uniquely identifying the result, and
         which is used to locate the output files in the campaign_dir/data
         folder.
+        The log_components dictionary represents the enabled log_components
+        along with their respective log_levels. For simulations where logging
+        was not enabled its value will be None.
         """
 
         # This dictionary serves as a model for how the keys in the newly
@@ -250,29 +237,50 @@ class DatabaseManager(object):
         example_result = {
             'params': {k: ['...'] for k in list(self.get_params().keys()) +
                        ['RngRun']},
-            'meta': {k: ['...'] for k in ['elapsed_time', 'id']},
+            'meta': {k: ['...'] for k in
+                     ['elapsed_time', 'id', 'exitcode', 'log_components']},
         }
 
-        # Verify result format is correct
-        if not(DatabaseManager.have_same_structure(result, example_result)):
-            raise ValueError(
-                '%s:\nExpected: %s\nGot: %s' % (
-                    "Result dictionary does not correspond to database format",
-                    pformat(example_result, depth=1),
-                    pformat(result, depth=1)))
+        for result in results:
+            # Verify result format is correct
+            # Only check the if the keys are consistent
+            if not(set(result.keys()) == set(['params', 'meta'])
+                   and set(example_result['params'].keys()) ==
+                    set(result['params'].keys())
+                   and set(example_result['meta'].keys()) ==
+                    set(result['meta'].keys())):
+                raise ValueError(
+                    '%s:\nExpected: %s\nGot: %s' % (
+                        "Result dictionary does not correspond to database format",
+                        pformat(example_result, depth=2),
+                        pformat(result, depth=2)))
+            result['meta']['log_components'] = parse_log_components(
+                                               result['meta']['log_components'])
 
-        # Insert result
-        self.db.table('results').insert(deepcopy(result))
+        # Insert results
+        self.db.table('results').insert_multiple(deepcopy(results))
 
-    def get_results(self, params=None, result_id=None):
+    def get_results(self, params=None, result_id=None, log_components=None):
         """
         Return all the results available from the database that fulfill some
-        parameter combinations.
+        parameter combinations or logging combination.
 
-        If params is None (or not specified), return all results.
-
-        If params is specified, it must be a dictionary specifying the result
+        Rules on params:
+        - If params is None (or not specified), return all the results.
+        - If params is specified, it must be a dictionary specifying the result
         values we are interested in, with multiple values specified as lists.
+
+        Rules on log_components:
+        - If log_components is None (or not specified), return only the results
+            where logging is not enabled.
+        - If log component is {} (Empty dictionary), return all the results
+            where logging is enabled.
+        - If log_components is a non-empty dictionary, return all the results
+            where the passed log_components matches the log_components used
+            during simulations.
+
+        The rules of both params and log_components will be applied
+        simultaneously.
 
         For example, if the following params value is used::
 
@@ -281,8 +289,17 @@ class DatabaseManager(object):
             'param2': ['value2', 'value3']
             }
 
-        the database will be queried for results having param1 equal to value1,
-        and param2 equal to value2 or value3.
+        One of three cases can occur:
+        - If log_components is None: the database will be queried for results
+            having param1 equal to value1, and param2 equal to value2 or
+            value3, and log_components is None (i.e. logging is disabled).
+        - If log_components is {}: the database will be queried for results
+            having param1 equal to value1, and param2 equal to value2 or
+            value3 and log_components is not None (i.e. logging is enabled)
+        - If log_components is {'component1':'level1|level2'}: the database
+            will be queried for results having param1 equal to value1, and
+            param2 equal to value2 or value3 and component1 equal to level1 or
+            level2.
 
         Not specifying a value for all the available parameters is allowed:
         unspecified parameters are assumed to be 'free', and can take any
@@ -293,16 +310,43 @@ class DatabaseManager(object):
             same structure as results inserted with the insert_result method.
         """
 
+        if log_components:
+            # If the log_components is passed in a string(NS_LOG) format
+            # convert it to a dictionary
+            if isinstance(log_components, str):
+                log_components = convert_environment_str_to_dict(log_components)
+
+            # Make the passed log_components consistent with the format stored
+            # in database
+            log_components = parse_log_components(log_components)
+
         # In this case, return all results
         # A cast to dict is necessary, since self.db.table() contains TinyDB's
         # Document object (which is simply a wrapper for a dictionary, thus the
         # simple cast).
+
         if result_id is not None:
             return [dict(i) for i in self.db.table('results').all() if
                     i['meta']['id'] == result_id]
 
-        if params is None:
-            return [dict(i) for i in self.db.table('results').all()]
+        # If params is None or params is {} match the results based only on
+        # log_components
+        if params is None or params == {}:
+            # Match all non-logging simulations
+            if log_components is None:
+                return [dict(i) for i in self.db.table('results').all() if
+                        i['meta']['log_components'] is None]
+            # Match all simulations where logging is enabled
+            if log_components == {}:
+                return [dict(i) for i in self.db.table('results').all() if
+                        i['meta']['log_components'] is not None]
+            # Match the simulations only with the provided log components
+            # enabled at the given log levels.
+            query = reduce(and_, [
+                where('meta')['log_components'][component] == value for
+                component, value in log_components.items()])
+            return [dict(i) for i in self.db.table('results')
+                    .search(query)]
 
         # If we are passed a list of parameter combinations, we concatenate
         # results for the queries corresponding to each dictionary in the list
@@ -329,16 +373,40 @@ class DatabaseManager(object):
             else:
                 query_params[key] = params[key]
 
-        # Handle case where query params has no keys
-        if not query_params.keys():
-            return [dict(i) for i in self.db.table('results').all()]
-
         # Create the TinyDB query
         # In the docstring example above, this is equivalent to:
-        # AND(OR(param1 == value1), OR(param2 == value2, param2 == value3))
-        query = reduce(and_, [reduce(or_, [
-            where('params')[key] == v for v in value]) for key, value in
-                              query_params.items()])
+        # If log_components is None:
+        #   AND(OR(param1 == value1), OR(param2 == value2, param2 == value3),
+        #   OR(log_components == None))
+        # If log_components is {}:
+        #   AND(OR(param1 == value1), OR(param2 == value2, param2 == value3),
+        #   OR(log_components != None))
+        # If log_components is {'component1':'level1|level2'}:
+        #   AND(OR(param1 == value1), OR(param2 == value2, param2 == value3),
+        #   OR(log_components == {'component1':'level1|level2'}))
+
+        if log_components is None:
+            query = reduce(and_, [reduce(or_, [
+                where('params')[key] == v for v in value]) for key, value in
+                                query_params.items()])
+            query2 = (where('meta')['log_components'] == None)
+            query = query & query2
+
+        elif log_components == {}:
+            query = reduce(and_, [reduce(or_, [
+                where('params')[key] == v for v in value]) for key, value in
+                                query_params.items()])
+            query2 = (where('meta')['log_components'] != None)
+            query = query & query2
+
+        else:
+            query = reduce(and_, [reduce(or_, [
+                where('params')[key] == v for v in value]) for key, value in
+                                query_params.items()])
+            query2 = reduce(and_, [
+                where('meta')['log_components'][component] == level
+                for component, level in log_components.items()])
+            query = query & query2
 
         return [dict(i) for i in self.db.table('results').search(query)]
 
@@ -365,7 +433,8 @@ class DatabaseManager(object):
 
         return {k: v for k, v in filename_path_pairs}
 
-    def get_complete_results(self, params=None, result_id=None, files_to_load=r'.*'):
+    def get_complete_results(self, params=None, result_id=None,
+                             files_to_load=r'.*', log_components=None):
         """
         Return available results, analogously to what get_results does, but
         also read the corresponding output files for each result, and
@@ -404,7 +473,8 @@ class DatabaseManager(object):
         if result_id is not None:
             results = deepcopy(self.get_results(result_id=result_id))
         else:
-            results = deepcopy(self.get_results(params))
+            results = deepcopy(self.get_results(params,
+                                                log_components=log_components))
 
         for r in results:
             r['output'] = {}

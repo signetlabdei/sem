@@ -24,13 +24,22 @@ class ConditionalRunner(SimulationRunner):
                                   skip_configuration, max_parallel_processes)
         self.parameter_runtime_map = {}
 
-    def run_simulations(self, parameter_list, data_folder, stop_on_errors=True):
+    def run_simulations(self,
+                        parameter_list,
+                        data_folder,
+                        stop_on_errors=True,
+                        environment=None):
         """
         This function runs multiple simulations in parallel.
 
         Args:
             parameter_list (list): list of parameter combinations to simulate.
             data_folder (str): folder in which to create output folders.
+            environment (dict): a dictionary containing the value of NS_LOG
+                environment variable to enable logging.
+                Format: {'NS_LOG': 'environment_variable'}
+
+                If logging is disabled this parameter will be None.
         """
 
         # print("Running simulations...")
@@ -54,7 +63,8 @@ class ConditionalRunner(SimulationRunner):
                     SimulationRunner.run_simulations(self,
                                                      [next_sim],
                                                      self.data_folder,
-                                                     stop_on_errors=False))
+                                                     stop_on_errors=False,
+                                                     environment=environment))
                 outq.put(result)
 
         # Create queue and processing pool

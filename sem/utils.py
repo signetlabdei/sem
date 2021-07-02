@@ -2,6 +2,8 @@ import io
 import math
 import copy
 import warnings
+import re
+from pathlib import Path
 from itertools import product
 from functools import wraps
 
@@ -16,6 +18,7 @@ try:
     import drmaa
 except(RuntimeError):
     DRMAA_AVAILABLE = False
+
 
 def output_labels(argument):
     def decorator(function):
@@ -300,7 +303,7 @@ def compute_sensitivity_analysis(
 
     campaign.run_missing_simulations(sem_parameter_list)
     results = np.array(
-        [result_parsing_function(campaign.db.get_complete_results(p)[0])[0]
+        [result_parsing_function(campaign.db.get_complete_results(p)[0])
          for p in sem_parameter_list])
     return salib_analyze_function(problem, results)
 
@@ -330,3 +333,151 @@ def compute_sensitivity_analysis(
 #                  np.array(xarray.sel(**kwargs)).squeeze())
 #     interact(plot_line, **{k: v for k, v in param_ranges.items() if k != x_axis
 #                            and len(v) > 1})
+
+def parse_log_components(log_components, ns3_log_components=None):
+    """
+    Verifies if the log levels/log classes passed in the log_component
+    dictionary are valid and converts log levels to corresponding log classes.
+    Returns a dictionary with the valid components and log classes.
+    For example,
+    'level_debug' gets converted to 'warn|error|debug'
+
+    Note: If log_components is None or {}(Empty dictionary), None is returned.
+
+    Args:
+        log_components (dict): a python dictionary with the
+            log_components (to enable) as the key and the log_levels
+            as the value. Log levels should be written in the same format as
+            the one specified by the ns-3 manual for the environment variable
+            NS_LOG.
+            Note: If any prefix is mentioned, it will be dropped and
+            prefix_all will always be appended.
+
+            For example,
+            log_components = {
+                'component1' : 'info',
+                'component2' : 'level_debug|info'
+            }
+        ns3_log_components (list): A list containing all the valid log
+            components supported by ns-3.
+    """
+    if not log_components:
+        return None
+
+    log_components_dict = {}
+    log_level_list = ['error',
+                      'warn',
+                      'debug',
+                      'info',
+                      'function',
+                      'logic']
+    converter = {
+        'error': ['error'],
+        'warn': ['warn'],
+        'debug': ['debug'],
+        'info': ['info'],
+        'function': ['function'],
+        'logic': ['logic'],
+        'all': ['error', 'warn', 'debug', 'info', 'function', 'logic'],
+        'level_error': ['error'],
+        'level_warn': ['error', 'warn'],
+        'level_debug': ['error', 'warn', 'debug'],
+        'level_info': ['error', 'warn', 'debug', 'info'],
+        'level_function': ['error', 'warn', 'debug', 'info', 'function'],
+        'level_logic': ['error', 'warn', 'debug', 'info', 'function', 'logic'],
+        'level_all': ['error', 'warn', 'debug', 'info', 'function', 'logic'],
+        '**': ['error', 'warn', 'debug', 'info', 'function', 'logic'],
+        '*': None,
+        'prefix_func': None,
+        'prefix_time': None,
+        'prefix_node': None,
+        'prefix_level': None,
+        'prefix_all': None
+    }
+    for component, levels in log_components.items():
+        log_level_complete = set()
+        if (ns3_log_components is not None) and component not in ns3_log_components and component != '*':
+            raise ValueError(
+                "Log component '%s' is not a valid ns-3 log component. Valid log components: \n%ls" % (
+                    component,
+                    ns3_log_components
+                ))
+        for level in levels.split('|'):
+            if level not in converter:
+                raise ValueError("Log level '%s' for component '%s' is not valid"
+                                 % (level,
+                                    component))
+
+            # '*' represents level_all only if it occurs before the first '|'
+            if levels.split('|')[0] == '*':
+                log_level_complete.update(converter['all'])
+                continue
+
+            # Do not update the dictionary if prefixes are mentioned
+            if converter[level] is not None:
+                log_level_complete.update(converter[level])
+
+        # Update log_level_complete if entry for components exists
+        if component in log_components_dict:
+            log_level_complete.update(log_components_dict[component].split('|'))
+
+        # Sort the log classes for consistency
+        log_level_sorted = [level for level in log_level_list
+                            if level in log_level_complete]
+
+        if component == '*':
+            if ns3_log_components is None:
+                raise ValueError('No list of ns-3 supported log components passed.\n')
+            for comp in ns3_log_components:
+                log_components_dict[comp] = "|".join(log_level_sorted)
+        else:
+            log_components_dict[component] = "|".join(log_level_sorted)
+
+    return log_components_dict
+
+
+def convert_environment_str_to_dict(log_components):
+    """
+    Converts NS_LOG formatted string to a dictionary.
+
+    For example,
+        log_components =
+            'NS_LOG="component1=info:component2=level_debug|info"'
+    will be converted to
+        dict = {
+            'component1': 'info',
+            'component2': 'level_debug|info'
+        }
+
+    Args:
+        log_components (str): a string formatted in the NS_LOG variable
+            format.
+    """
+    # Droppping 'NS_LOG=' prefix and check if the format of the provided
+    # string is valid. The validation of log components and log levels is
+    # done in Utils.parse_log_components.
+    # TODO - Use split() instead of regex
+    groups = re.match(r'^NS_LOG="((?:(\*\*\*)|([a-zA-Z]+)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*)(:(?:(\*\*\*)|([a-zA-Z]+)|(?:\*|[a-zA-Z]+)=(?:[a-zA-Z_]+|\*|\*\*)(\|(?:[a-zA-Z_]+|\*|(\*\*)))*))*)"$', log_components)
+
+    if groups is None:
+        raise ValueError("Provided log_components string '%s' is invalid\n" % log_components)
+
+    # convert the string to log_components dictionary format
+    # to store in the database later
+    log_components_dict = {}
+    for component in groups.group(1).split(':'):
+        component_and_level = component.split('=')
+        if len(component_and_level) == 1:
+            if component_and_level[0] == '***':
+                log_components_dict['*'] = 'all'
+                return log_components_dict
+            else:
+                log_components_dict[component_and_level[0]] = 'all'
+
+        elif len(component_and_level) == 2:
+            log_components_dict[component_and_level[0]] = component_and_level[1]
+
+        else:
+            raise ValueError("Provided log_components string '%s' is invalid\n" % log_components)
+
+    return log_components_dict

@@ -25,3 +25,4 @@ tests/ns-3
 Pipfile.lock
 poetry.lock
 package-lock.json
+examples/ns-3/

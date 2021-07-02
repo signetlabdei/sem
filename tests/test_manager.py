@@ -18,7 +18,7 @@ def test_campaign_creation(ns_3_compiled, config):
 
 def test_new_campaign_reload(ns_3_compiled, config, manager, result):
     # Insert a result in the already available sem.CampaignManager
-    manager.db.insert_result(result)
+    manager.db.insert_results([result])
     manager.db.write_to_disk()
 
     # Try creating a new sem.CampaignManager with the same settings
@@ -32,7 +32,7 @@ def test_new_campaign_reload(ns_3_compiled, config, manager, result):
 
 def test_new_campaign_reload_fail(ns_3_compiled, config, manager, result):
     # Insert a result in the already available sem.CampaignManager
-    manager.db.insert_result(result)
+    manager.db.insert_results([result])
 
     # Try creating a new sem.CampaignManager with the same settings and
     # different script. This should fail.
@@ -45,7 +45,7 @@ def test_new_campaign_reload_fail(ns_3_compiled, config, manager, result):
 
 def test_new_campaign_reload_overwrite(ns_3_compiled, config, manager, result):
     # Insert a result in the already available sem.CampaignManager
-    manager.db.insert_result(result)
+    manager.db.insert_results([result])
 
     # Try creating a new sem.CampaignManager with the same settings
     new_campaign = sem.CampaignManager.new(ns_3_compiled,
@@ -139,6 +139,55 @@ def test_save_to_folders(tmpdir, manager, result, parameter_combination_range):
                             2)
 
 
+def test_run_logging_simulation(ns_3_compiled_debug, config):
+    log_components = {
+        'Logger': 'all'
+    }
+    # This should raise an exception as the campaign in built in optimized
+    # mode and logging is enabled
+    new_campaign = sem.CampaignManager.new(ns_3_compiled_debug,
+                                           'logging-ns3-script',
+                                           config['campaign_dir'],
+                                           overwrite=True)
+
+    with pytest.raises(Exception):
+        log_path = new_campaign.run_missing_simulations({},
+                                                        runs=1,
+                                                        log_components=log_components)   
+
+    new_campaign = sem.CampaignManager.new(ns_3_compiled_debug,
+                                           'logging-ns3-script',
+                                           config['campaign_dir'],
+                                           overwrite=True,
+                                           optimized=False)
+
+    # This should run fine as the campaign in built in debug mode and logging
+    # is enabled
+    log_path = new_campaign.run_missing_simulations({},
+                                                    runs=1,
+                                                    log_components=log_components)
+
+    # Assert log_path list contains exctly one entry as only one parameter
+    # combination is passed
+    assert len(log_path) == 1
+
+    # Assert the log file generated is correct
+
+    sample_logs = ['+0.000000000s -1 Logger:main(): [DEBUG] Debug',
+                   '+0.000000000s -1 Logger:main(): [INFO ] Info',
+                   '+0.000000000s -1 Logger:main(): [WARN ] Warn',
+                   '+0.000000000s -1 Logger:main(): [ERROR] Error',
+                   '+0.000000000s -1 Logger:main(): [LOGIC] Logic',
+                   '+0.000000000s -1 Logger:main("Function")'
+                   ]
+
+    with open(log_path[0]) as f:
+        logs = f.readlines()
+    actual_logs = [x.strip() for x in logs]
+
+    assert (sample_logs == actual_logs)
+
+
 def test_only_load_some_files_decorator(tmpdir, manager, result, parameter_combination_no_rngrun):
     def parsing_function(result):
         assert len(result['output'].keys()) == 2
@@ -184,3 +233,72 @@ def test_only_load_some_files_decorator(tmpdir, manager, result, parameter_combi
         columns=['Label'],
         params=parameter_combination_no_rngrun,
         runs=1)  # Get one run per combination
+
+
+def test_convert_str_to_dict(manager):
+    # Valid examples along with wildcards
+    env_variable = 'NS_LOG="***"'
+    log_components = sem.convert_environment_str_to_dict(env_variable)
+    assert(log_components == {
+        '*': 'all'
+    })
+
+    env_variable = 'NS_LOG="*=**"'
+    log_components = sem.convert_environment_str_to_dict(env_variable)
+    assert(log_components == {
+        '*': '**'
+    })
+
+    env_variable = 'NS_LOG="*=*|*"'
+    log_components = sem.convert_environment_str_to_dict(env_variable)
+    assert(log_components == {
+        '*': '*|*'
+    })
+
+    env_variable = 'NS_LOG="*=all|*"'
+    log_components = sem.convert_environment_str_to_dict(env_variable)
+    assert(log_components == {
+        '*': 'all|*'
+    })
+
+    env_variable = 'NS_LOG="*=level_all|*"'
+    log_components = sem.convert_environment_str_to_dict(env_variable)
+    assert(log_components == {
+        '*': 'level_all|*'
+    })
+
+    env_variable = 'NS_LOG="*=*|all"'
+    log_components = sem.convert_environment_str_to_dict(env_variable)
+    assert(log_components == {
+        '*': '*|all'
+    })
+
+    env_variable = 'NS_LOG="*=*|prefix_all"'
+    log_components = sem.convert_environment_str_to_dict(env_variable)
+    assert(log_components == {
+        '*': '*|prefix_all'
+    })
+
+    env_variable = 'NS_LOG="component"'
+    log_components = sem.convert_environment_str_to_dict(env_variable)
+    assert(log_components == {
+        'component': 'all'
+    })
+
+    # Invalid examples
+
+    env_variable = 'NS_LOG="component="'
+    with pytest.raises(ValueError):
+        log_components = sem.convert_environment_str_to_dict(env_variable)
+
+    env_variable = 'NS_LOG="*=*|***"'
+    with pytest.raises(ValueError):
+        log_components = sem.convert_environment_str_to_dict(env_variable)
+
+    env_variable = 'NS_LOG="component=info=warn"'
+    with pytest.raises(ValueError):
+        log_components = sem.convert_environment_str_to_dict(env_variable)
+
+    env_variable = 'NS_LOG="NetDevice=**;Simulator:Node=level_info-prefix_time"'
+    with pytest.raises(ValueError):
+        log_components = sem.convert_environment_str_to_dict(env_variable)

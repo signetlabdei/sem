@@ -98,12 +98,12 @@ def test_get_next_rngruns(db, result):
 
     # If we add a result with RngRun 2, this should still return a 0
     result['params']['RngRun'] = 2
-    db.insert_result(result)
+    db.insert_results([result])
     assert next(db.get_next_rngruns()) == 0
 
     # After inserting a run with index 0, we still expect a 1
     result['params']['RngRun'] = 0
-    db.insert_result(result)
+    db.insert_results([result])
     assert next(db.get_next_rngruns()) == 1
 
     # Finally, if we ask for three more available runs, this should return
@@ -113,25 +113,26 @@ def test_get_next_rngruns(db, result):
 
 def test_results(db, result):
     # Test insertion of valid result
-    db.insert_result(result)
+    db.insert_results([result])
 
     # Test insertion of result missing a parameter
     with pytest.raises(ValueError):
         nonvalid_result = deepcopy(result)
         nonvalid_result['params'].pop('dict')
-        db.insert_result(nonvalid_result)
+        db.insert_results([nonvalid_result])
 
     # Test insertion of result missing any other key
     for k in result.keys():
         with pytest.raises(ValueError):
-            db.insert_result({i: result[i] for i in result.keys() if i != k})
+            db.insert_results([{i: result[i] for i in result.keys()
+                                if i != k}])
 
     # All inserted results are returned by get_results
     assert list(db.get_results()) == [result]
 
-    db.insert_result(result)
-    db.insert_result(result)
-    db.insert_result(result)
+    db.insert_results([result])
+    db.insert_results([result])
+    db.insert_results([result])
 
     assert list(db.get_results()) == [result, result, result, result]
 
@@ -146,6 +147,32 @@ def test_results(db, result):
     db.wipe_results()
     assert list(db.get_results()) == []
 
+    # Insert a valid non-logging result
+    db.insert_results([result])
+    db.insert_results([result])
+    log_components = {
+        'component1': 'level_info',
+    }
+    result['meta']['log_components'] = log_components
+
+    # Insert a valid logging result
+    db.insert_results([result])
+
+    # This should return only the logging result
+    assert list(db.get_results(log_components=log_components)) == [result]
+
+    # This should also return the logging result as level_info is same as
+    # info|error|warn|debug
+    assert list(db.get_results(log_components={'component1': 'info|error|warn|debug'})) == [result]
+
+    # This should return an empty list as there are no results that match the
+    # provided log_components
+    assert not list(db.get_results(log_components={'component1': 'logic'}))
+
+    result['meta']['log_components'] = None
+    # This should return all the non-logging results
+    assert list(db.get_results()) == [result, result]
+
 
 def test_results_queries(db, result):
     # Insert multiple runs for a set parameter combination
@@ -153,7 +180,7 @@ def test_results_queries(db, result):
     for runIdx in range(10):
         result['params']['RngRun'] = runIdx
         first_round_of_results.append(result)
-        db.insert_result(result)
+        db.insert_results([result])
 
     # Query should return the previously saved results
     results = list(db.get_results())
@@ -164,11 +191,11 @@ def test_results_queries(db, result):
     result['params']['dict'] = '/usr/share/dict/web2a'
     for runIdx in range(10, 20, 1):
         result['params']['RngRun'] = runIdx
-        db.insert_result(result)
+        db.insert_results([result])
 
     # This query should return all results
     results = list(db.get_results({'dict': ['/usr/share/dict/web2a',
-                                       '/usr/share/dict/web2']}))
+                                            '/usr/share/dict/web2']}))
     assert len(results) == 20
     assert sorted([d['params']['RngRun'] for d in results]) == list(range(20))
 
@@ -178,6 +205,52 @@ def test_results_queries(db, result):
     assert sorted([d['params']['RngRun'] for d in results]) == list(range(10,
                                                                           20,
                                                                           1))
+
+    # result['params']['dict'] = '/usr/share/dict/web2b'
+    result['meta']['log_components'] = {'Hasher': 'debug'}
+    for runIdx in range(20, 30, 1):
+        result['params']['RngRun'] = runIdx
+        db.insert_results([result])
+
+    result['meta']['log_components'] = {'HasherB': 'info'}
+    for runIdx in range(30, 40, 1):
+        result['params']['RngRun'] = runIdx
+        db.insert_results([result])
+
+    result['meta']['log_components'] = {'Hasher': 'debug',
+                                       'HasherB': 'info'}
+    for runIdx in range(40, 50, 1):
+        result['params']['RngRun'] = runIdx
+        db.insert_results([result])
+
+    # This query should return all results except the last three batches
+    results = list(db.get_results({'dict': ['/usr/share/dict/web2a',
+                                            '/usr/share/dict/web2']}))
+    assert len(results) == 20
+    assert sorted([d['params']['RngRun'] for d in results]) == list(range(20))
+
+    # This query should return all results where logging is enabled
+    results = list(db.get_results({'dict': ['/usr/share/dict/web2a',
+                                            '/usr/share/dict/web2']},
+                                  log_components={}))
+    assert len(results) == 30
+    assert sorted([d['params']['RngRun'] for d in results]) == list(range(20,
+                                                                          50,
+                                                                          1))
+
+    # This query should only return the third batch
+    results = list(db.get_results({'dict': ['/usr/share/dict/web2a']},
+                                  log_components='NS_LOG="HasherB=info"'))
+    assert len(results) == 20
+    assert sorted([d['params']['RngRun'] for d in results]) == list(range(30,
+                                                                          50,
+                                                                          1))
+
+    # This query should not return any match
+    results = list(db.get_results({'dict': ['/usr/share/dict/web2a']},
+                                  log_components={'Hasher': 'info',
+                                                 'HasherB': 'info'}))
+    assert len(results) == 0
 
 
 def test_get_complete_results(manager, parameter_combination):

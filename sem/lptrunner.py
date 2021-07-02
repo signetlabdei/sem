@@ -25,13 +25,18 @@ class LptRunner(SimulationRunner):
         SimulationRunner.__init__(self, path, script, optimized, max_parallel_processes)
         self.parameter_runtime_map = {}
 
-    def run_simulations(self, parameter_list, data_folder):
+    def run_simulations(self, parameter_list, data_folder, environment=None):
         """
         This function runs multiple simulations in parallel.
 
         Args:
             parameter_list (list): list of parameter combinations to simulate.
             data_folder (str): folder in which to create output folders.
+            environment (dict): a dictionary containing the value of NS_LOG environment variable 
+                to enable logging. 
+                Format: {'NS_LOG': 'environment_variable'}
+                
+                If logging is disabled this parameter will be None.
         """
         self.data_folder = data_folder
 
@@ -65,7 +70,8 @@ class LptRunner(SimulationRunner):
                 # with iolock:
                     # print("processing", next_sim)
                 result = next(SimulationRunner.run_simulations(self, [next_sim],
-                                                               self.data_folder))
+                                                               self.data_folder),
+                                                               env=environment)
                 times[index] = float(result['meta']['elapsed_time'])
 
                 # with iolock:
