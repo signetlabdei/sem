@@ -3,6 +3,7 @@ import math
 import copy
 import warnings
 import re
+import os
 from pathlib import Path
 from itertools import product
 from functools import wraps
@@ -12,6 +13,10 @@ import numpy as np
 import numpy.core.numeric as nx
 import SALib.analyze.sobol
 import SALib.sample.saltelli
+
+from tinydb import TinyDB, where
+from tinydb.storages import JSONStorage
+from tinydb.middlewares import CachingMiddleware
 
 try:
     DRMAA_AVAILABLE = True
@@ -481,3 +486,76 @@ def convert_environment_str_to_dict(log_components):
             raise ValueError("Provided log_components string '%s' is invalid\n" % log_components)
 
     return log_components_dict
+
+
+def process_logs(log_file):
+    if not Path(log_file).exists():
+        raise FileNotFoundError("Cannot access file '%s'\n" % log_file)
+
+    logs = parse_logs(log_file)
+
+    db = TinyDB(os.path.join('/tmp/', "logs.json"),
+                storage=CachingMiddleware(JSONStorage))
+
+    insert_logs(logs, db)
+    return db
+
+
+def parse_logs(log_file):
+    log_list = []
+    with open(log_file) as f:
+        for log in f:
+            # Groups structure
+            # group[1] = Time
+            # group[2] = Context
+            # group[3] = Extended Context ; For example, '-1 [node -1]' group[2] = -1 and group [3] = [node -1]
+            # group[4] = Component:Function(Arguments)
+            # group[5] = Component
+            # group[6] = Function
+            # group[7] = Arguments
+            # group[8] = :[Level] Message
+            # group[9] = Level
+            # group[10] = Extra space after level if present;else None
+            # group[11] = Mesage
+
+            # Example: '+0.000000000s -1 PowerAdaptationDistance:SetupPhy(): [DEBUG] OfdmRate6Mbps 0.00192 6000000bps'
+            # group[1] = 0.000000000
+            # group[2] = -1
+            # group[3] = None
+            # group[4] = PowerAdaptationDistance:SetupPhy()
+            # group[5] = PowerAdaptationDistance
+            # group[6] = SetupPhy
+            # group[7] = ''
+            # group[8] = : [DEBUG] OfdmRate6Mbps 0.00192 6000000bps
+            # group[9] = DEBUG
+            # group[10] = None
+            # group[11] = OfdmRate6Mbps 0.00192 6000000bps
+            groups = re.match(r'\+(\d+\.\d{9})s ((?:\d+|-\d+)( \[node\ (?:\d+|-\d+)])?) (([a-zA-Z_]+):([a-zA-Z_]+)\((.*)\))(: \[(\w+( )?)\] (.*))?', log)
+
+            if groups is None:
+                raise ValueError("Cannot parse log: '%s'\n." % log)
+
+            # If level is function
+            if groups[9] is None and groups[11] is None:
+                groups[9] = 'function'
+                groups[11] = ''
+
+            temp_dict = {
+                'Time': groups[1],
+                'Context': groups[2],
+                'Component': groups[5],
+                'Function': groups[6],
+                'Arguments': groups[7],
+                'Level': groups[9],
+                'Message': groups[11]
+            }
+            log_list.append(temp_dict)
+
+    return log_list
+
+
+def insert_logs(logs, db):
+    if logs == [] or logs is None:
+        return
+
+    db.table('logs').insert_multiple(logs)

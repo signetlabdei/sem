@@ -1,3 +1,4 @@
+from sem import utils
 import sem
 import pprint
 
@@ -51,6 +52,8 @@ log_path = campaign.run_missing_simulations(
 
 if log_path:
     print(log_path)
+    db = utils.process_logs(log_path[0])
+    print(db.table('logs').all())
 
 # Print the complete result
 example_result = campaign.db.get_complete_results(log_components=log_components)[0]
