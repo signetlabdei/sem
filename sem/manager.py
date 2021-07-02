@@ -533,6 +533,13 @@ class CampaignManager(object):
         parameter combinations or a dictionary containing multiple values for
         each parameter, to be expanded into a list.
 
+        Note: If overwrite=True(during campaign creation) this function will
+            always re-run simulations for the specified parameter and logging
+            combination.
+            If overwite=False(during campaign creation) this function verifies
+            whether the requested simulations are present in the database and
+            will only run simulations which are not available in the databse.
+
         Returns a list containing the paths to log files(stderr) if logging is
         enabled; else returns empty list.
 
