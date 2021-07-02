@@ -1,9 +1,9 @@
 import sem
-from math import log
 from sem import list_param_combinations, automatic_parser, stdout_automatic_parser, parse_log_components
 import json
 import numpy as np
 import pytest
+
 from operator import getitem
 
 
@@ -152,7 +152,7 @@ def test_parse_log_components(ns_3_compiled_debug, config):
     ns3_log_components = new_campaign.runner.get_available_log_components()
 
     new_components = parse_log_components(log_components=log_components,
-                                         ns3_log_components=ns3_log_components)
+                                          ns3_log_components=ns3_log_components)
 
     assert new_components['Simulator'] == 'error|warn|debug|info'
 
@@ -162,4 +162,4 @@ def test_parse_log_components(ns_3_compiled_debug, config):
 
     with pytest.raises(ValueError):
         new_components = parse_log_components(log_components=log_components,
-                                             ns3_log_components=ns3_log_components)
+                                              ns3_log_components=ns3_log_components)

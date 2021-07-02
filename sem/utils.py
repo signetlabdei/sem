@@ -3,8 +3,6 @@ import math
 import copy
 import warnings
 import re
-from pathlib import Path
-from itertools import product
 from functools import wraps
 
 import matplotlib.pyplot as plt
