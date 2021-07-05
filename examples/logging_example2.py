@@ -1,13 +1,13 @@
+from sem import utils
 import sem
-import pprint
 
 #######################
 # Create the campaign #
 #######################
 
 script = 'wifi-power-adaptation-distance'
-ns_path = 'ns-3'
-campaign_dir = '/tmp/sem-test/wifi-plotting-example'
+ns_path = './examples/ns-3'
+campaign_dir = "/tmp/sem-test/wifi-plotting-example"
 
 campaign = sem.CampaignManager.new(ns_path, script, campaign_dir,
                                    runner_type='ParallelRunner',
@@ -36,32 +36,24 @@ params = {
     'rtsThreshold': 2346,
     'stepsSize': 1
 }
+# Log Component in both formats
 
-# Log Components in both formats
-log_components = {
+log_component = {
     'PowerAdaptationDistance': 'debug',
     'ParfWifiManager': 'info'
 }
-# log_components = 'NS_LOG="PowerAdaptationDistance=debug:ParfWifiManager=info"'
+# log_component = 'NS_LOG="PowerAdaptationDistance=debug:ParfWifiManager=info"'
+runs = 1  # Number of runs to perform for each combination
 
-# Run the simulations with logging enabled
+# Actually run the simulations
+# This will also print a progress bar
 log_path = campaign.run_missing_simulations(
     sem.list_param_combinations(params),
-    runs=1, log_components=log_components)
+    runs=runs, log_component=log_component)
 
 if log_path:
     print(log_path)
-
-# Print the complete result
-example_result = campaign.db.get_complete_results(log_components=log_components)[0]
-print("Complete result:")
-pprint.pprint(example_result)
-
-# Printing the generated logs
-print("Generated logs:")
-pprint.pprint(example_result['output']['stderr'])
-
-# Printing the meta entry describing what kind of logs were used for this
-# simulation
-print("Log component information:")
-pprint.pprint(example_result['meta']['log_components'])
+    db = utils.process_logs(log_path[0])
+    print(utils.filter_logs(db, level='debug',
+                            components={'PowerAdaptationDistance': 'info'},
+                            time_begin=0.5))
