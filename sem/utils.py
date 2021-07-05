@@ -716,4 +716,4 @@ def filter_logs(db,
         query = reduce(and_, query_final)
         return [dict(i) for i in db.table('logs').search(query)]
     else:
-        return [dict(i) for i in db.table('logs').all()]
+        return []
