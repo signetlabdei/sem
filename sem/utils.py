@@ -4,7 +4,8 @@ import copy
 import warnings
 import re
 import os
-import warnings
+import time
+from copy import deepcopy
 from pprint import pformat
 from operator import and_, or_
 from pathlib import Path
@@ -493,41 +494,44 @@ def convert_environment_str_to_dict(log_components):
 
 def process_logs(log_file):
     """
-    Create a tinyDB instance, parse the log file and insert the logs to a
-    tinyDB instance (using parse_logs and insert_logs respectively).
+    Create a TinyDB instance, parse the log file and insert the logs to a
+    TinyDB instance.
 
-    Returns a tinydb instance containing the logs(in table 'logs') from the
-    log file.
+    Returns a TinyDB instance containing the logs from the log file and the
+    path to where that instance is stored.
 
     Args:
-        log_file (string): Path to where the log file is stored
+        log_file (str): Path to where the log file is stored
     """
     if not Path(log_file).exists():
         raise FileNotFoundError("Cannot access file '%s'\n" % log_file)
 
     logs = parse_logs(log_file)
 
-    db = TinyDB(os.path.join('/tmp/', "logs.json"),
+    data_dir = os.path.join('/tmp/', str(time.strftime("%Y-%m-%d::%H-%M-%S")) + ':logs.json')
+    db = TinyDB(data_dir,
                 storage=CachingMiddleware(JSONStorage))
 
     insert_logs(logs, db)
-    return db
+    # TODO Find a more elegant way to clean up TinyDB directory after
+    # completion
+    return db, data_dir
 
 
 def parse_logs(log_file):
     """
     Parse the logs from a log file.
 
-    Return a list of dictionary with each dictionary having the following
+    Return a list of dictionaries with each dictionary having the following
     format:
     dictionary = {
-        'Time': timestamp,
-        'Context': context/nodeId,
-        'Component': log component,
-        'Function': function name,
-        'Arguments': function arguments,
-        'Level': log level,
-        'Message': log message
+        'Time': timestamp,  # float
+        'Context': context/nodeId,  # str
+        'Component': log component,  # str
+        'Function': function name,  # str
+        'Arguments': function arguments,  # str
+        'Level': log level,  # str
+        'Message': log message  # str
     }
     Note: This function will skip the log lines that do not have the same
           structure as ns-3 logs with prefix level set to prefix_all.
@@ -549,8 +553,8 @@ def parse_logs(log_file):
             # group[8] = :[Level] Message
             # group[9] = Level/'Level '
             # group[10] = Level
-            # group[11] = Extra space after level if present;else None
-            # group[12] = Mesage
+            # group[11] = Extra spaces after level if present;else None
+            # group[12] = Message
 
             # Example: '+0.000000000s -1 PowerAdaptationDistance:SetupPhy(): [DEBUG] OfdmRate6Mbps 0.00192 6000000bps'
             # group[1] = 0.000000000
@@ -565,7 +569,7 @@ def parse_logs(log_file):
             # group[10] = DEBUG
             # group[11] = None
             # group[12] = OfdmRate6Mbps 0.00192 6000000bps
-            groups = re.match(r'\+(\d+\.\d{9})s ((?:\d+|-\d+)( \[node\ (?:\d+|-\d+)])?) (([a-zA-Z_]+):([a-zA-Z_]+)\((.*)\))(: \[((\w+)( )?)\] (.*))?', log)
+            groups = re.match(r'[\+\-]?(\d+\.\d+)s ((?:\d+|-\d+)( \[node\ (?:\d+|-\d+)])?) ((\w+):(\w+)\((.*?)\))(: \[((\w+)(\s*))\] (.*))?', log)
 
             if groups is None:
                 warnings.warn("Log format is not consistent with prefix_all. Skipping log '%s'" % log, RuntimeWarning)
@@ -594,12 +598,13 @@ def parse_logs(log_file):
 
 def insert_logs(logs, db):
     """
-    Insert the logs in the tinydb instance passed.
+    Insert the logs in the TinyDB instance passed.
 
     Note: This function does not return anything.
 
     Args:
-        logs (list): A list of logs to insert in database.
+        logs (list): A list of logs to insert in database. Logs are described
+                     as a python dict
         db (TinyDB instance): A TinyDB instace where the logs will be inserted.
     """
     if logs == [] or logs is None:
@@ -617,7 +622,7 @@ def insert_logs(logs, db):
 
     for log in logs:
         # Verify log format is correct
-        # Only check the if the keys are consistent
+        # Only check if the keys are consistent
         if not(set(log.keys()) == set(example_result.keys())):
             raise ValueError(
                 '%s:\nExpected: %s\nGot: %s' % (
@@ -625,16 +630,38 @@ def insert_logs(logs, db):
                     pformat(example_result, depth=2),
                     pformat(log, depth=2)))
 
-    db.table('logs').insert_multiple(logs)
+    db.table('logs').insert_multiple(deepcopy(logs))
+
+
+def wipe_results(db, data_dir):
+    """
+    Remove all logs from the database.
+
+    This also removes all output files, and cannot be undone.
+
+    Args:
+        db (TinyDB instance): A TinyDB instace where the logs are inserted.
+        data_dir (str): Path to where the TinyDB instance is stored
+    """
+    # Clean logs table
+    db.drop_table('logs')
+    db.storage.flush()
+
+    # Get rid of contents of data dir
+    try:
+        os.remove(data_dir)
+    except OSError as error:
+        print(error)
+        print("File path '%s' can not be removed" % data_dir)
 
 
 def filter_logs(db,
-                context=[],
-                function=[],
-                time_begin=-1,
-                time_end=-1,
-                level=[],
-                components={}):
+                context=None,
+                function=None,
+                time_begin=None,
+                time_end=None,
+                level=None,
+                components=None):
     """
     Filter the logs stored in the database.
 
@@ -655,8 +682,8 @@ def filter_logs(db,
             be filtered.
         time_begin (float): Start timestamp (in seconds) of the time window.
         time_end (float): End timestamp (in seconds) of the time window.
-        level (list): A list of log levels based on which the logs will be
-            filtered.
+        level (list): A list of log severity classes based on which the logs
+            will be filtered.
         components (dict): A dictionary having structure
             {
                 components:['level1','level2']
@@ -665,24 +692,24 @@ def filter_logs(db,
     """
     query_final = []
 
-    if level != [] or components != {}:
-        if not isinstance(level, list):
+    if level is not None or components is not None:
+        if isinstance(level, str):
             level = [level]
         for value in components.values():
-            if not isinstance(value, list):
+            if isinstance(value, str):
                 value = [value]
 
         query_list = []
-        if level != []:
+        if level is not None:
             query = reduce(or_,
                            [where('Level') == lvl.upper() for lvl in level]
                            )
             query_list.append(query)
-        # If components is provided apply the specified log levels to the
-        # specified log components in addition to the log levels passed with
-        # 'levels'. In other words, log levels passed with 'levels' is treated
-        # as a global level filter.
-        if components != {}:
+        # If components is provided apply the specified log severity classes
+        # to the specified log components in addition to the log severity
+        # classes passed with 'levels'. In other words, log severity classes
+        # passed with 'levels' is treated as a global level filter.
+        if components is not None:
             query = reduce(or_, [reduce(or_, [
                     Query().fragment({'Component': component, 'Level': lvl.upper()}) for lvl in levels])
                     for component, levels in components.items()])
@@ -690,29 +717,29 @@ def filter_logs(db,
 
         query_final.append(reduce(or_, query_list))
 
-    if function != []:
-        if not isinstance(function, list):
+    if function is not None:
+        if isinstance(function, str):
             function = [function]
 
         query = reduce(or_, [where('Function') == fnc for fnc in function])
         query_final.append(query)
 
-    if context != []:
-        if not isinstance(context, list):
+    if context is not None:
+        if isinstance(context, str):
             context = [str(context)]
 
         query = reduce(or_, [where('Context') == ctx for ctx in context])
         query_final.append(query)
 
-    if time_begin != -1:
+    if time_begin is not None:
         query = where('Time') >= float(time_begin)
         query_final.append(query)
 
-    if time_end != -1:
+    if time_end is not None:
         query = where('Time') <= float(time_end)
         query_final.append(query)
 
-    if query_final != []:
+    if query_final is not None:
         query = reduce(and_, query_final)
         return [dict(i) for i in db.table('logs').search(query)]
     else:
