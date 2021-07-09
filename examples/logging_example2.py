@@ -38,22 +38,23 @@ params = {
 }
 # Log Component in both formats
 
-log_component = {
+log_components = {
     'PowerAdaptationDistance': 'debug',
     'ParfWifiManager': 'info'
 }
-# log_component = 'NS_LOG="PowerAdaptationDistance=debug:ParfWifiManager=info"'
+# log_components = 'NS_LOG="PowerAdaptationDistance=debug:ParfWifiManager=info"'
 runs = 1  # Number of runs to perform for each combination
 
 # Actually run the simulations
 # This will also print a progress bar
 log_path = campaign.run_missing_simulations(
     sem.list_param_combinations(params),
-    runs=runs, log_component=log_component)
+    runs=runs, log_components=log_components)
 
 if log_path:
     print(log_path)
-    db = utils.process_logs(log_path[0])
+    db, data_dir = utils.process_logs(log_path[0])
     print(utils.filter_logs(db, level='debug',
-                            components={'PowerAdaptationDistance': 'info'},
-                            time_begin=0.5))
+                            components={'PowerAdaptationDistance': 'info'}))
+
+    utils.wipe_results(db, data_dir)
