@@ -534,7 +534,7 @@ def parse_logs(log_file):
         'Component': log component,  # str
         'Function': function name,  # str
         'Arguments': function arguments,  # str
-        'Level': log level,  # str
+        'Severity_class': log severity class,  # str
         'Message': log message  # str
     }
     Note: This function will skip the log lines that do not have the same
@@ -554,8 +554,8 @@ def parse_logs(log_file):
             # group[4] = Component
             # group[5] = Function
             # group[6] = Arguments
-            # group[7] = : [Level] Message
-            # group[8] = Level
+            # group[7] = : [Severity_class] Message
+            # group[8] = Severity_class
             # group[9] = Message
 
             # Example: '+0.000000000s -1 PowerAdaptationDistance:SetupPhy(): [DEBUG] OfdmRate6Mbps 0.00192 6000000bps'
@@ -586,7 +586,7 @@ def parse_logs(log_file):
                     'Component': groups[4],
                     'Function': groups[5],
                     'Arguments': groups[6],
-                    'Level': 'FUNCTION',
+                    'Severity_class': 'FUNCTION',
                     'Message': ''
                 }
             else:
@@ -597,7 +597,7 @@ def parse_logs(log_file):
                     'Component': groups[4],
                     'Function': groups[5],
                     'Arguments': groups[6],
-                    'Level': groups[8],
+                    'Severity_class': groups[8],
                     'Message': groups[9]
                 }
             log_list.append(temp_dict)
@@ -626,7 +626,7 @@ def insert_logs(logs, db):
                              'Extended_context',
                              'Function',
                              'Arguments',
-                             'Level',
+                             'Severity_class',
                              'Message']
     }
 
@@ -672,14 +672,14 @@ def filter_logs(db,
                 function=None,
                 time_begin=None,
                 time_end=None,
-                level=None,
+                sevirity_class=None,
                 components=None):
     """
     Filter the logs stored in the database.
 
-    Filters are applied on context, function name, log level and time.
+    Filters are applied on context, function name, log sevirity class and time.
     Additionally the user can also filter each log component based on a
-    particular level using components dictionary.
+    particular sevirity class using components dictionary.
     For example, if the user specifies Context = [0, 1] and Function = [A, B]
     the function will output logs in which (context == 0 or context == 1) and
     (function == a or function == b).
@@ -695,37 +695,38 @@ def filter_logs(db,
             be filtered.
         time_begin (float): Start timestamp (in seconds) of the time window.
         time_end (float): End timestamp (in seconds) of the time window.
-        level (list): A list of log severity classes based on which the logs
+        sevirity_class (list): A list of log severity classes based on which the logs
             will be filtered.
         components (dict): A dictionary having structure
             {
-                components:['level1','level2']
+                components:['class1','class2']
             }
             based on which the logs will be filtered.
     """
     query_final = []
 
-    if level is not None or components is not None:
-        if isinstance(level, str):
-            level = [level]
+    if sevirity_class is not None or components is not None:
+        if isinstance(sevirity_class, str):
+            sevirity_class = [sevirity_class]
         for value in components.values():
             if isinstance(value, str):
                 value = [value]
 
         query_list = []
-        if level is not None:
+        if sevirity_class is not None:
             query = reduce(or_,
-                           [where('Level') == lvl.upper() for lvl in level]
+                           [where('Severity_class') == lvl.upper()
+                            for lvl in sevirity_class]
                            )
             query_list.append(query)
         # If components is provided apply the specified log severity classes
         # to the specified log components in addition to the log severity
-        # classes passed with 'levels'. In other words, log severity classes
-        # passed with 'levels' is treated as a global level filter.
+        # classes passed with 'sevirity_class'. In other words, log severity
+        # classes passed with 'sevirity_class' is treated as a global filter.
         if components is not None:
             query = reduce(or_, [reduce(or_, [
-                    Query().fragment({'Component': component, 'Level': lvl.upper()}) for lvl in levels])
-                    for component, levels in components.items()])
+                    Query().fragment({'Component': component, 'Severity_class': cls.upper()}) for cls in classes])
+                    for component, classes in components.items()])
             query_list.append(query)
 
         query_final.append(reduce(or_, query_list))
