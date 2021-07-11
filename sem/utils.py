@@ -649,6 +649,8 @@ def wipe_results(db, data_dir):
 
     This also removes all output files, and cannot be undone.
 
+    Note: This function does not return anything.
+
     Args:
         db (TinyDB instance): A TinyDB instace where the logs are inserted.
         data_dir (str): Path to where the TinyDB instance is stored
@@ -682,7 +684,8 @@ def filter_logs(db,
     the function will output logs in which (context == 0 or context == 1) and
     (function == a or function == b).
 
-    Return a list of logs that satisfy all the passed filters.
+    Return a list of logs that satisfy all the passed filters. Each log is
+    represented by a dictionary.
 
     Args:
         db (TinyDB instance): A TinyDB instace where the logs are inserted.
