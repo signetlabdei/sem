@@ -509,6 +509,9 @@ def process_logs(log_file):
     logs = parse_logs(log_file)
 
     data_dir = os.path.join('/tmp/', str(time.strftime("%Y-%m-%d::%H-%M-%S")) + ':logs.json')
+    if Path(data_dir).exists():
+        raise FileExistsError("File path '%s' already exists" % data_dir)
+
     db = TinyDB(data_dir,
                 storage=CachingMiddleware(JSONStorage))
 
@@ -527,6 +530,7 @@ def parse_logs(log_file):
     dictionary = {
         'Time': timestamp,  # float
         'Context': context/nodeId,  # str
+        'Extended_Context': ,   #str
         'Component': log component,  # str
         'Function': function name,  # str
         'Arguments': function arguments,  # str
@@ -540,57 +544,62 @@ def parse_logs(log_file):
         log_file (string): Path to where the log file is stored
     """
     log_list = []
+    regex = re.compile(r'[\+\-]?(\d+\.\d+)s ((?:\d+|-\d+)) (\[.*?\] )?(\w+):(\w+)\((.*?)\)(: \[(\w+)\s*\] (.*))?')
     with open(log_file) as f:
         for log in f:
             # Groups structure
             # group[1] = Time
             # group[2] = Context
             # group[3] = Extended Context ; For example, '-1 [node -1]' group[2] = -1 and group [3] = [node -1]
-            # group[4] = Component:Function(Arguments)
-            # group[5] = Component
-            # group[6] = Function
-            # group[7] = Arguments
-            # group[8] = :[Level] Message
-            # group[9] = Level/'Level '
-            # group[10] = Level
-            # group[11] = Extra spaces after level if present;else None
-            # group[12] = Message
+            # group[4] = Component
+            # group[5] = Function
+            # group[6] = Arguments
+            # group[7] = : [Level] Message
+            # group[8] = Level
+            # group[9] = Message
 
             # Example: '+0.000000000s -1 PowerAdaptationDistance:SetupPhy(): [DEBUG] OfdmRate6Mbps 0.00192 6000000bps'
             # group[1] = 0.000000000
             # group[2] = -1
             # group[3] = None
-            # group[4] = PowerAdaptationDistance:SetupPhy()
-            # group[5] = PowerAdaptationDistance
-            # group[6] = SetupPhy
-            # group[7] = ''
-            # group[8] = : [DEBUG] OfdmRate6Mbps 0.00192 6000000bps
-            # group[9] = DEBUG
-            # group[10] = DEBUG
-            # group[11] = None
-            # group[12] = OfdmRate6Mbps 0.00192 6000000bps
-            groups = re.match(r'[\+\-]?(\d+\.\d+)s ((?:\d+|-\d+)( \[node\ (?:\d+|-\d+)])?) ((\w+):(\w+)\((.*?)\))(: \[((\w+)(\s*))\] (.*))?', log)
+            # group[4] = PowerAdaptationDistance
+            # group[5] = SetupPhy
+            # group[6] = ''
+            # group[7] = : [DEBUG] OfdmRate6Mbps 0.00192 6000000bps
+            # group[8] = DEBUG
+            # group[9] = OfdmRate6Mbps 0.00192 6000000bps
+            groups = regex.match(log)
 
             if groups is None:
                 warnings.warn("Log format is not consistent with prefix_all. Skipping log '%s'" % log, RuntimeWarning)
                 continue
 
+            temp_dict = None
             # If level is function
             # TODO - I have seen in certain examples that the format of
             # level=function is different.
-            if groups[10] is None and groups[12] is None:
-                groups[10] = 'function'
-                groups[12] = ''
-
-            temp_dict = {
-                'Time': float(groups[1]),
-                'Context': groups[2],
-                'Component': groups[5],
-                'Function': groups[6],
-                'Arguments': groups[7],
-                'Level': groups[10],
-                'Message': groups[12]
-            }
+            if groups[8] is None and groups[9] is None:
+                temp_dict = {
+                    'Time': float(groups[1]),
+                    'Context': groups[2],
+                    'Extended_context': groups[3],
+                    'Component': groups[4],
+                    'Function': groups[5],
+                    'Arguments': groups[6],
+                    'Level': 'FUNCTION',
+                    'Message': ''
+                }
+            else:
+                temp_dict = {
+                    'Time': float(groups[1]),
+                    'Context': groups[2],
+                    'Extended_context': groups[3],
+                    'Component': groups[4],
+                    'Function': groups[5],
+                    'Arguments': groups[6],
+                    'Level': groups[8],
+                    'Message': groups[9]
+                }
             log_list.append(temp_dict)
 
     return log_list
@@ -614,6 +623,7 @@ def insert_logs(logs, db):
         k: ['...'] for k in ['Time',
                              'Context',
                              'Component',
+                             'Extended_context',
                              'Function',
                              'Arguments',
                              'Level',
