@@ -1,10 +1,17 @@
+from sem.utils import filter_logs, insert_logs, parse_logs, wipe_results
 import sem
 from math import log
 from sem import list_param_combinations, automatic_parser, stdout_automatic_parser, parse_log_components
 import json
 import numpy as np
 import pytest
+import os
+import time
 from operator import getitem
+
+from tinydb import TinyDB
+from tinydb.storages import JSONStorage
+from tinydb.middlewares import CachingMiddleware
 
 
 def test_list_param_combinations():
@@ -163,3 +170,284 @@ def test_parse_log_components(ns_3_compiled_debug, config):
     with pytest.raises(ValueError):
         new_components = parse_log_components(log_components=log_components,
                                              ns3_log_components=ns3_log_components)
+
+def test_parse_logs():
+    data_dir = os.path.join(os.curdir, 'tests', str(time.strftime("%Y-%m-%d::%H-%M-%S")) + ':test_logs.json')
+
+    log_ls = ['+0.000000000s -1 [mac=00:00:00:00:00:00] FrameExchangeManager:SetWifiMac(0x5576595683e0, 0x557659603820)\n',
+              '+0.045510017s 1 [mac=00:00:00:00:00:01] FrameExchangeManager:RxStartIndication(0x5576595683e0, "PSDU reception started for ", +76us, " (txVector: ", txpwrlvl: 17 preamble: LONG channel width: 20 GI: 800 NTx: 97 Ness: 0 MPDU aggregation: 0 STBC: 0 FEC coding: BCC mode: OfdmRate6Mbps Nss: 1, ")")\n',
+              '+0.000000000s -1 WifiPhy:WifiPhy(0x557659571bd0)\n',
+              '+0.000000000s -1 WifiPhy:SetChannelNumber(): [DEBUG] Saving channel number configuration for initialization \n',
+              '+0.506390387s 1 [mac=00:00:00:00:00:01] FrameExchangeManager:StartTransmission(): [DEBUG] MPDU payload size=36, to=00:00:00:00:00:02, seq=16 \n',
+              'WifiPhy:AddStaticPhyEntity(HR/DSSS) \n',
+              '+0.000000000s -1 WifiPhy:SetChannelNumber(): [DEBUG] ()[]./-=\n',
+              '+0.000000000s -1 WifiPhy:SetChannelNumber() \n',
+              '+0.000000000s -1 WifiPhy:SetChannelNumber): [DEBUG] Saving channel number configuration for initialization \n',
+              '+0.000000000s -1 WifiPhy:SetChannelNumber(): DEBUG] Saving channel number configuration for initialization \n',
+              '+0.000000000s WifiPhy:SetChannelNumber(): [DEBUG] Saving channel number configuration for initialization \n']
+    with open(data_dir, "w") as f:
+        f.writelines(log_ls)
+
+    parse_list = parse_logs(data_dir)
+
+    expected_list = [
+        {
+            'Time': 0.000000000,
+            'Context': '-1',
+            'Extended_context': 'mac=00:00:00:00:00:00',
+            'Component': 'FrameExchangeManager',
+            'Function': 'SetWifiMac',
+            'Arguments': '0x5576595683e0, 0x557659603820',
+            'Severity_class': 'FUNCTION',
+            'Message': ''
+        },
+        {
+            'Time': 0.045510017,
+            'Context': '1',
+            'Extended_context': 'mac=00:00:00:00:00:01',
+            'Component': 'FrameExchangeManager',
+            'Function': 'RxStartIndication',
+            'Arguments': '0x5576595683e0, "PSDU reception started for ", +76us, " (txVector: ", txpwrlvl: 17 preamble: LONG channel width: 20 GI: 800 NTx: 97 Ness: 0 MPDU aggregation: 0 STBC: 0 FEC coding: BCC mode: OfdmRate6Mbps Nss: 1, ")"',
+            'Severity_class': 'FUNCTION',
+            'Message': ''
+        },
+        {
+            'Time': 0.000000000,
+            'Context': '-1',
+            'Extended_context': None,
+            'Component': 'WifiPhy',
+            'Function': 'WifiPhy',
+            'Arguments': '0x557659571bd0',
+            'Severity_class': 'FUNCTION',
+            'Message': ''
+        },
+        {
+            'Time': 0.000000000,
+            'Context': '-1',
+            'Extended_context': None,
+            'Component': 'WifiPhy',
+            'Function': 'SetChannelNumber',
+            'Arguments': '',
+            'Severity_class': 'DEBUG',
+            'Message': 'Saving channel number configuration for initialization'
+        },
+        {
+            'Time': 0.506390387,
+            'Context': '1',
+            'Extended_context': 'mac=00:00:00:00:00:01',
+            'Component': 'FrameExchangeManager',
+            'Function': 'StartTransmission',
+            'Arguments': '',
+            'Severity_class': 'DEBUG',
+            'Message': 'MPDU payload size=36, to=00:00:00:00:00:02, seq=16'
+        },
+        {
+            'Time': 0.000000000,
+            'Context': '-1',
+            'Extended_context': None,
+            'Component': 'WifiPhy',
+            'Function': 'SetChannelNumber',
+            'Arguments': '',
+            'Severity_class': 'DEBUG',
+            'Message': '()[]./-='
+        }
+    ]
+
+    assert len(parse_list) == 6
+    assert all([actual == expected for actual, expected in zip(parse_list, expected_list)])
+
+    os.remove(data_dir)
+
+
+def test_filters():
+    db_dir = os.path.join(os.curdir, 'tests', str(time.strftime("%Y-%m-%d::%H-%M-%S")) + ':test_logs.json')
+    data_dir = os.path.join(os.curdir, 'tests', str(time.strftime("%Y-%m-%d::%H-%M-%S")) + ':test_logs')
+
+    db = TinyDB(db_dir,
+                storage=CachingMiddleware(JSONStorage))
+
+    log_ls = ['+0.000000000s -1 [mac=00:00:00:00:00:00] FrameExchangeManager:SetWifiMac(0x5576595683e0, 0x557659603820)\n',
+              '+0.045510017s 1 [mac=00:00:00:00:00:01] FrameExchangeManager:RxStartIndication(0x5576595683e0, "PSDU reception started for ", +76us, " (txVector: ", txpwrlvl: 17 preamble: LONG channel width: 20 GI: 800 NTx: 97 Ness: 0 MPDU aggregation: 0 STBC: 0 FEC coding: BCC mode: OfdmRate6Mbps Nss: 1, ")")\n',
+              '+0.506390387s 1 [mac=00:00:00:00:00:01] FrameExchangeManager:StartTransmission(): [DEBUG] MPDU payload size=36, to=00:00:00:00:00:02, seq=16\n',
+              '+2.999074264s 0 [mac=00:00:00:00:00:02] FrameExchangeManager:NotifyReceivedNormalAck(0x56239764d8c0, DATA, payloadSize=1456, to=00:00:00:00:00:01, seqN=2323, duration/ID=+44000ns, lifetime=+195539us, packet=0x56239786dd00)\n',
+              '+0.000000000s -1 WifiPhy:WifiPhy(0x557659571bd0)\n',
+              '+0.000000000s -1 WifiPhy:SetChannelNumber(): [DEBUG] Saving channel number configuration for initialization\n',
+              '+0.000000000s -1 WifiPhy:SetChannelNumber(): [DEBUG] ()[]./-=\n',
+              '+2.999825333s 1 WifiPhy:GetTxPowerForTransmission(): [INFO ] txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz\n',
+              '+2.999825333s 1 WifiPhy:GetTxPowerForTransmission(): [INFO ] txPowerDbm=17 after applying m_powerDensityLimit=100\n'
+              ]
+
+    with open(data_dir, "w") as f:
+        f.writelines(log_ls)
+
+    parse_list = parse_logs(data_dir)
+    insert_logs(parse_list, db)
+
+    filter_list = filter_logs(db, context=['1'])
+    assert len(filter_list) == 4
+    assert filter_list == [
+        {'Time': 0.045510017,
+         'Context': '1',
+         'Extended_context': 'mac=00:00:00:00:00:01',
+         'Component': 'FrameExchangeManager',
+         'Function': 'RxStartIndication',
+         'Arguments': '0x5576595683e0, "PSDU reception started for ", +76us, " (txVector: ", txpwrlvl: 17 preamble: LONG channel width: 20 GI: 800 NTx: 97 Ness: 0 MPDU aggregation: 0 STBC: 0 FEC coding: BCC mode: OfdmRate6Mbps Nss: 1, ")"',
+         'Severity_class': 'FUNCTION',
+         'Message': ''
+         },
+        {'Time': 0.506390387,
+         'Context': '1',
+         'Extended_context': 'mac=00:00:00:00:00:01',
+         'Component': 'FrameExchangeManager',
+         'Function': 'StartTransmission',
+         'Arguments': '',
+         'Severity_class': 'DEBUG',
+         'Message': 'MPDU payload size=36, to=00:00:00:00:00:02, seq=16'
+         },
+        {'Time': 2.999825333,
+         'Context': '1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'GetTxPowerForTransmission',
+         'Arguments': '',
+         'Severity_class': 'INFO',
+         'Message': 'txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz'
+         },
+        {'Time': 2.999825333,
+         'Context': '1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'GetTxPowerForTransmission',
+         'Arguments': '',
+         'Severity_class': 'INFO',
+         'Message': 'txPowerDbm=17 after applying m_powerDensityLimit=100'
+         }
+    ]
+
+    filter_list = filter_logs(db, context=['1'], function='GetTxPowerForTransmission')
+    assert len(filter_list) == 2
+    assert filter_list == [
+        {'Time': 2.999825333,
+         'Context': '1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'GetTxPowerForTransmission',
+         'Arguments': '',
+         'Severity_class': 'INFO',
+         'Message': 'txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz'
+         },
+        {'Time': 2.999825333,
+         'Context': '1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'GetTxPowerForTransmission',
+         'Arguments': '',
+         'Severity_class': 'INFO',
+         'Message': 'txPowerDbm=17 after applying m_powerDensityLimit=100'
+         }
+    ]
+
+    filter_list = filter_logs(db, context=['1'], sevirity_class=['info'])
+    assert len(filter_list) == 2
+    assert filter_list == [
+        {'Time': 2.999825333,
+         'Context': '1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'GetTxPowerForTransmission',
+         'Arguments': '',
+         'Severity_class': 'INFO',
+         'Message': 'txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz'
+         },
+        {'Time': 2.999825333,
+         'Context': '1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'GetTxPowerForTransmission',
+         'Arguments': '',
+         'Severity_class': 'INFO',
+         'Message': 'txPowerDbm=17 after applying m_powerDensityLimit=100'
+         }
+    ]
+
+    filter_list = filter_logs(db, context=['1'], time_begin=0.6)
+    assert len(filter_list) == 2
+    assert filter_list == [
+        {'Time': 2.999825333,
+         'Context': '1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'GetTxPowerForTransmission',
+         'Arguments': '',
+         'Severity_class': 'INFO',
+         'Message': 'txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz'
+         },
+        {'Time': 2.999825333,
+         'Context': '1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'GetTxPowerForTransmission',
+         'Arguments': '',
+         'Severity_class': 'INFO',
+         'Message': 'txPowerDbm=17 after applying m_powerDensityLimit=100'
+         }
+    ]
+
+    filter_list = filter_logs(db, context=['1'], time_end=0.5)
+    assert len(filter_list) == 1
+    assert filter_list == [
+        {'Time': 0.045510017,
+         'Context': '1',
+         'Extended_context': 'mac=00:00:00:00:00:01',
+         'Component': 'FrameExchangeManager',
+         'Function': 'RxStartIndication',
+         'Arguments': '0x5576595683e0, "PSDU reception started for ", +76us, " (txVector: ", txpwrlvl: 17 preamble: LONG channel width: 20 GI: 800 NTx: 97 Ness: 0 MPDU aggregation: 0 STBC: 0 FEC coding: BCC mode: OfdmRate6Mbps Nss: 1, ")"',
+         'Severity_class': 'FUNCTION',
+         'Message': ''
+         }
+    ]
+
+    filter_list = filter_logs(db, sevirity_class='function')
+    print(filter_list)
+    assert len(filter_list) == 4
+    assert filter_list == [
+        {'Time': 0.0,
+         'Context': '-1',
+         'Extended_context': 'mac=00:00:00:00:00:00',
+         'Component': 'FrameExchangeManager',
+         'Function': 'SetWifiMac',
+         'Arguments': '0x5576595683e0, 0x557659603820',
+         'Severity_class': 'FUNCTION',
+         'Message': ''
+         },
+        {'Time': 0.045510017,
+         'Context': '1',
+         'Extended_context': 'mac=00:00:00:00:00:01',
+         'Component': 'FrameExchangeManager',
+         'Function': 'RxStartIndication',
+         'Arguments': '0x5576595683e0, "PSDU reception started for ", +76us, " (txVector: ", txpwrlvl: 17 preamble: LONG channel width: 20 GI: 800 NTx: 97 Ness: 0 MPDU aggregation: 0 STBC: 0 FEC coding: BCC mode: OfdmRate6Mbps Nss: 1, ")"',
+         'Severity_class': 'FUNCTION',
+         'Message': ''
+         },
+        {'Time': 2.999074264,
+         'Context': '0',
+         'Extended_context': 'mac=00:00:00:00:00:02',
+         'Component': 'FrameExchangeManager',
+         'Function': 'NotifyReceivedNormalAck',
+         'Arguments': '0x56239764d8c0, DATA, payloadSize=1456, to=00:00:00:00:00:01, seqN=2323, duration/ID=+44000ns, lifetime=+195539us, packet=0x56239786dd00',
+         'Severity_class': 'FUNCTION',
+         'Message': ''
+         },
+        {'Time': 0.0,
+         'Context': '-1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'WifiPhy',
+         'Arguments': '0x557659571bd0',
+         'Severity_class': 'FUNCTION',
+         'Message': ''
+         }
+    ]
+
+    wipe_results(db, db_dir)
+    os.remove(data_dir)
