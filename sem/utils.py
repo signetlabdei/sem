@@ -544,19 +544,18 @@ def parse_logs(log_file):
         log_file (string): Path to where the log file is stored
     """
     log_list = []
-    regex = re.compile(r'[\+\-]?(\d+\.\d+)s ((?:\d+|-\d+)) (\[.*?\] )?(\w+):(\w+)\((.*?)\)(: \[(\w+)\s*\] (.*))?')
+    regex = re.compile(r'^[\+\-]?(\d+\.\d+)s ((?:\d+|-\d+)) (?:\[(.*?)\] )?(\w+):(\w+)\((.*?)\)(?:: \[(\w+)\s*\] (.*))?$')
     with open(log_file) as f:
         for log in f:
             # Groups structure
             # group[1] = Time
             # group[2] = Context
-            # group[3] = Extended Context ; For example, '-1 [node -1]' group[2] = -1 and group [3] = [node -1]
+            # group[3] = Extended Context; For example, '-1 [node -1]' group[2] = -1 and group[3] = node -1
             # group[4] = Component
             # group[5] = Function
             # group[6] = Arguments
-            # group[7] = : [Severity_class] Message
-            # group[8] = Severity_class
-            # group[9] = Message
+            # group[7] = Severity_class
+            # group[8] = Message
 
             # Example: '+0.000000000s -1 PowerAdaptationDistance:SetupPhy(): [DEBUG] OfdmRate6Mbps 0.00192 6000000bps'
             # group[1] = 0.000000000
@@ -565,20 +564,29 @@ def parse_logs(log_file):
             # group[4] = PowerAdaptationDistance
             # group[5] = SetupPhy
             # group[6] = ''
-            # group[7] = : [DEBUG] OfdmRate6Mbps 0.00192 6000000bps
-            # group[8] = DEBUG
-            # group[9] = OfdmRate6Mbps 0.00192 6000000bps
+            # group[7] = DEBUG
+            # group[8] = OfdmRate6Mbps 0.00192 6000000bps
             groups = regex.match(log)
 
             if groups is None:
                 warnings.warn("Log format is not consistent with prefix_all. Skipping log '%s'" % log, RuntimeWarning)
                 continue
 
+            # If severity class is 'function', then arguments cannot be empty
+            if groups[7] is None and groups[8] is None and groups[6] is None:
+                warnings.warn("Log format is not consistent with prefix_all. Skipping log '%s'" % log, RuntimeWarning)
+                continue
+
             temp_dict = None
+            # Remove trailing whitespaces after message
+            message = groups[8]
+            if groups[8] is not None:
+                message = message.rstrip()
+
             # If level is function
             # TODO - I have seen in certain examples that the format of
             # level=function is different.
-            if groups[8] is None and groups[9] is None:
+            if groups[7] is None and groups[8] is None:
                 temp_dict = {
                     'Time': float(groups[1]),
                     'Context': groups[2],
@@ -597,8 +605,8 @@ def parse_logs(log_file):
                     'Component': groups[4],
                     'Function': groups[5],
                     'Arguments': groups[6],
-                    'Severity_class': groups[8],
-                    'Message': groups[9]
+                    'Severity_class': groups[7],
+                    'Message': message
                 }
             log_list.append(temp_dict)
 
@@ -708,9 +716,6 @@ def filter_logs(db,
     if sevirity_class is not None or components is not None:
         if isinstance(sevirity_class, str):
             sevirity_class = [sevirity_class]
-        for value in components.values():
-            if isinstance(value, str):
-                value = [value]
 
         query_list = []
         if sevirity_class is not None:
@@ -724,6 +729,9 @@ def filter_logs(db,
         # classes passed with 'sevirity_class'. In other words, log severity
         # classes passed with 'sevirity_class' is treated as a global filter.
         if components is not None:
+            for value in components.values():
+                if isinstance(value, str):
+                    value = [value]
             query = reduce(or_, [reduce(or_, [
                     Query().fragment({'Component': component, 'Severity_class': cls.upper()}) for cls in classes])
                     for component, classes in components.items()])
@@ -741,7 +749,6 @@ def filter_logs(db,
     if context is not None:
         if isinstance(context, str):
             context = [str(context)]
-
         query = reduce(or_, [where('Context') == ctx for ctx in context])
         query_final.append(query)
 
