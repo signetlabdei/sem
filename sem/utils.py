@@ -703,8 +703,8 @@ def filter_logs(db,
             be filtered.
         time_begin (float): Start timestamp (in seconds) of the time window.
         time_end (float): End timestamp (in seconds) of the time window.
-        sevirity_class (list): A list of log severity classes based on which the logs
-            will be filtered.
+        sevirity_class (list): A list of log severity classes based on which
+        the logs will be filtered.
         components (dict): A dictionary having structure
             {
                 components:['class1','class2']
@@ -729,11 +729,13 @@ def filter_logs(db,
         # classes passed with 'sevirity_class'. In other words, log severity
         # classes passed with 'sevirity_class' is treated as a global filter.
         if components is not None:
-            for value in components.values():
+            for key, value in components.items():
                 if isinstance(value, str):
-                    value = [value]
+                    components[key] = [value]
             query = reduce(or_, [reduce(or_, [
-                    Query().fragment({'Component': component, 'Severity_class': cls.upper()}) for cls in classes])
+                    Query().fragment({'Component': component,
+                                      'Severity_class': cls.upper()})
+                    for cls in classes])
                     for component, classes in components.items()])
             query_list.append(query)
 
