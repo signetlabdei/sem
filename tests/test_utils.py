@@ -171,6 +171,7 @@ def test_parse_log_components(ns_3_compiled_debug, config):
         new_components = parse_log_components(log_components=log_components,
                                              ns3_log_components=ns3_log_components)
 
+
 def test_parse_logs():
     data_dir = os.path.join(os.curdir, 'tests', str(time.strftime("%Y-%m-%d::%H-%M-%S")) + ':test_logs.json')
 
@@ -272,8 +273,8 @@ def test_filters():
               '+2.999074264s 0 [mac=00:00:00:00:00:02] FrameExchangeManager:NotifyReceivedNormalAck(0x56239764d8c0, DATA, payloadSize=1456, to=00:00:00:00:00:01, seqN=2323, duration/ID=+44000ns, lifetime=+195539us, packet=0x56239786dd00)\n',
               '+0.000000000s -1 WifiPhy:WifiPhy(0x557659571bd0)\n',
               '+0.000000000s -1 WifiPhy:SetChannelNumber(): [DEBUG] Saving channel number configuration for initialization\n',
-              '+0.000000000s -1 WifiPhy:SetChannelNumber(): [DEBUG] ()[]./-=\n',
-              '+2.999825333s 1 WifiPhy:GetTxPowerForTransmission(): [INFO ] txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz\n',
+              '+0.000000000s -1 WifiPhy:SetChannelNumber(): [INFO] ()[]./-=\n',
+              '+2.999825333s 1 WifiPhy:GetTxPowerForTransmission(): [DEBUG ] txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz\n',
               '+2.999825333s 1 WifiPhy:GetTxPowerForTransmission(): [INFO ] txPowerDbm=17 after applying m_powerDensityLimit=100\n'
               ]
 
@@ -310,7 +311,7 @@ def test_filters():
          'Component': 'WifiPhy',
          'Function': 'GetTxPowerForTransmission',
          'Arguments': '',
-         'Severity_class': 'INFO',
+         'Severity_class': 'DEBUG',
          'Message': 'txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz'
          },
         {'Time': 2.999825333,
@@ -324,7 +325,8 @@ def test_filters():
          }
     ]
 
-    filter_list = filter_logs(db, context=['1'], function='GetTxPowerForTransmission')
+    filter_list = filter_logs(db, context=['1'],
+                              function='GetTxPowerForTransmission')
     assert len(filter_list) == 2
     assert filter_list == [
         {'Time': 2.999825333,
@@ -333,7 +335,7 @@ def test_filters():
          'Component': 'WifiPhy',
          'Function': 'GetTxPowerForTransmission',
          'Arguments': '',
-         'Severity_class': 'INFO',
+         'Severity_class': 'DEBUG',
          'Message': 'txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz'
          },
         {'Time': 2.999825333,
@@ -348,17 +350,8 @@ def test_filters():
     ]
 
     filter_list = filter_logs(db, context=['1'], sevirity_class=['info'])
-    assert len(filter_list) == 2
+    assert len(filter_list) == 1
     assert filter_list == [
-        {'Time': 2.999825333,
-         'Context': '1',
-         'Extended_context': None,
-         'Component': 'WifiPhy',
-         'Function': 'GetTxPowerForTransmission',
-         'Arguments': '',
-         'Severity_class': 'INFO',
-         'Message': 'txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz'
-         },
         {'Time': 2.999825333,
          'Context': '1',
          'Extended_context': None,
@@ -379,7 +372,7 @@ def test_filters():
          'Component': 'WifiPhy',
          'Function': 'GetTxPowerForTransmission',
          'Arguments': '',
-         'Severity_class': 'INFO',
+         'Severity_class': 'DEBUG',
          'Message': 'txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz'
          },
         {'Time': 2.999825333,
@@ -408,7 +401,6 @@ def test_filters():
     ]
 
     filter_list = filter_logs(db, sevirity_class='function')
-    print(filter_list)
     assert len(filter_list) == 4
     assert filter_list == [
         {'Time': 0.0,
@@ -449,5 +441,151 @@ def test_filters():
          }
     ]
 
+    filter_list = filter_logs(db, components={'WifiPhy': 'AddStaticPhyEntity'})
+    assert len(filter_list) == 0
+
+    filter_list = filter_logs(db, components={'WifiPhy': 'info'})
+    assert len(filter_list) == 2
+    assert filter_list == [
+        {'Time': 0.000000000,
+         'Context': '-1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'SetChannelNumber',
+         'Arguments': '',
+         'Severity_class': 'INFO',
+         'Message': '()[]./-='
+         },
+        {'Time': 2.999825333,
+         'Context': '1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'GetTxPowerForTransmission',
+         'Arguments': '',
+         'Severity_class': 'INFO',
+         'Message': 'txPowerDbm=17 after applying m_powerDensityLimit=100'
+         }
+    ]
+
+    filter_list = filter_logs(db, components={'WifiPhy': ['info', 'debug']})
+    assert len(filter_list) == 4
+    assert filter_list == [
+        {'Time': 0.000000000,
+         'Context': '-1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'SetChannelNumber',
+         'Arguments': '',
+         'Severity_class': 'DEBUG',
+         'Message': 'Saving channel number configuration for initialization'
+         },
+        {'Time': 0.000000000,
+         'Context': '-1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'SetChannelNumber',
+         'Arguments': '',
+         'Severity_class': 'INFO',
+         'Message': '()[]./-='
+         },
+        {'Time': 2.999825333,
+         'Context': '1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'GetTxPowerForTransmission',
+         'Arguments': '',
+         'Severity_class': 'DEBUG',
+         'Message': 'txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz'
+         },
+        {'Time': 2.999825333,
+         'Context': '1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'GetTxPowerForTransmission',
+         'Arguments': '',
+         'Severity_class': 'INFO',
+         'Message': 'txPowerDbm=17 after applying m_powerDensityLimit=100'
+         }
+    ]
+
+    filter_list = filter_logs(db,
+                              components={'WifiPhy': ['info', 'debug']},
+                              sevirity_class='function')
+    print(filter_list)
+    assert len(filter_list) == 8
+    assert filter_list == [
+        {'Time': 0.0,
+         'Context': '-1',
+         'Extended_context': 'mac=00:00:00:00:00:00',
+         'Component': 'FrameExchangeManager',
+         'Function': 'SetWifiMac',
+         'Arguments': '0x5576595683e0, 0x557659603820',
+         'Severity_class': 'FUNCTION',
+         'Message': ''
+         },
+        {'Time': 0.045510017,
+         'Context': '1',
+         'Extended_context': 'mac=00:00:00:00:00:01',
+         'Component': 'FrameExchangeManager',
+         'Function': 'RxStartIndication',
+         'Arguments': '0x5576595683e0, "PSDU reception started for ", +76us, " (txVector: ", txpwrlvl: 17 preamble: LONG channel width: 20 GI: 800 NTx: 97 Ness: 0 MPDU aggregation: 0 STBC: 0 FEC coding: BCC mode: OfdmRate6Mbps Nss: 1, ")"',
+         'Severity_class': 'FUNCTION',
+         'Message': ''
+         },
+        {'Time': 2.999074264,
+         'Context': '0',
+         'Extended_context': 'mac=00:00:00:00:00:02',
+         'Component': 'FrameExchangeManager',
+         'Function': 'NotifyReceivedNormalAck',
+         'Arguments': '0x56239764d8c0, DATA, payloadSize=1456, to=00:00:00:00:00:01, seqN=2323, duration/ID=+44000ns, lifetime=+195539us, packet=0x56239786dd00',
+         'Severity_class': 'FUNCTION',
+         'Message': ''
+         },
+        {'Time': 0.0,
+         'Context': '-1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'WifiPhy',
+         'Arguments': '0x557659571bd0',
+         'Severity_class': 'FUNCTION',
+         'Message': ''
+         },
+        {'Time': 0.000000000,
+         'Context': '-1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'SetChannelNumber',
+         'Arguments': '',
+         'Severity_class': 'DEBUG',
+         'Message': 'Saving channel number configuration for initialization'
+         },
+        {'Time': 0.000000000,
+         'Context': '-1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'SetChannelNumber',
+         'Arguments': '',
+         'Severity_class': 'INFO',
+         'Message': '()[]./-='
+         },
+        {'Time': 2.999825333,
+         'Context': '1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'GetTxPowerForTransmission',
+         'Arguments': '',
+         'Severity_class': 'DEBUG',
+         'Message': 'txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz'
+         },
+        {'Time': 2.999825333,
+         'Context': '1',
+         'Extended_context': None,
+         'Component': 'WifiPhy',
+         'Function': 'GetTxPowerForTransmission',
+         'Arguments': '',
+         'Severity_class': 'INFO',
+         'Message': 'txPowerDbm=17 after applying m_powerDensityLimit=100'
+         }
+    ]
     wipe_results(db, db_dir)
     os.remove(data_dir)
