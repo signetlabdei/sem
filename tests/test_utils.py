@@ -185,7 +185,10 @@ def test_parse_logs():
               '+0.000000000s -1 WifiPhy:SetChannelNumber() \n',
               '+0.000000000s -1 WifiPhy:SetChannelNumber): [DEBUG] Saving channel number configuration for initialization \n',
               '+0.000000000s -1 WifiPhy:SetChannelNumber(): DEBUG] Saving channel number configuration for initialization \n',
-              '+0.000000000s WifiPhy:SetChannelNumber(): [DEBUG] Saving channel number configuration for initialization \n']
+              '+0.000000000s WifiPhy:SetChannelNumber(): [DEBUG] Saving channel number configuration for initialization \n',
+              '+0.000000000s -1 WifiPhy:SetChannelNumber(): Saving channel number configuration for initialization \n',
+              '+0.000000000s -1 WifiPhy:SetChannelNumber():  \n'
+              ]
     with open(data_dir, "w") as f:
         f.writelines(log_ls)
 
