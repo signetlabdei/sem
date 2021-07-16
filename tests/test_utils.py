@@ -352,7 +352,7 @@ def test_filters():
          }
     ]
 
-    filter_list = filter_logs(db, context=['1'], sevirity_class=['info'])
+    filter_list = filter_logs(db, context=['1'], severity_class=['info'])
     assert len(filter_list) == 1
     assert filter_list == [
         {'Time': 2.999825333,
@@ -403,7 +403,7 @@ def test_filters():
          }
     ]
 
-    filter_list = filter_logs(db, sevirity_class='function')
+    filter_list = filter_logs(db, severity_class='function')
     assert len(filter_list) == 4
     assert filter_list == [
         {'Time': 0.0,
@@ -513,7 +513,7 @@ def test_filters():
 
     filter_list = filter_logs(db,
                               components={'WifiPhy': ['info', 'debug']},
-                              sevirity_class='function')
+                              severity_class='function')
     print(filter_list)
     assert len(filter_list) == 8
     assert filter_list == [

@@ -688,7 +688,7 @@ def filter_logs(db,
                 function=None,
                 time_begin=None,
                 time_end=None,
-                sevirity_class=None,
+                severity_class=None,
                 components=None):
     """
     Filter the logs stored in the database.
@@ -705,14 +705,17 @@ def filter_logs(db,
 
     Args:
         db (TinyDB instance): A TinyDB instace where the logs are inserted.
-        context (list): A list of context based on which the logs will be
-            filtered.
-        function (list): A list of function names based on which the logs will
-            be filtered.
+        context (list, str, int): A list of context based on which the logs will be
+            filtered. If only one context is to be provided, then this
+            paramter can also be a string or an int.
+        function (list, str): A list of function names based on which the logs will
+            be filtered. If only one function name is to be provided, then this
+            paramter can also be a string.
         time_begin (float): Start timestamp (in seconds) of the time window.
         time_end (float): End timestamp (in seconds) of the time window.
-        sevirity_class (list): A list of log severity classes based on which
-        the logs will be filtered.
+        severity_class (list, str): A list of log severity classes based on which
+        the logs will be filtered. If only one log severity class is to be
+        provided, then this paramter can also be a string.
         components (dict): A dictionary having structure
             {
                 components:['class1','class2']
@@ -721,25 +724,32 @@ def filter_logs(db,
     """
     query_final = []
 
-    if sevirity_class is not None or components is not None:
-        if isinstance(sevirity_class, str):
-            sevirity_class = [sevirity_class]
-
+    if severity_class is not None or components is not None:
+        if isinstance(severity_class, str):
+            severity_class = [severity_class]
+        elif isinstance(severity_class, list):
+            pass
+        else:
+            raise TypeError("severity_class can only be a list or a string (if only one value is passed).")
         query_list = []
-        if sevirity_class is not None:
+        if severity_class is not None:
             query = reduce(or_,
                            [where('Severity_class') == lvl.upper()
-                            for lvl in sevirity_class]
+                            for lvl in severity_class]
                            )
             query_list.append(query)
         # If components is provided apply the specified log severity classes
         # to the specified log components in addition to the log severity
-        # classes passed with 'sevirity_class'. In other words, log severity
-        # classes passed with 'sevirity_class' is treated as a global filter.
+        # classes passed with 'severity_class'. In other words, log severity
+        # classes passed with 'severity_class' is treated as a global filter.
         if components is not None:
             for key, value in components.items():
                 if isinstance(value, str):
                     components[key] = [value]
+                elif isinstance(value, list):
+                    pass
+                else:
+                    raise TypeError("values in components dictionary can only be a list or a string (if only one value is passed).")
             query = reduce(or_, [reduce(or_, [
                     Query().fragment({'Component': component,
                                       'Severity_class': cls.upper()})
@@ -752,6 +762,10 @@ def filter_logs(db,
     if function is not None:
         if isinstance(function, str):
             function = [function]
+        elif isinstance(function, list):
+            pass
+        else:
+            raise TypeError("function can only be a list or a string (if only one value is passed).")
 
         query = reduce(or_, [where('Function') == fnc for fnc in function])
         query_final.append(query)
@@ -759,6 +773,11 @@ def filter_logs(db,
     if context is not None:
         if isinstance(context, str) or isinstance(context, int):
             context = [str(context)]
+        elif isinstance(context, list):
+            pass
+        else:
+            raise TypeError("context can only be a list or a string (if only one value is passed).")
+
         query = reduce(or_, [where('Context') == str(ctx) for ctx in context])
         query_final.append(query)
 
