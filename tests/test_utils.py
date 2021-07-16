@@ -178,7 +178,7 @@ def test_parse_logs():
     log_ls = ['+0.000000000s -1 [mac=00:00:00:00:00:00] FrameExchangeManager:SetWifiMac(0x5576595683e0, 0x557659603820)\n',
               '+0.045510017s 1 [mac=00:00:00:00:00:01] FrameExchangeManager:RxStartIndication(0x5576595683e0, "PSDU reception started for ", +76us, " (txVector: ", txpwrlvl: 17 preamble: LONG channel width: 20 GI: 800 NTx: 97 Ness: 0 MPDU aggregation: 0 STBC: 0 FEC coding: BCC mode: OfdmRate6Mbps Nss: 1, ")")\n',
               '+0.000000000s -1 WifiPhy:WifiPhy(0x557659571bd0)\n',
-              '+0.000000000s -1 WifiPhy:SetChannelNumber(): [DEBUG] Saving channel number configuration for initialization \n',
+              '+0.000000000s -1 WifiPhy:SetChannelNumber(): [DEBUG  ] Saving channel number configuration for initialization \n',
               '+0.506390387s 1 [mac=00:00:00:00:00:01] FrameExchangeManager:StartTransmission(): [DEBUG] MPDU payload size=36, to=00:00:00:00:00:02, seq=16 \n',
               'WifiPhy:AddStaticPhyEntity(HR/DSSS) \n',
               '+0.000000000s -1 WifiPhy:SetChannelNumber(): [DEBUG] ()[]./-=\n',
