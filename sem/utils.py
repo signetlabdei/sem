@@ -544,7 +544,15 @@ def parse_logs(log_file):
         log_file (string): Path to where the log file is stored
     """
     log_list = []
-    regex = re.compile(r'^[\+\-]?(\d+\.\d+)s ((?:\d+|-\d+)) (?:\[(.*?)\] )?(\w+):(\w+)\((.*?)\)(?:: \[(\w+)\s*\] (.*))?$')
+
+    # Regex for parsing the logs
+    time_re = r'[\+\-]?(?P<time>\d+\.\d+)s '
+    context_extended_context_re = r'(?P<context>(?:\d+|-\d+)) (?:\[(?P<extended_context>.*?)\] )?'
+    component_function_arguments_re = r'(?P<component>\w+):(?P<function>\w+)\((?P<arguments>.*?)\)'
+    severity_class_message_re = r'(?:: \[(?P<severity_class>\w+)\s*\] (?P<message>.*))?'
+
+    regex = re.compile(r'^' + time_re + context_extended_context_re + component_function_arguments_re + severity_class_message_re + r'$')
+
     with open(log_file) as f:
         for log in f:
             # Groups structure
@@ -573,39 +581,39 @@ def parse_logs(log_file):
                 continue
 
             # If severity class is 'function', then arguments cannot be empty
-            if groups[7] is None and groups[8] is None and groups[6] is None:
+            if groups.group('severity_class') is None and groups.group('message') is None and groups.group('arguments') is None:
                 warnings.warn("Log format is not consistent with prefix_all. Skipping log '%s'" % log, RuntimeWarning)
                 continue
 
             temp_dict = None
             # Remove trailing whitespaces after message
-            message = groups[8]
-            if groups[8] is not None:
+            message = groups.group('message')
+            if message is not None:
                 message = message.rstrip()
 
             # If level is function
             # TODO - I have seen in certain examples that the format of
             # level=function is different.
-            if groups[7] is None and groups[8] is None:
+            if groups.group('severity_class') is None and groups.group('message') is None:
                 temp_dict = {
-                    'Time': float(groups[1]),
-                    'Context': groups[2],
-                    'Extended_context': groups[3],
-                    'Component': groups[4],
-                    'Function': groups[5],
-                    'Arguments': groups[6],
+                    'Time': float(groups.group('time')),
+                    'Context': groups.group('context'),
+                    'Extended_context': groups.group('extended_context'),
+                    'Component': groups.group('component'),
+                    'Function': groups.group('function'),
+                    'Arguments': groups.group('arguments'),
                     'Severity_class': 'FUNCTION',
                     'Message': ''
                 }
             else:
                 temp_dict = {
-                    'Time': float(groups[1]),
-                    'Context': groups[2],
-                    'Extended_context': groups[3],
-                    'Component': groups[4],
-                    'Function': groups[5],
-                    'Arguments': groups[6],
-                    'Severity_class': groups[7],
+                    'Time': float(groups.group('time')),
+                    'Context': groups.group('context'),
+                    'Extended_context': groups.group('extended_context'),
+                    'Component': groups.group('component'),
+                    'Function': groups.group('function'),
+                    'Arguments': groups.group('arguments'),
+                    'Severity_class': groups.group('severity_class'),
                     'Message': message
                 }
             log_list.append(temp_dict)
@@ -749,9 +757,9 @@ def filter_logs(db,
         query_final.append(query)
 
     if context is not None:
-        if isinstance(context, str):
+        if isinstance(context, str) or isinstance(context, int):
             context = [str(context)]
-        query = reduce(or_, [where('Context') == ctx for ctx in context])
+        query = reduce(or_, [where('Context') == str(ctx) for ctx in context])
         query_final.append(query)
 
     if time_begin is not None:
