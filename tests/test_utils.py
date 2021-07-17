@@ -31,94 +31,94 @@ log_ls = ['+0.000000000s -1 [node -1] FrameExchangeManager:SetWifiMac(0x55765956
           ]
 
 expected_list = [{
-                    'Time': 0.000000000,
-                    'Context': '-1',
-                    'Extended_context': 'node -1',
-                    'Component': 'FrameExchangeManager',
-                    'Function': 'SetWifiMac',
-                    'Arguments': '0x5576595683e0, 0x557659603820',
-                    'Severity_class': 'FUNCTION',
-                    'Message': ''
+                    'time': 0.000000000,
+                    'context': '-1',
+                    'extended_context': 'node -1',
+                    'component': 'FrameExchangeManager',
+                    'function': 'SetWifiMac',
+                    'arguments': '0x5576595683e0, 0x557659603820',
+                    'severity_class': 'FUNCTION',
+                    'message': ''
                 },
                 {
-                    'Time': 0.045510017,
-                    'Context': '1',
-                    'Extended_context': 'mac=00:00:00:00:00:01',
-                    'Component': 'FrameExchangeManager',
-                    'Function': 'RxStartIndication',
-                    'Arguments': '0x5576595683e0, "PSDU reception started for ", +76us, " (txVector: ", txpwrlvl: 17 preamble: LONG channel width: 20 GI: 800 NTx: 97 Ness: 0 MPDU aggregation: 0 STBC: 0 FEC coding: BCC mode: OfdmRate6Mbps Nss: 1, ")"',
-                    'Severity_class': 'FUNCTION',
-                    'Message': ''
+                    'time': 0.045510017,
+                    'context': '1',
+                    'extended_context': 'mac=00:00:00:00:00:01',
+                    'component': 'FrameExchangeManager',
+                    'function': 'RxStartIndication',
+                    'arguments': '0x5576595683e0, "PSDU reception started for ", +76us, " (txVector: ", txpwrlvl: 17 preamble: LONG channel width: 20 GI: 800 NTx: 97 Ness: 0 MPDU aggregation: 0 STBC: 0 FEC coding: BCC mode: OfdmRate6Mbps Nss: 1, ")"',
+                    'severity_class': 'FUNCTION',
+                    'message': ''
                 },
                 {
-                    'Time': 0.000000000,
-                    'Context': '-1',
-                    'Extended_context': None,
-                    'Component': 'WifiPhy',
-                    'Function': 'SetChannelNumber',
-                    'Arguments': '',
-                    'Severity_class': 'DEBUG',
-                    'Message': 'Saving channel number configuration for initialization'
+                    'time': 0.000000000,
+                    'context': '-1',
+                    'extended_context': None,
+                    'component': 'WifiPhy',
+                    'function': 'SetChannelNumber',
+                    'arguments': '',
+                    'severity_class': 'DEBUG',
+                    'message': 'Saving channel number configuration for initialization'
                 },
                 {
-                    'Time': 0.506390387,
-                    'Context': '1',
-                    'Extended_context': 'mac=00:00:00:00:00:01',
-                    'Component': 'FrameExchangeManager',
-                    'Function': 'StartTransmission',
-                    'Arguments': '',
-                    'Severity_class': 'DEBUG',
-                    'Message': 'MPDU payload size=36, to=00:00:00:00:00:02, seq=16'
+                    'time': 0.506390387,
+                    'context': '1',
+                    'extended_context': 'mac=00:00:00:00:00:01',
+                    'component': 'FrameExchangeManager',
+                    'function': 'StartTransmission',
+                    'arguments': '',
+                    'severity_class': 'DEBUG',
+                    'message': 'MPDU payload size=36, to=00:00:00:00:00:02, seq=16'
                 },
                 {
-                     'Time': 2.999074264,
-                     'Context': '0',
-                     'Extended_context': 'mac=00:00:00:00:00:02',
-                     'Component': 'FrameExchangeManager',
-                     'Function': 'NotifyReceivedNormalAck',
-                     'Arguments': '0x56239764d8c0, DATA, payloadSize=1456, to=00:00:00:00:00:01, seqN=2323, duration/ID=+44000ns, lifetime=+195539us, packet=0x56239786dd00',
-                     'Severity_class': 'FUNCTION',
-                     'Message': ''
+                     'time': 2.999074264,
+                     'context': '0',
+                     'extended_context': 'mac=00:00:00:00:00:02',
+                     'component': 'FrameExchangeManager',
+                     'function': 'NotifyReceivedNormalAck',
+                     'arguments': '0x56239764d8c0, DATA, payloadSize=1456, to=00:00:00:00:00:01, seqN=2323, duration/ID=+44000ns, lifetime=+195539us, packet=0x56239786dd00',
+                     'severity_class': 'FUNCTION',
+                     'message': ''
                  },
                 {
-                    'Time': 0.000000000,
-                    'Context': '-1',
-                    'Extended_context': None,
-                    'Component': 'WifiPhy',
-                    'Function': 'WifiPhy',
-                    'Arguments': '0x557659571bd0',
-                    'Severity_class': 'FUNCTION',
-                    'Message': ''
+                    'time': 0.000000000,
+                    'context': '-1',
+                    'extended_context': None,
+                    'component': 'WifiPhy',
+                    'function': 'WifiPhy',
+                    'arguments': '0x557659571bd0',
+                    'severity_class': 'FUNCTION',
+                    'message': ''
                 },
                 {
-                    'Time': 0.000000000,
-                    'Context': '-1',
-                    'Extended_context': None,
-                    'Component': 'WifiPhy',
-                    'Function': 'SetChannelNumber',
-                    'Arguments': '',
-                    'Severity_class': 'INFO',
-                    'Message': ':()[]:./-='
+                    'time': 0.000000000,
+                    'context': '-1',
+                    'extended_context': None,
+                    'component': 'WifiPhy',
+                    'function': 'SetChannelNumber',
+                    'arguments': '',
+                    'severity_class': 'INFO',
+                    'message': ':()[]:./-='
                 },
                 {
-                     'Time': 2.999825333,
-                     'Context': '1',
-                     'Extended_context': None,
-                     'Component': 'WifiPhy',
-                     'Function': 'GetTxPowerForTransmission',
-                     'Arguments': '',
-                     'Severity_class': 'DEBUG',
-                     'Message': 'txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz'
+                     'time': 2.999825333,
+                     'context': '1',
+                     'extended_context': None,
+                     'component': 'WifiPhy',
+                     'function': 'GetTxPowerForTransmission',
+                     'arguments': '',
+                     'severity_class': 'DEBUG',
+                     'message': 'txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz'
                  },
                 {
-                     'Time': 2.999825333,
-                     'Context': '1',
-                     'Extended_context': None,
-                     'Component': 'WifiPhy',
-                     'Function': 'GetTxPowerForTransmission',
-                     'Arguments': '',
-                     'Severity_class': 'INFO',
-                     'Message': 'txPowerDbm=17 after applying m_powerDensityLimit=100'
+                     'time': 2.999825333,
+                     'context': '1',
+                     'extended_context': None,
+                     'component': 'WifiPhy',
+                     'function': 'GetTxPowerForTransmission',
+                     'arguments': '',
+                     'severity_class': 'INFO',
+                     'message': 'txPowerDbm=17 after applying m_powerDensityLimit=100'
                  }]
 
 
@@ -313,7 +313,7 @@ def test_filters():
         # Test case 1
         filter_list = filter_logs(db, context=['1'])
         expected_filter_list = [exp_list for exp_list in expected_list
-                                if exp_list['Context'] == '1']
+                                if exp_list['context'] == '1']
         assert len(filter_list) == len(expected_filter_list)
         assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
 
@@ -321,64 +321,64 @@ def test_filters():
         filter_list = filter_logs(db, context=['1'],
                                   function='GetTxPowerForTransmission')
         expected_filter_list = [exp_list for exp_list in expected_list
-                                if (exp_list['Context'] == '1' and
-                                    exp_list['Function'] == 'GetTxPowerForTransmission')]
+                                if (exp_list['context'] == '1' and
+                                    exp_list['function'] == 'GetTxPowerForTransmission')]
         assert len(filter_list) == len(expected_filter_list)
         assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
 
         # Test case 3
         filter_list = filter_logs(db, context=['1'], severity_class=['info'])
         expected_filter_list = [exp_list for exp_list in expected_list
-                                if (exp_list['Context'] == '1' and
-                                    exp_list['Severity_class'] == 'INFO')]
+                                if (exp_list['context'] == '1' and
+                                    exp_list['severity_class'] == 'INFO')]
         assert len(filter_list) == len(expected_filter_list)
         assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
 
         # Test case 4
         filter_list = filter_logs(db, context=['1'], time_begin=0.6)
         expected_filter_list = [exp_list for exp_list in expected_list
-                                if (exp_list['Context'] == '1' and
-                                    exp_list['Time'] >= 0.6)]
+                                if (exp_list['context'] == '1' and
+                                    exp_list['time'] >= 0.6)]
         assert len(filter_list) == len(expected_filter_list)
         assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
 
         # Test case 5
         filter_list = filter_logs(db, context=['1'], time_end=0.5)
         expected_filter_list = [exp_list for exp_list in expected_list
-                                if (exp_list['Context'] == '1' and
-                                    exp_list['Time'] < 0.5)]
+                                if (exp_list['context'] == '1' and
+                                    exp_list['time'] < 0.5)]
         assert len(filter_list) == len(expected_filter_list)
         assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
 
         # Test case 6
         filter_list = filter_logs(db, severity_class='function')
         expected_filter_list = [exp_list for exp_list in expected_list
-                                if (exp_list['Severity_class'] == 'FUNCTION')]
+                                if (exp_list['severity_class'] == 'FUNCTION')]
         assert len(filter_list) == len(expected_filter_list)
         assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
 
         # Test case 7
         filter_list = filter_logs(db, components={'WifiPhy': 'warn'})
         expected_filter_list = [exp_list for exp_list in expected_list
-                                if (exp_list['Component'] == 'WifiPhy' and
-                                    exp_list['Severity_class'] == 'WARN')]
+                                if (exp_list['component'] == 'WifiPhy' and
+                                    exp_list['severity_class'] == 'WARN')]
         assert len(filter_list) == len(expected_filter_list)
         assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
 
         # Test case 8
         filter_list = filter_logs(db, components={'WifiPhy': 'info'})
         expected_filter_list = [exp_list for exp_list in expected_list
-                                if (exp_list['Component'] == 'WifiPhy' and
-                                    exp_list['Severity_class'] == 'INFO')]
+                                if (exp_list['component'] == 'WifiPhy' and
+                                    exp_list['severity_class'] == 'INFO')]
         assert len(filter_list) == len(expected_filter_list)
         assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
 
         # Test case 9
         filter_list = filter_logs(db, components={'WifiPhy': ['info', 'debug']})
         expected_filter_list = [exp_list for exp_list in expected_list
-                                if (exp_list['Component'] == 'WifiPhy') and
-                                   (exp_list['Severity_class'] == 'INFO' or
-                                    exp_list['Severity_class'] == 'DEBUG')]
+                                if (exp_list['component'] == 'WifiPhy') and
+                                   (exp_list['severity_class'] == 'INFO' or
+                                    exp_list['severity_class'] == 'DEBUG')]
         assert len(filter_list) == len(expected_filter_list)
         assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
 
@@ -387,10 +387,10 @@ def test_filters():
                                   components={'WifiPhy': ['info', 'debug']},
                                   severity_class='function')
         expected_filter_list = [exp_list for exp_list in expected_list
-                                if (exp_list['Severity_class'] == 'FUNCTION') or
-                                   ((exp_list['Component'] == 'WifiPhy') and
-                                    (exp_list['Severity_class'] == 'INFO' or
-                                     exp_list['Severity_class'] == 'DEBUG'))]
+                                if (exp_list['severity_class'] == 'FUNCTION') or
+                                   ((exp_list['component'] == 'WifiPhy') and
+                                    (exp_list['severity_class'] == 'INFO' or
+                                     exp_list['severity_class'] == 'DEBUG'))]
         assert len(filter_list) == len(expected_filter_list)
         assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
     except RuntimeError:
