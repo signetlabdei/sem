@@ -287,7 +287,6 @@ def test_parse_logs():
             f.writelines(log_ls)
 
         parse_list = parse_logs(data_dir)
-
         assert len(parse_list) == len(expected_list)
         assert all([actual == expected for actual, expected in zip(parse_list, expected_list)])
     except RuntimeError:
@@ -315,7 +314,8 @@ def test_filters():
         expected_filter_list = [exp_list for exp_list in expected_list
                                 if exp_list['context'] == '1']
         assert len(filter_list) == len(expected_filter_list)
-        assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
+        assert all([actual == expected for actual, expected
+                    in zip(filter_list, expected_filter_list)])
 
         # Test case 2
         filter_list = filter_logs(db, context=['1'],
@@ -324,7 +324,8 @@ def test_filters():
                                 if (exp_list['context'] == '1' and
                                     exp_list['function'] == 'GetTxPowerForTransmission')]
         assert len(filter_list) == len(expected_filter_list)
-        assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
+        assert all([actual == expected for actual, expected
+                    in zip(filter_list, expected_filter_list)])
 
         # Test case 3
         filter_list = filter_logs(db, context=['1'], severity_class=['info'])
@@ -332,7 +333,8 @@ def test_filters():
                                 if (exp_list['context'] == '1' and
                                     exp_list['severity_class'] == 'INFO')]
         assert len(filter_list) == len(expected_filter_list)
-        assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
+        assert all([actual == expected for actual, expected
+                    in zip(filter_list, expected_filter_list)])
 
         # Test case 4
         filter_list = filter_logs(db, context=['1'], time_begin=0.6)
@@ -340,7 +342,8 @@ def test_filters():
                                 if (exp_list['context'] == '1' and
                                     exp_list['time'] >= 0.6)]
         assert len(filter_list) == len(expected_filter_list)
-        assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
+        assert all([actual == expected for actual, expected
+                    in zip(filter_list, expected_filter_list)])
 
         # Test case 5
         filter_list = filter_logs(db, context=['1'], time_end=0.5)
@@ -348,14 +351,16 @@ def test_filters():
                                 if (exp_list['context'] == '1' and
                                     exp_list['time'] < 0.5)]
         assert len(filter_list) == len(expected_filter_list)
-        assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
+        assert all([actual == expected for actual, expected
+                    in zip(filter_list, expected_filter_list)])
 
         # Test case 6
         filter_list = filter_logs(db, severity_class='function')
         expected_filter_list = [exp_list for exp_list in expected_list
                                 if (exp_list['severity_class'] == 'FUNCTION')]
         assert len(filter_list) == len(expected_filter_list)
-        assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
+        assert all([actual == expected for actual, expected
+                    in zip(filter_list, expected_filter_list)])
 
         # Test case 7
         filter_list = filter_logs(db, components={'WifiPhy': 'warn'})
@@ -363,7 +368,8 @@ def test_filters():
                                 if (exp_list['component'] == 'WifiPhy' and
                                     exp_list['severity_class'] == 'WARN')]
         assert len(filter_list) == len(expected_filter_list)
-        assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
+        assert all([actual == expected for actual, expected
+                    in zip(filter_list, expected_filter_list)])
 
         # Test case 8
         filter_list = filter_logs(db, components={'WifiPhy': 'info'})
@@ -371,7 +377,8 @@ def test_filters():
                                 if (exp_list['component'] == 'WifiPhy' and
                                     exp_list['severity_class'] == 'INFO')]
         assert len(filter_list) == len(expected_filter_list)
-        assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
+        assert all([actual == expected for actual, expected
+                    in zip(filter_list, expected_filter_list)])
 
         # Test case 9
         filter_list = filter_logs(db, components={'WifiPhy': ['info', 'debug']})
@@ -380,7 +387,8 @@ def test_filters():
                                    (exp_list['severity_class'] == 'INFO' or
                                     exp_list['severity_class'] == 'DEBUG')]
         assert len(filter_list) == len(expected_filter_list)
-        assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
+        assert all([actual == expected for actual, expected
+                    in zip(filter_list, expected_filter_list)])
 
         # Test case 10
         filter_list = filter_logs(db,
@@ -392,7 +400,8 @@ def test_filters():
                                     (exp_list['severity_class'] == 'INFO' or
                                      exp_list['severity_class'] == 'DEBUG'))]
         assert len(filter_list) == len(expected_filter_list)
-        assert all([actual == expected for actual, expected in zip(filter_list, expected_filter_list)])
+        assert all([actual == expected for actual, expected
+                    in zip(filter_list, expected_filter_list)])
     except RuntimeError:
         print('Test for filter logs failed')
     finally:

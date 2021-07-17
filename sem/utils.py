@@ -528,14 +528,14 @@ def parse_logs(log_file):
     Return a list of dictionaries with each dictionary having the following
     format:
     dictionary = {
-        'Time': timestamp,  # float
-        'Context': context/nodeId,  # str
+        'time': timestamp,  # float
+        'context': context/nodeId,  # str
         'Extended_Context': ,   #str
-        'Component': log component,  # str
-        'Function': function name,  # str
-        'Arguments': function arguments,  # str
-        'Severity_class': log severity class,  # str
-        'Message': log message  # str
+        'component': log component,  # str
+        'function': function name,  # str
+        'arguments': function arguments,  # str
+        'severity_class': log severity class,  # str
+        'message': log message  # str
     }
     Note: This function will skip the log lines that do not have the same
           structure as ns-3 logs with prefix level set to prefix_all.
@@ -546,10 +546,28 @@ def parse_logs(log_file):
     log_list = []
 
     # Regex for parsing the logs
+    # time: Accepts string of form "[+-]'digits.digits's". The number of digits
+    #       is variable as user can change time resolution.
     time_re = r'[\+\-]?(?P<time>\d+\.\d+)s '
+    # context: Accepts string of form "digits" or "-digits".
+    # extended_context: Accepts everything between [] followed by a space. i.e.
+    #                   '[Extended Context] '.
+    # Note: '.*?' will try to match minimum possible string. Or in other words,
+    #       it is a non greedy match.
     context_extended_context_re = r'(?P<context>(?:\d+|-\d+)) (?:\[(?P<extended_context>.*?)\] )?'
+    # component: Accepts string of form '[a-zA-Z0-9_]'
+    # function: Accepts string of form '[a-zA-Z0-9_]'
+    # arguments: Accepts everything between '()'(after function name).
+    # Note: '.*?' will try to match minimum possible string. Or in other words,
+    #       it is a non greedy match.
     component_function_arguments_re = r'(?P<component>\w+):(?P<function>\w+)\((?P<arguments>.*?)\)'
-    severity_class_message_re = r'(?:: \[\s*(?P<severity_class>\w+)\s*\] (?P<message>.*))?'
+    # severity_class: Accepts string of form '[a-zA-Z0-9_]'
+    # message: Accepts everything after 'severity_class '.
+    # Note: '\s*' matches extra spaces if present after severity_class.
+    # Note: 'severity_class_message_re' is optional as when
+    #       severity_class=function severity_class and message are not present
+    #       in the resultant log. 
+    severity_class_message_re = r'(?:: \[(?P<severity_class>\w+)\s*\] (?P<message>.*))?'
 
     regex = re.compile(r'^' + time_re + context_extended_context_re + component_function_arguments_re + severity_class_message_re + r'$')
 
@@ -589,25 +607,25 @@ def parse_logs(log_file):
             # If level is function
             if groups.group('severity_class') is None and groups.group('message') is None:
                 temp_dict = {
-                    'Time': float(groups.group('time')),
-                    'Context': groups.group('context'),
-                    'Extended_context': groups.group('extended_context'),
-                    'Component': groups.group('component'),
-                    'Function': groups.group('function'),
-                    'Arguments': groups.group('arguments'),
-                    'Severity_class': 'FUNCTION',
-                    'Message': ''
+                    'time': float(groups.group('time')),
+                    'context': groups.group('context'),
+                    'extended_context': groups.group('extended_context'),
+                    'component': groups.group('component'),
+                    'function': groups.group('function'),
+                    'arguments': groups.group('arguments'),
+                    'severity_class': 'FUNCTION',
+                    'message': ''
                 }
             else:
                 temp_dict = {
-                    'Time': float(groups.group('time')),
-                    'Context': groups.group('context'),
-                    'Extended_context': groups.group('extended_context'),
-                    'Component': groups.group('component'),
-                    'Function': groups.group('function'),
-                    'Arguments': groups.group('arguments'),
-                    'Severity_class': groups.group('severity_class'),
-                    'Message': message
+                    'time': float(groups.group('time')),
+                    'context': groups.group('context'),
+                    'extended_context': groups.group('extended_context'),
+                    'component': groups.group('component'),
+                    'function': groups.group('function'),
+                    'arguments': groups.group('arguments'),
+                    'severity_class': groups.group('severity_class'),
+                    'message': message
                 }
             log_list.append(temp_dict)
 
@@ -629,14 +647,14 @@ def insert_logs(logs, db):
         return
 
     example_result = {
-        k: ['...'] for k in ['Time',
-                             'Context',
-                             'Component',
-                             'Extended_context',
-                             'Function',
-                             'Arguments',
-                             'Severity_class',
-                             'Message']
+        k: ['...'] for k in ['time',
+                             'context',
+                             'component',
+                             'extended_context',
+                             'function',
+                             'arguments',
+                             'severity_class',
+                             'message']
     }
 
     for log in logs:
@@ -757,7 +775,7 @@ def filter_logs(db,
         query_list = []
         if severity_class is not None:
             query = reduce(or_, [
-                           where('Severity_class') == lvl.upper()
+                           where('severity_class') == lvl.upper()
                            for lvl in severity_class
                            ])
             query_list.append(query)
@@ -767,8 +785,8 @@ def filter_logs(db,
         # classes passed with 'severity_class' is treated as a global filter.
         if components is not None:
             query = reduce(or_, [reduce(or_, [
-                    Query().fragment({'Component': component,
-                                      'Severity_class': cls.upper()})
+                    Query().fragment({'component': component,
+                                      'severity_class': cls.upper()})
                     for cls in classes])
                     for component, classes in components.items()])
             query_list.append(query)
@@ -776,19 +794,19 @@ def filter_logs(db,
         query_final.append(reduce(or_, query_list))
 
     if function is not None:
-        query = reduce(or_, [where('Function') == fnc for fnc in function])
+        query = reduce(or_, [where('function') == fnc for fnc in function])
         query_final.append(query)
 
     if context is not None:
-        query = reduce(or_, [where('Context') == str(ctx) for ctx in context])
+        query = reduce(or_, [where('context') == str(ctx) for ctx in context])
         query_final.append(query)
 
     if time_begin is not None:
-        query = where('Time') >= float(time_begin)
+        query = where('time') >= float(time_begin)
         query_final.append(query)
 
     if time_end is not None:
-        query = where('Time') <= float(time_end)
+        query = where('time') <= float(time_end)
         query_final.append(query)
 
     if query_final is not None:
