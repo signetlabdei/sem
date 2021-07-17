@@ -1,6 +1,5 @@
 from sem.utils import filter_logs, insert_logs, parse_logs, wipe_results
 import sem
-from math import log
 from sem import list_param_combinations, automatic_parser, stdout_automatic_parser, parse_log_components
 import json
 import numpy as np
@@ -14,7 +13,7 @@ from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 
 
-log_ls = ['+0.000000000s -1 [mac=00:00:00:00:00:00] FrameExchangeManager:SetWifiMac(0x5576595683e0, 0x557659603820)\n',
+log_ls = ['+0.000000000s -1 [node -1] FrameExchangeManager:SetWifiMac(0x5576595683e0, 0x557659603820)\n',
           '+0.045510017s 1 [mac=00:00:00:00:00:01] FrameExchangeManager:RxStartIndication(0x5576595683e0, "PSDU reception started for ", +76us, " (txVector: ", txpwrlvl: 17 preamble: LONG channel width: 20 GI: 800 NTx: 97 Ness: 0 MPDU aggregation: 0 STBC: 0 FEC coding: BCC mode: OfdmRate6Mbps Nss: 1, ")")\n',
           '+0.000000000s -1 WifiPhy:SetChannelNumber(): [DEBUG] Saving channel number configuration for initialization \n',
           '+0.506390387s 1 [mac=00:00:00:00:00:01] FrameExchangeManager:StartTransmission(): [DEBUG] MPDU payload size=36, to=00:00:00:00:00:02, seq=16 \n',
@@ -34,7 +33,7 @@ log_ls = ['+0.000000000s -1 [mac=00:00:00:00:00:00] FrameExchangeManager:SetWifi
 expected_list = [{
                     'Time': 0.000000000,
                     'Context': '-1',
-                    'Extended_context': 'mac=00:00:00:00:00:00',
+                    'Extended_context': 'node -1',
                     'Component': 'FrameExchangeManager',
                     'Function': 'SetWifiMac',
                     'Arguments': '0x5576595683e0, 0x557659603820',
