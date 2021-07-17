@@ -549,7 +549,7 @@ def parse_logs(log_file):
     time_re = r'[\+\-]?(?P<time>\d+\.\d+)s '
     context_extended_context_re = r'(?P<context>(?:\d+|-\d+)) (?:\[(?P<extended_context>.*?)\] )?'
     component_function_arguments_re = r'(?P<component>\w+):(?P<function>\w+)\((?P<arguments>.*?)\)'
-    severity_class_message_re = r'(?:: \[(?P<severity_class>\w+)\s*\] (?P<message>.*))?'
+    severity_class_message_re = r'(?:: \[\s*(?P<severity_class>\w+)\s*\] (?P<message>.*))?'
 
     regex = re.compile(r'^' + time_re + context_extended_context_re + component_function_arguments_re + severity_class_message_re + r'$')
 
@@ -580,11 +580,6 @@ def parse_logs(log_file):
                 warnings.warn("Log format is not consistent with prefix_all. Skipping log '%s'" % log, RuntimeWarning)
                 continue
 
-            # If severity class is 'function', then arguments cannot be empty
-            if groups.group('severity_class') is None and groups.group('message') is None and groups.group('arguments') is None:
-                warnings.warn("Log format is not consistent with prefix_all. Skipping log '%s'" % log, RuntimeWarning)
-                continue
-
             temp_dict = None
             # Remove trailing whitespaces after message
             message = groups.group('message')
@@ -592,8 +587,6 @@ def parse_logs(log_file):
                 message = message.rstrip()
 
             # If level is function
-            # TODO - I have seen in certain examples that the format of
-            # level=function is different.
             if groups.group('severity_class') is None and groups.group('message') is None:
                 temp_dict = {
                     'Time': float(groups.group('time')),
@@ -684,12 +677,12 @@ def wipe_results(db, data_dir):
 
 
 def filter_logs(db,
-                context=None,
-                function=None,
-                time_begin=None,
-                time_end=None,
                 severity_class=None,
-                components=None):
+                components=None,
+                function=None,
+                context=None,
+                time_begin=None,
+                time_end=None):
     """
     Filter the logs stored in the database.
 
@@ -705,17 +698,17 @@ def filter_logs(db,
 
     Args:
         db (TinyDB instance): A TinyDB instace where the logs are inserted.
-        context (list, str, int): A list of context based on which the logs will be
-            filtered. If only one context is to be provided, then this
+        context (list, str, int): A list of context based on which the logs
+            will be filtered. If only one context is to be provided, then this
             paramter can also be a string or an int.
-        function (list, str): A list of function names based on which the logs will
-            be filtered. If only one function name is to be provided, then this
-            paramter can also be a string.
+        function (list, str): A list of function names based on which the logs
+            will be filtered. If only one function name is to be provided, then
+            this paramter can also be a string.
         time_begin (float): Start timestamp (in seconds) of the time window.
         time_end (float): End timestamp (in seconds) of the time window.
-        severity_class (list, str): A list of log severity classes based on which
-        the logs will be filtered. If only one log severity class is to be
-        provided, then this paramter can also be a string.
+        severity_class (list, str): A list of log severity classes based on
+            which the logs will be filtered. If only one log severity class is
+            to be provided, then this paramter can also be a string.
         components (dict): A dictionary having structure
             {
                 components:['class1','class2']
@@ -724,13 +717,43 @@ def filter_logs(db,
     """
     query_final = []
 
-    if severity_class is not None or components is not None:
-        if isinstance(severity_class, str):
-            severity_class = [severity_class]
-        elif isinstance(severity_class, list):
+    # Assert that the passed paramters are of valid type.
+    if severity_class is not None:
+        if severity_class is not None:
+            if isinstance(severity_class, str):
+                severity_class = [severity_class]
+            elif isinstance(severity_class, list):
+                pass
+            else:
+                raise TypeError("severity_class can only be a list or a string (if only one value is passed).")
+
+    if components is not None:
+        for key, value in components.items():
+            if isinstance(value, str):
+                components[key] = [value]
+            elif isinstance(value, list):
+                pass
+            else:
+                raise TypeError("values in components dictionary can only be a list or a string (if only one value is passed).")
+
+    if function is not None:
+        if isinstance(function, str):
+            function = [function]
+        elif isinstance(function, list):
             pass
         else:
-            raise TypeError("severity_class can only be a list or a string (if only one value is passed).")
+            raise TypeError("function can only be a list or a string (if only one value is passed).")
+
+    if context is not None:
+        if isinstance(context, str) or isinstance(context, int):
+            context = [str(context)]
+        elif isinstance(context, list):
+            pass
+        else:
+            raise TypeError("context can only be a list or a string (if only one value is passed).")
+
+    # Build TinyDB query based on the passed paramters
+    if severity_class is not None or components is not None:
         query_list = []
         if severity_class is not None:
             query = reduce(or_,
@@ -743,13 +766,6 @@ def filter_logs(db,
         # classes passed with 'severity_class'. In other words, log severity
         # classes passed with 'severity_class' is treated as a global filter.
         if components is not None:
-            for key, value in components.items():
-                if isinstance(value, str):
-                    components[key] = [value]
-                elif isinstance(value, list):
-                    pass
-                else:
-                    raise TypeError("values in components dictionary can only be a list or a string (if only one value is passed).")
             query = reduce(or_, [reduce(or_, [
                     Query().fragment({'Component': component,
                                       'Severity_class': cls.upper()})
@@ -760,24 +776,10 @@ def filter_logs(db,
         query_final.append(reduce(or_, query_list))
 
     if function is not None:
-        if isinstance(function, str):
-            function = [function]
-        elif isinstance(function, list):
-            pass
-        else:
-            raise TypeError("function can only be a list or a string (if only one value is passed).")
-
         query = reduce(or_, [where('Function') == fnc for fnc in function])
         query_final.append(query)
 
     if context is not None:
-        if isinstance(context, str) or isinstance(context, int):
-            context = [str(context)]
-        elif isinstance(context, list):
-            pass
-        else:
-            raise TypeError("context can only be a list or a string (if only one value is passed).")
-
         query = reduce(or_, [where('Context') == str(ctx) for ctx in context])
         query_final.append(query)
 
