@@ -756,10 +756,10 @@ def filter_logs(db,
     if severity_class is not None or components is not None:
         query_list = []
         if severity_class is not None:
-            query = reduce(or_,
-                           [where('Severity_class') == lvl.upper()
-                            for lvl in severity_class]
-                           )
+            query = reduce(or_, [
+                           where('Severity_class') == lvl.upper()
+                           for lvl in severity_class
+                           ])
             query_list.append(query)
         # If components is provided apply the specified log severity classes
         # to the specified log components in addition to the log severity
