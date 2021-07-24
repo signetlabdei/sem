@@ -566,9 +566,10 @@ def parse_logs(log_file):
     # Note: '\s*' matches extra spaces if present after severity_class.
     # Note: 'severity_class_message_re' is optional as when
     #       severity_class=function severity_class and message are not present
-    #       in the resultant log. 
+    #       in the resultant log.
     severity_class_message_re = r'(?:: \[(?P<severity_class>\w+)\s*\] (?P<message>.*))?'
 
+    # Note: '^$' - Ensures that the entire regex matches the entire log line.
     regex = re.compile(r'^' + time_re + context_extended_context_re + component_function_arguments_re + severity_class_message_re + r'$')
 
     with open(log_file) as f:
@@ -722,8 +723,9 @@ def filter_logs(db,
         function (list, str): A list of function names based on which the logs
             will be filtered. If only one function name is to be provided, then
             this paramter can also be a string.
-        time_begin (float): Start timestamp (in seconds) of the time window.
-        time_end (float): End timestamp (in seconds) of the time window.
+        time_begin (float, str): Start timestamp (in seconds) of the time
+            window.
+        time_end (float, str): End timestamp (in seconds) of the time window.
         severity_class (list, str): A list of log severity classes based on
             which the logs will be filtered. If only one log severity class is
             to be provided, then this paramter can also be a string.
@@ -741,34 +743,53 @@ def filter_logs(db,
             if isinstance(severity_class, str):
                 severity_class = [severity_class]
             elif isinstance(severity_class, list):
-                pass
+                for cls in severity_class:
+                    if not isinstance(cls, str):
+                        raise TypeError("severity_class can only be a list of string or a string (if only one value is passed).")
             else:
-                raise TypeError("severity_class can only be a list or a string (if only one value is passed).")
+                raise TypeError("severity_class can only be a list of string or a string (if only one value is passed).")
 
     if components is not None:
         for key, value in components.items():
             if isinstance(value, str):
                 components[key] = [value]
             elif isinstance(value, list):
-                pass
+                for val in value:
+                    if not isinstance(val, str):
+                        raise TypeError("values in components dictionary can only be a list of string or a string (if only one value is passed).")
+
             else:
-                raise TypeError("values in components dictionary can only be a list or a string (if only one value is passed).")
+                raise TypeError("values in components dictionary can only be a list of string or a string (if only one value is passed).")
 
     if function is not None:
         if isinstance(function, str):
             function = [function]
         elif isinstance(function, list):
-            pass
+            for func in function:
+                if not isinstance(func, str):
+                    raise TypeError("function can only be a list of string or a string (if only one value is passed).")
+
         else:
-            raise TypeError("function can only be a list or a string (if only one value is passed).")
+            raise TypeError("function can only be a list of string or a string (if only one value is passed).")
 
     if context is not None:
         if isinstance(context, str) or isinstance(context, int):
             context = [str(context)]
         elif isinstance(context, list):
-            pass
+            for ctx in context:
+                if not (isinstance(ctx, str) or isinstance(ctx, int)):
+                    raise TypeError("context can only be a list of string/integer or a string (if only one value is passed).")
+
         else:
-            raise TypeError("context can only be a list or a string (if only one value is passed).")
+            raise TypeError("context can only be a list of string/integer or a string (if only one value is passed).")
+
+    if time_begin is not None:
+        if not (isinstance(time_begin, float) or isinstance(time_begin, str)):
+            raise TypeError("time_begin can only be a float or a string")
+
+    if time_end is not None:
+        if not (isinstance(time_end, float) or isinstance(time_end, str)):
+            raise TypeError("time_end can only be a float or a string")
 
     # Build TinyDB query based on the passed paramters
     if severity_class is not None or components is not None:

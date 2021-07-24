@@ -289,8 +289,6 @@ def test_parse_logs():
         parse_list = parse_logs(data_dir)
         assert len(parse_list) == len(expected_list)
         assert all([actual == expected for actual, expected in zip(parse_list, expected_list)])
-    except RuntimeError:
-        print('Test for parse_logs failed')
     finally:
         os.remove(data_dir)
 
@@ -328,7 +326,7 @@ def test_filters():
                     in zip(filter_list, expected_filter_list)])
 
         # Test case 3
-        filter_list = filter_logs(db, context=['1'], severity_class=['info'])
+        filter_list = filter_logs(db, context=['1'], severity_class='info')
         expected_filter_list = [exp_list for exp_list in expected_list
                                 if (exp_list['context'] == '1' and
                                     exp_list['severity_class'] == 'INFO')]
@@ -337,7 +335,7 @@ def test_filters():
                     in zip(filter_list, expected_filter_list)])
 
         # Test case 4
-        filter_list = filter_logs(db, context=['1'], time_begin=0.6)
+        filter_list = filter_logs(db, context=[1], time_begin=0.6)
         expected_filter_list = [exp_list for exp_list in expected_list
                                 if (exp_list['context'] == '1' and
                                     exp_list['time'] >= 0.6)]
@@ -346,7 +344,7 @@ def test_filters():
                     in zip(filter_list, expected_filter_list)])
 
         # Test case 5
-        filter_list = filter_logs(db, context=['1'], time_end=0.5)
+        filter_list = filter_logs(db, context='1', time_end='0.5')
         expected_filter_list = [exp_list for exp_list in expected_list
                                 if (exp_list['context'] == '1' and
                                     exp_list['time'] < 0.5)]
@@ -402,8 +400,18 @@ def test_filters():
         assert len(filter_list) == len(expected_filter_list)
         assert all([actual == expected for actual, expected
                     in zip(filter_list, expected_filter_list)])
-    except RuntimeError:
-        print('Test for filter logs failed')
+
+        # Test case 11
+        with pytest.raises(TypeError):
+            filter_list = filter_logs(db, context=1.0, time_end=0.5)
+
+        # Test case 12
+        with pytest.raises(TypeError):
+            filter_list = filter_logs(db, time_end=[0.5])
+
+        # Test case 13
+        with pytest.raises(TypeError):
+            filter_list = filter_logs(db, time_end=['0.5'])
     finally:
         wipe_results(db, db_dir)
         os.remove(data_dir)
