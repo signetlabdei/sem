@@ -516,8 +516,6 @@ def process_logs(log_file):
                 storage=CachingMiddleware(JSONStorage))
 
     insert_logs(logs, db)
-    # TODO Find a more elegant way to clean up TinyDB directory after
-    # completion
     return db, data_dir
 
 
@@ -530,7 +528,7 @@ def parse_logs(log_file):
     dictionary = {
         'time': timestamp,  # float
         'context': context/nodeId,  # str
-        'Extended_Context': ,   #str
+        'extended_Context': ,   #str
         'component': log component,  # str
         'function': function name,  # str
         'arguments': function arguments,  # str
@@ -574,29 +572,10 @@ def parse_logs(log_file):
 
     with open(log_file) as f:
         for log in f:
-            # Groups structure
-            # group[1] = Time
-            # group[2] = Context
-            # group[3] = Extended Context; For example, '-1 [node -1]' group[2] = -1 and group[3] = node -1
-            # group[4] = Component
-            # group[5] = Function
-            # group[6] = Arguments
-            # group[7] = Severity_class
-            # group[8] = Message
-
-            # Example: '+0.000000000s -1 PowerAdaptationDistance:SetupPhy(): [DEBUG] OfdmRate6Mbps 0.00192 6000000bps'
-            # group[1] = 0.000000000
-            # group[2] = -1
-            # group[3] = None
-            # group[4] = PowerAdaptationDistance
-            # group[5] = SetupPhy
-            # group[6] = ''
-            # group[7] = DEBUG
-            # group[8] = OfdmRate6Mbps 0.00192 6000000bps
             groups = regex.match(log)
 
             if groups is None:
-                warnings.warn("Log format is not consistent with prefix_all. Skipping log '%s'" % log, RuntimeWarning)
+                warnings.warn("Log format is not consistent with prefix_all. Skipping log '%s'" % log, RuntimeWarning, stacklevel=2)
                 continue
 
             temp_dict = None
@@ -642,7 +621,7 @@ def insert_logs(logs, db):
     Args:
         logs (list): A list of logs to insert in database. Logs are described
                      as a python dict
-        db (TinyDB instance): A TinyDB instace where the logs will be inserted.
+        db (TinyDB instance): A TinyDB instance where the logs will be inserted.
     """
     if logs == [] or logs is None:
         return
@@ -668,10 +647,10 @@ def insert_logs(logs, db):
                     pformat(example_result, depth=2),
                     pformat(log, depth=2)))
 
-    db.table('logs').insert_multiple(deepcopy(logs))
+    db.table('logs').insert_multiple(logs)
 
 
-def wipe_results(db, data_dir):
+def wipe_results(db, db_path):
     """
     Remove all logs from the database.
 
@@ -680,19 +659,23 @@ def wipe_results(db, data_dir):
     Note: This function does not return anything.
 
     Args:
-        db (TinyDB instance): A TinyDB instace where the logs are inserted.
-        data_dir (str): Path to where the TinyDB instance is stored
+        db (TinyDB instance): A TinyDB instance where the logs are inserted.
+        db_path (str): Path to where the TinyDB instance is stored
     """
+
     # Clean logs table
     db.drop_table('logs')
     db.storage.flush()
 
     # Get rid of contents of data dir
     try:
-        os.remove(data_dir)
+        if db_path.lower().endswith('.json'):
+            os.remove(db_path)
+        else:
+            warnings.warn("TinyDB instance is stored in a JSON file. File '%s' will not be removed." % db_path, stacklevel=2)
     except OSError as error:
         print(error)
-        print("File path '%s' can not be removed" % data_dir)
+        print("File path '%s' can not be removed" % db_path)
 
 
 def filter_logs(db,
@@ -705,9 +688,9 @@ def filter_logs(db,
     """
     Filter the logs stored in the database.
 
-    Filters are applied on context, function name, log sevirity class and time.
+    Filters are applied on context, function name, log severity class and time.
     Additionally the user can also filter each log component based on a
-    particular sevirity class using components dictionary.
+    particular severity class using components dictionary.
     For example, if the user specifies Context = [0, 1] and Function = [A, B]
     the function will output logs in which (context == 0 or context == 1) and
     (function == a or function == b).
@@ -716,19 +699,19 @@ def filter_logs(db,
     represented by a dictionary.
 
     Args:
-        db (TinyDB instance): A TinyDB instace where the logs are inserted.
+        db (TinyDB instance): The TinyDB instance contaning the logs to filter.
         context (list, str, int): A list of context based on which the logs
             will be filtered. If only one context is to be provided, then this
-            paramter can also be a string or an int.
+            parameter can also be a string or an int.
         function (list, str): A list of function names based on which the logs
             will be filtered. If only one function name is to be provided, then
-            this paramter can also be a string.
-        time_begin (float, str): Start timestamp (in seconds) of the time
+            this parameter can also be a string.
+        time_begin (float, int,  str): Start timestamp (in seconds) of the time
             window.
-        time_end (float, str): End timestamp (in seconds) of the time window.
+        time_end (float, int, str): End timestamp (in seconds) of the time window.
         severity_class (list, str): A list of log severity classes based on
             which the logs will be filtered. If only one log severity class is
-            to be provided, then this paramter can also be a string.
+            to be provided, then this parameter can also be a string.
         components (dict): A dictionary having structure
             {
                 components:['class1','class2']
@@ -737,22 +720,28 @@ def filter_logs(db,
     """
     query_final = []
 
-    # Assert that the passed paramters are of valid type.
-    if severity_class is not None:
-        if severity_class is not None:
-            if isinstance(severity_class, str):
-                severity_class = [severity_class]
-            elif isinstance(severity_class, list):
-                for cls in severity_class:
-                    if not isinstance(cls, str):
-                        raise TypeError("severity_class can only be a list of string or a string (if only one value is passed).")
-            else:
-                raise TypeError("severity_class can only be a list of string or a string (if only one value is passed).")
+    # Make copies of the arguments passed to avoid modifying the parameters
+    # passed by the user.
+    severity_class_copy = severity_class
+    components_copy = components
+    function_copy = function
+    context_copy = context
 
-    if components is not None:
-        for key, value in components.items():
+    # Assert that the passed parameters are of valid type.
+    if severity_class_copy is not None:
+        if isinstance(severity_class_copy, str):
+            severity_class_copy = [severity_class_copy]
+        elif isinstance(severity_class_copy, list):
+            for cls in severity_class_copy:
+                if not isinstance(cls, str):
+                    raise TypeError("severity_class can only be a list of string or a string (if only one value is passed).")
+        else:
+            raise TypeError("severity_class can only be a list of string or a string (if only one value is passed).")
+
+    if components_copy is not None:
+        for key, value in components_copy.items():
             if isinstance(value, str):
-                components[key] = [value]
+                components_copy[key] = [value]
             elif isinstance(value, list):
                 for val in value:
                     if not isinstance(val, str):
@@ -761,22 +750,22 @@ def filter_logs(db,
             else:
                 raise TypeError("values in components dictionary can only be a list of string or a string (if only one value is passed).")
 
-    if function is not None:
-        if isinstance(function, str):
-            function = [function]
-        elif isinstance(function, list):
-            for func in function:
+    if function_copy is not None:
+        if isinstance(function_copy, str):
+            function_copy = [function_copy]
+        elif isinstance(function_copy, list):
+            for func in function_copy:
                 if not isinstance(func, str):
                     raise TypeError("function can only be a list of string or a string (if only one value is passed).")
 
         else:
             raise TypeError("function can only be a list of string or a string (if only one value is passed).")
 
-    if context is not None:
-        if isinstance(context, str) or isinstance(context, int):
-            context = [str(context)]
-        elif isinstance(context, list):
-            for ctx in context:
+    if context_copy is not None:
+        if isinstance(context_copy, str) or isinstance(context_copy, int):
+            context_copy = [str(context_copy)]
+        elif isinstance(context_copy, list):
+            for ctx in context_copy:
                 if not (isinstance(ctx, str) or isinstance(ctx, int)):
                     raise TypeError("context can only be a list of string/integer or a string (if only one value is passed).")
 
@@ -784,42 +773,42 @@ def filter_logs(db,
             raise TypeError("context can only be a list of string/integer or a string (if only one value is passed).")
 
     if time_begin is not None:
-        if not (isinstance(time_begin, float) or isinstance(time_begin, str)):
+        if not (isinstance(time_begin, float) or isinstance(time_begin, str) or isinstance(time_begin, int)):
             raise TypeError("time_begin can only be a float or a string")
 
     if time_end is not None:
-        if not (isinstance(time_end, float) or isinstance(time_end, str)):
+        if not (isinstance(time_end, float) or isinstance(time_end, str) or isinstance(time_end, int)):
             raise TypeError("time_end can only be a float or a string")
 
-    # Build TinyDB query based on the passed paramters
-    if severity_class is not None or components is not None:
+    # Build TinyDB query based on the passed parameters
+    if severity_class_copy is not None or components_copy is not None:
         query_list = []
-        if severity_class is not None:
+        if severity_class_copy is not None:
             query = reduce(or_, [
                            where('severity_class') == lvl.upper()
-                           for lvl in severity_class
+                           for lvl in severity_class_copy
                            ])
             query_list.append(query)
         # If components is provided apply the specified log severity classes
         # to the specified log components in addition to the log severity
         # classes passed with 'severity_class'. In other words, log severity
         # classes passed with 'severity_class' is treated as a global filter.
-        if components is not None:
+        if components_copy is not None:
             query = reduce(or_, [reduce(or_, [
                     Query().fragment({'component': component,
                                       'severity_class': cls.upper()})
                     for cls in classes])
-                    for component, classes in components.items()])
+                    for component, classes in components_copy.items()])
             query_list.append(query)
 
         query_final.append(reduce(or_, query_list))
 
-    if function is not None:
-        query = reduce(or_, [where('function') == fnc for fnc in function])
+    if function_copy is not None:
+        query = reduce(or_, [where('function') == fnc for fnc in function_copy])
         query_final.append(query)
 
-    if context is not None:
-        query = reduce(or_, [where('context') == str(ctx) for ctx in context])
+    if context_copy is not None:
+        query = reduce(or_, [where('context') == str(ctx) for ctx in context_copy])
         query_final.append(query)
 
     if time_begin is not None:
