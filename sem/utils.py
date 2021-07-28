@@ -722,10 +722,10 @@ def filter_logs(db,
 
     # Make copies of the arguments passed to avoid modifying the parameters
     # passed by the user.
-    severity_class_copy = severity_class
-    components_copy = components
-    function_copy = function
-    context_copy = context
+    severity_class_copy = deepcopy(severity_class)
+    components_copy = deepcopy(components)
+    function_copy = deepcopy(function)
+    context_copy = deepcopy(context)
 
     # Assert that the passed parameters are of valid type.
     if severity_class_copy is not None:
