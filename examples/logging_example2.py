@@ -4,7 +4,6 @@ import sem
 #######################
 # Create the campaign #
 #######################
-
 script = 'wifi-power-adaptation-distance'
 ns_path = './examples/ns-3'
 campaign_dir = "/tmp/sem-test/wifi-plotting-example"
@@ -36,13 +35,14 @@ params = {
     'rtsThreshold': 2346,
     'stepsSize': 1
 }
-# Log Component in both formats
 
+# Log Component in both formats
 log_components = {
-    'PowerAdaptationDistance': 'debug',
-    'ParfWifiManager': 'info'
+    'PowerAdaptationDistance': 'all',
+    'FrameExchangeManager': 'info',
 }
-# log_components = 'NS_LOG="PowerAdaptationDistance=debug:ParfWifiManager=info"'
+# log_components = 'NS_LOG="PowerAdaptationDistance=all:FrameExchangeManager=info"'
+
 runs = 1  # Number of runs to perform for each combination
 
 # Actually run the simulations
@@ -53,8 +53,8 @@ log_path = campaign.run_missing_simulations(
 
 if log_path:
     print(log_path)
-    db, data_dir = utils.process_logs(log_path[0])
-    print(utils.filter_logs(db, level='debug',
+    db, db_path = utils.process_logs(log_path[0])
+    print(utils.filter_logs(db, severity_class='debug',
                             components={'PowerAdaptationDistance': 'info'}))
 
-    utils.wipe_results(db, data_dir)
+    utils.wipe_results(db, db_path)
