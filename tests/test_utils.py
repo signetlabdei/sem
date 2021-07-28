@@ -1,6 +1,6 @@
-from sem.utils import filter_logs, insert_logs, parse_logs, wipe_results
+from sem.logging import filter_logs, insert_logs, parse_logs, wipe_results
 import sem
-from sem import list_param_combinations, automatic_parser, stdout_automatic_parser, parse_log_components
+from sem.utils import list_param_combinations, automatic_parser, stdout_automatic_parser, parse_log_components
 import json
 import numpy as np
 import pytest

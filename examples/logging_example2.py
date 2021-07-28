@@ -1,4 +1,4 @@
-from sem import utils
+from sem import logging
 import sem
 
 #######################
@@ -53,8 +53,8 @@ log_path = campaign.run_missing_simulations(
 
 if log_path:
     print(log_path)
-    db, db_path = utils.process_logs(log_path[0])
-    print(utils.filter_logs(db, severity_class='debug',
-                            components={'PowerAdaptationDistance': 'info'}))
+    db, db_path = logging.process_logs(log_path[0])
+    print(logging.filter_logs(db, severity_class='debug',
+                              components={'PowerAdaptationDistance': 'info'}))
 
-    utils.wipe_results(db, db_path)
+    logging.wipe_results(db, db_path)
