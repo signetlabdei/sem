@@ -31,6 +31,4 @@ def filter():
 @tables.route("/unique_values", methods=['GET'])
 def get_unique():
     un = tab.get_unique_values(request)
-    print('Unique')
-    print(un)
     return jsonify(tab.get_unique_values(request))

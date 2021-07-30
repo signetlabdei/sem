@@ -8,10 +8,9 @@ from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 from sem.logging import process_logs, filter_logs
 
-
 class Table(object):
-    def __init__(self):
-        db, data_dir = process_logs('/tmp/sem-test/wifi-plotting-example/data/4b175ec0-0d1e-41bf-b6a9-b38ea8299ada/stderr')
+    def __init__(self, log_path):
+        db, data_dir = process_logs(log_path)
         # pass_data = filter_logs(db, time_end=0)
         data = db.table('logs').all()
         # print(filter_logs(db, time_end=0))
