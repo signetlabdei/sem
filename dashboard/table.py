@@ -38,8 +38,6 @@ class Table(object):
         self.cardinality_filtered = len(data)
         data = self._custom_sort(data)
         data = self._custom_paging(data)
-        # print('tt')
-        # print(len(data))
         output = {}
         output['sEcho'] = str(int(self.request_values['sEcho']))
         output['iTotalRecords'] = str(self.cardinality)
@@ -60,6 +58,9 @@ class Table(object):
                     return data[start:limit]
                 else:
                     return data[start:]
+        if int(self.request_values['iDisplayLength']) == -1:
+            print(len(data))
+            return data[0:200000]
 
     def _custom_filter(self, data):
         def check_row(row):
@@ -130,6 +131,16 @@ class Table(object):
 
     def _filter_logs(self):
         if self.filter_request_values is not None:
-            return filter_logs(self.db, severity_class=self.filter_request_values['severity_class'], context = self.filter_request_values['context'], function=self.filter_request_values['func'], time_begin=self.filter_request_values['time_begin'], time_end=self.filter_request_values['time_end'])
+            component = None
+            if self.filter_request_values['component'] is not None:
+                component = {}
+                for comp in self.filter_request_values['component']:
+                    component[comp] = self.filter_request_values['severity_class']
+                print('component')
+                print(component)
+                return filter_logs(self.db, context=self.filter_request_values['context'], function=self.filter_request_values['func'], time_begin=self.filter_request_values['time_begin'], time_end=self.filter_request_values['time_end'], components=component)
+            else:
+                return filter_logs(self.db, severity_class=self.filter_request_values['severity_class'], context=self.filter_request_values['context'], function=self.filter_request_values['func'], time_begin=self.filter_request_values['time_begin'], time_end=self.filter_request_values['time_end'])
+
         else:
             return self.data

@@ -8,9 +8,25 @@ $(document).ready(function () {
         },
         dom: 'Plfrtip',
         sPaginationType: "full_numbers",
-        lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+        lengthMenu: [[10, 25, 50, 100, 1000, -1], [10, 25, 50, 100, 1000, "All"]],
+        // scrollY: 200,
+        // scroller: {
+        //     loadingIndicator: true
+        // },
         bjQueryUI: true,
+        autoWidth: true,
         sAjaxSource: '/serverside_table',
+        columnDefs: [
+            { width: '10px', targets: 0 },
+            { width: '10px', targets: 1 },
+            { width: '10px', targets: 2 },
+            { width: '10px', targets: 3 },
+            { width: '10px', targets: 4 },
+            { width: '10px', targets: 5 },
+            { width: '10px', targets: 6 },
+            { width: '10px', targets: 7 }
+        ],
+        fixedColumns: true,
         columns: [
             {"data": "time"},
             {"data": "context"},
@@ -106,7 +122,8 @@ $(document).ready(function () {
                 // }
 
                 // $('.clear-selectpicker').selectpicker('refresh');
-                table.ajax.reload()
+                table.ajax.reload().columns.adjust();
+                table.columns.adjust().draw();
                 // table.clear().draw();
                 // table.rows.add(result); // Add new data
                 // table.columns.adjust().draw(); // Redraw the DataTable
