@@ -1,4 +1,17 @@
 $(document).ready(function () {
+    function addData(chart, data) {
+        chart.data.datasets.forEach((dataset) => {
+            dataset.data.push(data);
+        });
+        chart.update();
+    }
+
+    function removeData(chart) {
+        chart.data.datasets.forEach((dataset) => {
+            dataset.data.pop();
+        });
+        chart.update();
+    }
     var table = $('#serverside_table').DataTable({
         bProcessing: true,
         serverSide: true,
@@ -38,6 +51,169 @@ $(document).ready(function () {
             {"data": "message"}
         ],
     });
+    var scatter_chart;
+    $.ajax({
+        url: '/chart',
+        success: function(result){
+            console.log(result);
+            var data = {
+                datasets: [{
+                    label: "Dataset #1",
+                    backgroundColor: "rgba(255,99,132,0.2)",
+                    borderColor: "rgba(255,99,132,1)",
+                    borderWidth: 2,
+                    hoverBackgroundColor: "rgba(255,99,132,0.4)",
+                    hoverBorderColor: "rgba(255,99,132,1)",
+                    showLine: true,
+                    data: result
+                    // [{
+                    //     x: 0,
+                    //     y: 5
+                    // },
+                    //     {
+                    //         x: 1,
+                    //         y: 10
+                    //     },
+                    //     {
+                    //         x: 1,
+                    //         y: 5
+                    //     },
+                    //     {
+                    //         x: 3,
+                    //         y: 10
+                    //     }]
+                }]
+            };
+
+            var option = {
+                scales: {
+                    yAxes: [{
+                        stacked: true,
+                        gridLines: {
+                            display: true,
+                            color: "rgba(255,99,132,0.2)"
+                        }
+                    }],
+                    xAxes: [{
+                        gridLines: {
+                            display: true,
+                            color: "rgba(255,99,132,0.2)"
+                        }
+                    }]
+                },
+                elements: {
+                    line: {
+                        tension: 0, // bezier curves
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                console.log('hi');
+                                return "$" + Number(tooltipItem.yLabel) + " and so worth it !";
+                            }
+                        },
+                        enabled: false,
+                        position: 'nearest',
+                        external: function(context) {
+                            console.log(context);
+                            console.log('hi');
+                            // Tooltip Element
+                            var tooltipEl = document.getElementById('chartjs-tooltip');
+
+                            // Create element on first render
+                            if (!tooltipEl) {
+                                tooltipEl = document.createElement('div');
+                                tooltipEl.id = 'chartjs-tooltip';
+                                tooltipEl.innerHTML = '<table></table>';
+                                document.body.appendChild(tooltipEl);
+                            }
+
+                            // Hide if no tooltip
+                            var tooltipModel = context.tooltip;
+                            if (tooltipModel.opacity === 0) {
+                                tooltipEl.style.opacity = 0;
+                                return;
+                            }
+
+                            // Set caret Position
+                            tooltipEl.classList.remove('above', 'below', 'no-transform');
+                            if (tooltipModel.yAlign) {
+                                tooltipEl.classList.add(tooltipModel.yAlign);
+                            } else {
+                                tooltipEl.classList.add('no-transform');
+                            }
+
+                            function getBody(bodyItem) {
+                                return bodyItem.lines;
+                            }
+
+                            // Set Text
+                            if (tooltipModel.body) {
+                                var titleLines = tooltipModel.title || [];
+                                var bodyLines = tooltipModel.body.map(getBody);
+
+                                var innerHtml = '<thead>';
+
+                                titleLines.forEach(function(title) {
+                                    innerHtml += '<tr><th>' + title + '</th></tr>';
+                                });
+                                innerHtml += '</thead><tbody>';
+
+                                bodyLines.forEach(function(body, i) {
+                                    var colors = tooltipModel.labelColors[i];
+                                    var style = 'background:' + colors.backgroundColor;
+                                    style += '; border-color:' + colors.borderColor;
+                                    style += '; border-width: 2px';
+                                    var span = '<span style="' + style + '"></span>';
+                                    innerHtml += '<tr><td>' + span + body + '</td></tr>';
+                                });
+                                innerHtml += '</tbody>';
+
+                                var tableRoot = tooltipEl.querySelector('table');
+                                tableRoot.innerHTML = innerHtml;
+                            }
+
+                            var position = context.chart.canvas.getBoundingClientRect();
+                            var bodyFont = Chart.helpers.toFont(tooltipModel.options.bodyFont);
+
+                            // Display, position, and set styles for font
+                            tooltipEl.style.opacity = 1;
+                            tooltipEl.style.position = 'absolute';
+                            tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX + 'px';
+                            tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY + 'px';
+                            tooltipEl.style.font = bodyFont.string;
+                            tooltipEl.style.padding = tooltipModel.padding + 'px ' + tooltipModel.padding + 'px';
+                            tooltipEl.style.pointerEvents = 'none';
+                        }
+                    },
+                    zoom: {
+                        pan: {
+                            enabled: true,
+                            mode: 'xy',
+                        },
+                        zoom: {
+                            wheel: {
+                                enabled: true,
+                            },
+                            pinch: {
+                                enabled: true
+                            },
+                            mode: 'xy',
+                        }
+                    }
+                }
+            };
+            var mychart = document.getElementById("chart").getContext("2d");
+
+            scatter_chart = new Chart(mychart, {
+                type: 'scatter',
+                options: option,
+                data: data
+            });
+        }
+    })
     $.ajax({
         url: '/unique_values',
         success: function(result){
@@ -76,7 +252,7 @@ $(document).ready(function () {
 
         var component = $('#component').val();
         // alert('Component:' + component)
-        
+
         var lower_window = $('#min').val();
         // alert("Time:" + lower_window)
 
@@ -124,6 +300,10 @@ $(document).ready(function () {
                 // $('.clear-selectpicker').selectpicker('refresh');
                 table.ajax.reload().columns.adjust();
                 table.columns.adjust().draw();
+
+
+                removeData(scatter_chart);
+                addData(scatter_chart, result);
                 // table.clear().draw();
                 // table.rows.add(result); // Add new data
                 // table.columns.adjust().draw(); // Redraw the DataTable

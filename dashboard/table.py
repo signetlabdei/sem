@@ -1,12 +1,14 @@
 import time
 import re
-from copy import deepcopy
+import numpy as np
 
+from copy import deepcopy
 from copy import deepcopy
 from tinydb import TinyDB, where, Query
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 from sem.logging import process_logs, filter_logs
+
 
 class Table(object):
     def __init__(self, log_path):
@@ -31,6 +33,41 @@ class Table(object):
         # print('values')
         # print(self.request_values)
         # print(self.filter_request_values)
+
+    def getTotalTime(self):
+        return self.data[-1]['time']
+
+    def buildchart(self):
+        # Jitter Logs
+        unique_time = list(set([data['time'] for data in self.data]))
+        # Trimed to make it work temporarily
+        unique_time = unique_time[0:2]
+        ret_data = []
+        orig_data = deepcopy(self.data)
+        for timestamp in unique_time:
+            un_t = [i for i in orig_data if i['time'] == timestamp]
+            for ctx in {i['context'] for i in un_t}:
+                data = [item for item in un_t if item['context'] == ctx ]
+                if len(data) > 1:
+                    offsets = np.linspace(-0.2, 0.2, len(data))
+                    for idx, unique_context_item in enumerate(data):
+                        unique_context_item['context'] = str(float(unique_context_item['context']) + offsets[idx])
+            ret_data += un_t
+        # data = deepcopy(self.data)
+        # for unique_time in {i['time'] for i in data}:
+        #     # print("Unique time: %s" % unique_time)
+        #     unique_time_items = [item for item in data if item['time'] ==
+        #                         unique_time]
+        #     for unique_context in {i['context'] for i in unique_time_items}:
+        #         # print("Unique context: %s" % unique_context)
+        #         unique_context_items = [item for item in unique_time_items if
+        #                                 item['context'] == unique_context]
+        #         if len(unique_context_items) > 1:
+        #             offsets = np.linspace(-0.2, 0.2, len(unique_context_items))
+        #             print(offsets)
+        #             for idx, unique_context_item in enumerate(unique_context_items):
+        #                 unique_context_item['context'] = str(float(unique_context_item['context']) + offsets[idx])
+        return ret_data
 
     def build_datatable(self):
         data = self._filter_logs()
