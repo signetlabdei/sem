@@ -21,7 +21,7 @@ class Table(object):
         self.db = db
         self.data = data
         self.columns = ['time', 'context', 'extended_context', 'component', 'function', 'arguments', 'severity_class', 'message']
-        self.col_search = ['extended_context', 'component', 'argument', 'message']
+        self.col_search = ['extended_context', 'component', 'arguments', 'message']
         self.filter_request_values = None
         self.unique_context = set(ctx['context'] for ctx in data)
         self.unique_func = set(fun['function'] for fun in data)
@@ -39,11 +39,11 @@ class Table(object):
 
     def buildchart(self):
         # Jitter Logs
-        unique_time = list(set([data['time'] for data in self.data]))
+        orig_data = deepcopy(self._filter_logs())
+        unique_time = list(set([data['time'] for data in orig_data]))
         # Trimed to make it work temporarily
-        unique_time = unique_time[0:2]
+        unique_time = unique_time[0:20]
         ret_data = []
-        orig_data = deepcopy(self.data)
         for timestamp in unique_time:
             un_t = [i for i in orig_data if i['time'] == timestamp]
             for ctx in {i['context'] for i in un_t}:
@@ -67,7 +67,7 @@ class Table(object):
         #             print(offsets)
         #             for idx, unique_context_item in enumerate(unique_context_items):
         #                 unique_context_item['context'] = str(float(unique_context_item['context']) + offsets[idx])
-        return ret_data
+        return sorted(ret_data, key=lambda k: k['time'])
 
     def build_datatable(self):
         data = self._filter_logs()

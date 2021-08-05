@@ -21,14 +21,15 @@ def filter():
     tab.set_filter_request(request)
 
     data = tab.buildchart()
-    print(data)
     plot_data = []
     # plot_data = [{'x': x, 'y': y} for x, y in data]
     for i in data:
         plot_data += [{'x': i['time'], 'y': float(i['context'])}]
-    print()
-    print(plot_data)
-    return jsonify(plot_data)
+    ret_dict = {
+            'plot': plot_data,
+            'data': data
+            }
+    return jsonify(ret_dict)
 
 
 @tables.route("/unique_values", methods=['GET'])
@@ -38,14 +39,14 @@ def get_unique():
 
 @tables.route("/chart", methods=['GET'])
 def make_chart():
-
     data = tab.buildchart()
-    print(data)
     plot_data = []
     # plot_data = [{'x': x, 'y': y} for x, y in data]
     for i in data:
         plot_data += [{'x': i['time'], 'y': float(i['context'])}]
-    print()
-    print(plot_data)
 
-    return jsonify(plot_data)
+    ret_dict = {
+            'plot': plot_data,
+            'data': data
+            }
+    return jsonify(ret_dict)

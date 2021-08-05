@@ -1,15 +1,18 @@
 $(document).ready(function () {
     function addData(chart, data) {
-        chart.data.datasets.forEach((dataset) => {
-            dataset.data.push(data);
-        });
+        // chart.data.datasets.forEach((dataset) => {
+        //     dataset.data.push(data);
+        // });
+        console.log(data);
+        chart.data.datasets[0].data = data;
         chart.update();
     }
 
     function removeData(chart) {
-        chart.data.datasets.forEach((dataset) => {
-            dataset.data.pop();
-        });
+        // chart.data.datasets.forEach((dataset) => {
+        //     dataset.data.pop();
+        // });
+        chart.data.datasets[0].data.pop();
         chart.update();
     }
     var table = $('#serverside_table').DataTable({
@@ -65,7 +68,7 @@ $(document).ready(function () {
                     hoverBackgroundColor: "rgba(255,99,132,0.4)",
                     hoverBorderColor: "rgba(255,99,132,1)",
                     showLine: true,
-                    data: result
+                    data: result.plot
                     // [{
                     //     x: 0,
                     //     y: 5
@@ -110,83 +113,95 @@ $(document).ready(function () {
                     tooltip: {
                         callbacks: {
                             label: function(tooltipItem) {
-                                console.log('hi');
-                                return "$" + Number(tooltipItem.yLabel) + " and so worth it !";
+                                // console.log('hi');
+                                // console.log(tooltipItem);
+                                // console.log(result.data);
+                                // console.log(result.data[0]);
+                                var current_log = result.data[tooltipItem.dataIndex];
+                                var timestamp = current_log.time;
+                                var context = current_log.context;
+                                var extended_context = current_log.extended_context;
+                                var component = current_log.component;
+                                var func = current_log.function;
+                                var args = current_log.arguments;
+                                var severity_class = current_log.severity_class;
+                                var mssg = current_log.message;
+                                return "Timestamp: " + timestamp  + ", Context: " + context + ", Extended Context: " + extended_context + ", Component: " + component + ", Function: " + func + ", Arguments: " + args + ", Severity Class: " + severity_class + ", Message: " + mssg;
                             }
                         },
-                        enabled: false,
-                        position: 'nearest',
-                        external: function(context) {
-                            console.log(context);
-                            console.log('hi');
-                            // Tooltip Element
-                            var tooltipEl = document.getElementById('chartjs-tooltip');
+                        // enabled: false,
+                        // position: 'nearest',
+                        // external: function(context) {
+                        //     console.log(context);
+                        //     // console.log('hi');
+                        //     // Tooltip Element
+                        //     var tooltipEl = document.getElementById('chartjs-tooltip');
 
-                            // Create element on first render
-                            if (!tooltipEl) {
-                                tooltipEl = document.createElement('div');
-                                tooltipEl.id = 'chartjs-tooltip';
-                                tooltipEl.innerHTML = '<table></table>';
-                                document.body.appendChild(tooltipEl);
-                            }
+                        //     // Create element on first render
+                        //     if (!tooltipEl) {
+                        //         tooltipEl = document.createElement('div');
+                        //         tooltipEl.id = 'chartjs-tooltip';
+                        //         tooltipEl.innerHTML = '<table></table>';
+                        //         document.body.appendChild(tooltipEl);
+                        //     }
 
-                            // Hide if no tooltip
-                            var tooltipModel = context.tooltip;
-                            if (tooltipModel.opacity === 0) {
-                                tooltipEl.style.opacity = 0;
-                                return;
-                            }
+                        //     // Hide if no tooltip
+                        //     var tooltipModel = context.tooltip;
+                        //     if (tooltipModel.opacity === 0) {
+                        //         tooltipEl.style.opacity = 0;
+                        //         return;
+                        //     }
 
-                            // Set caret Position
-                            tooltipEl.classList.remove('above', 'below', 'no-transform');
-                            if (tooltipModel.yAlign) {
-                                tooltipEl.classList.add(tooltipModel.yAlign);
-                            } else {
-                                tooltipEl.classList.add('no-transform');
-                            }
+                        //     // Set caret Position
+                        //     tooltipEl.classList.remove('above', 'below', 'no-transform');
+                        //     if (tooltipModel.yAlign) {
+                        //         tooltipEl.classList.add(tooltipModel.yAlign);
+                        //     } else {
+                        //         tooltipEl.classList.add('no-transform');
+                        //     }
 
-                            function getBody(bodyItem) {
-                                return bodyItem.lines;
-                            }
+                        //     function getBody(bodyItem) {
+                        //         return bodyItem.lines;
+                        //     }
 
-                            // Set Text
-                            if (tooltipModel.body) {
-                                var titleLines = tooltipModel.title || [];
-                                var bodyLines = tooltipModel.body.map(getBody);
+                        //     // Set Text
+                        //     if (tooltipModel.body) {
+                        //         var titleLines = tooltipModel.title || [];
+                        //         var bodyLines = tooltipModel.body.map(getBody);
 
-                                var innerHtml = '<thead>';
+                        //         var innerHtml = '<thead>';
 
-                                titleLines.forEach(function(title) {
-                                    innerHtml += '<tr><th>' + title + '</th></tr>';
-                                });
-                                innerHtml += '</thead><tbody>';
+                        //         titleLines.forEach(function(title) {
+                        //             innerHtml += '<tr><th>' + title + '</th></tr>';
+                        //         });
+                        //         innerHtml += '</thead><tbody>';
 
-                                bodyLines.forEach(function(body, i) {
-                                    var colors = tooltipModel.labelColors[i];
-                                    var style = 'background:' + colors.backgroundColor;
-                                    style += '; border-color:' + colors.borderColor;
-                                    style += '; border-width: 2px';
-                                    var span = '<span style="' + style + '"></span>';
-                                    innerHtml += '<tr><td>' + span + body + '</td></tr>';
-                                });
-                                innerHtml += '</tbody>';
+                        //         bodyLines.forEach(function(body, i) {
+                        //             var colors = tooltipModel.labelColors[i];
+                        //             var style = 'background:' + colors.backgroundColor;
+                        //             style += '; border-color:' + colors.borderColor;
+                        //             style += '; border-width: 2px';
+                        //             var span = '<span style="' + style + '"></span>';
+                        //             innerHtml += '<tr><td>' + span + body + '</td></tr>';
+                        //         });
+                        //         innerHtml += '</tbody>';
 
-                                var tableRoot = tooltipEl.querySelector('table');
-                                tableRoot.innerHTML = innerHtml;
-                            }
+                        //         var tableRoot = tooltipEl.querySelector('table');
+                        //         tableRoot.innerHTML = innerHtml;
+                        //     }
 
-                            var position = context.chart.canvas.getBoundingClientRect();
-                            var bodyFont = Chart.helpers.toFont(tooltipModel.options.bodyFont);
+                        //     var position = context.chart.canvas.getBoundingClientRect();
+                        //     var bodyFont = Chart.helpers.toFont(tooltipModel.options.bodyFont);
 
-                            // Display, position, and set styles for font
-                            tooltipEl.style.opacity = 1;
-                            tooltipEl.style.position = 'absolute';
-                            tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX + 'px';
-                            tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY + 'px';
-                            tooltipEl.style.font = bodyFont.string;
-                            tooltipEl.style.padding = tooltipModel.padding + 'px ' + tooltipModel.padding + 'px';
-                            tooltipEl.style.pointerEvents = 'none';
-                        }
+                        //     // Display, position, and set styles for font
+                        //     tooltipEl.style.opacity = 1;
+                        //     tooltipEl.style.position = 'absolute';
+                        //     tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX + 'px';
+                        //     tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY + 'px';
+                        //     tooltipEl.style.font = bodyFont.string;
+                        //     tooltipEl.style.padding = tooltipModel.padding + 'px ' + tooltipModel.padding + 'px';
+                        //     tooltipEl.style.pointerEvents = 'none';
+                        // }
                     },
                     zoom: {
                         pan: {
@@ -298,12 +313,15 @@ $(document).ready(function () {
                 // }
 
                 // $('.clear-selectpicker').selectpicker('refresh');
-                table.ajax.reload().columns.adjust();
-                table.columns.adjust().draw();
+                // table.ajax.reload().columns.adjust();
+                // table.draw().columns.adjust();
 
-
-                removeData(scatter_chart);
-                addData(scatter_chart, result);
+                table.clear();
+                table.rows.add(result.data)
+                table.draw().columns.adjust();
+                
+                // removeData(scatter_chart);
+                addData(scatter_chart, result.plot);
                 // table.clear().draw();
                 // table.rows.add(result); // Add new data
                 // table.columns.adjust().draw(); // Redraw the DataTable
@@ -311,22 +329,3 @@ $(document).ready(function () {
         })
     });
 });
-//$(document).ready(function() {
-//
-//    var dtage = $('#serverside_table').DataTable({
-//         "ajax": "dump.txt",
-//         "columns": [
-//          {"data": "time"},
-//          {"data": "context"},
-//          {"data": "component"},
-//          {"data": "function"},
-//          {"data": "severity_class"},
-//          {"data": "message"}
-//         ]
-//    } );
-//
-//    // Event listener to the two range filtering inputs to redraw on input
-//    $('#min, #max').keyup(function() {
-//        dtage.draw();
-//    });
-//});
