@@ -34,7 +34,7 @@ def filter():
 
 @tables.route("/unique_values", methods=['GET'])
 def get_unique():
-    return jsonify(tab.get_unique_values(request))
+    return jsonify(tab.get_unique_values())
 
 
 @tables.route("/chart", methods=['GET'])
@@ -45,8 +45,10 @@ def make_chart():
     for i in data:
         plot_data += [{'x': i['time'], 'y': float(i['context'])}]
 
+    unique_values = tab.get_unique_values()
     ret_dict = {
             'plot': plot_data,
-            'data': data
+            'data': data,
+            'component': unique_values['component']
             }
     return jsonify(ret_dict)

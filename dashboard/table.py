@@ -40,9 +40,10 @@ class Table(object):
     def buildchart(self):
         # Jitter Logs
         orig_data = deepcopy(self._filter_logs())
+        orig_data = orig_data[0:10000]
         unique_time = list(set([data['time'] for data in orig_data]))
         # Trimed to make it work temporarily
-        unique_time = unique_time[0:20]
+        # unique_time = unique_time[0:20]
         ret_data = []
         for timestamp in unique_time:
             un_t = [i for i in orig_data if i['time'] == timestamp]
@@ -159,7 +160,7 @@ class Table(object):
         # print(float(self.filter_request_values['time_begin'][0]))
         # print(type(float(self.filter_request_values['time_begin'][0])))
 
-    def get_unique_values(self, request):
+    def get_unique_values(self):
         return{
                 'context': list(self.unique_context),
                 'function': list(self.unique_func),
