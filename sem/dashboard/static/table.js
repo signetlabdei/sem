@@ -185,9 +185,29 @@ $(document).ready(function () {
     });
 $('#serverside_table tbody').on('click', 'tr', function(){
     var data = table.row(this).data();
+    console.log(data);
+    console.log(table.row(this));
+    console.log(table.page.info());
     var pageNumber = data.index / table.page.info().length;
+    // table.search('');
+    // table.ajax.reload();
+    // table.draw().columns.adjust();
 
     table.search('').page(pageNumber).draw(false);
+    // $.ajax({
+    //     url: '/page',
+    //     data: {
+    //         index: data.index,
+    //     },
+    //     traditional: true,
+    //     beforeSend: function(){
+    //         $("#overlay").fadeIn(300);　
+    //     },
+    //     success: function(result){
+             
+
+    //     }
+    // });
 });
 
 $('.selectpicker, .time').change(function () {
