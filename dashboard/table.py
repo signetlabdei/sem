@@ -1,6 +1,7 @@
 import time
 import re
 import numpy as np
+import bisect
 
 from copy import deepcopy
 from copy import deepcopy
@@ -8,6 +9,19 @@ from tinydb import TinyDB, where, Query
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
 from sem.logging import process_logs, filter_logs
+from bisect import bisect_left, bisect_right
+
+
+class dict_list_index_get_member(object):
+    def __init__(self, dict_list, member):
+        self.dict_list = dict_list
+        self.member = member
+
+    def __getitem__(self, index):
+        return self.dict_list[index][self.member]
+
+    def __len__(self):
+        return self.dict_list.__len__()
 
 
 class Table(object):
@@ -41,38 +55,25 @@ class Table(object):
     def getTotalTime(self):
         return self.data[-1]['time']
 
-    def buildchart(self):
-        # Jitter Logs
-        orig_data = deepcopy(self._filter_logs())
-        orig_data = orig_data[0:1000]
+    def jitter_logs(self, orig_data):
         unique_time = list(set([data['time'] for data in orig_data]))
-        # Trimed to make it work temporarily
-        # unique_time = unique_time[0:20]
-        ret_data = []
+        time_column = dict_list_index_get_member(orig_data, 'time')
         for timestamp in unique_time:
-            un_t = [i for i in orig_data if i['time'] == timestamp]
+            un_t = orig_data[bisect_left(time_column, timestamp):bisect_right(time_column, timestamp)]
             for ctx in {i['context'] for i in un_t}:
-                data = [item for item in un_t if item['context'] == ctx ]
+                data = [item for item in un_t if item['context'] == ctx]
                 if len(data) > 1:
                     offsets = np.linspace(-0.2, 0.2, len(data))
                     for idx, unique_context_item in enumerate(data):
-                        unique_context_item['context'] = str(float(unique_context_item['context']) + offsets[idx])
-            ret_data += un_t
-        # data = deepcopy(self.data)
-        # for unique_time in {i['time'] for i in data}:
-        #     # print("Unique time: %s" % unique_time)
-        #     unique_time_items = [item for item in data if item['time'] ==
-        #                         unique_time]
-        #     for unique_context in {i['context'] for i in unique_time_items}:
-        #         # print("Unique context: %s" % unique_context)
-        #         unique_context_items = [item for item in unique_time_items if
-        #                                 item['context'] == unique_context]
-        #         if len(unique_context_items) > 1:
-        #             offsets = np.linspace(-0.2, 0.2, len(unique_context_items))
-        #             print(offsets)
-        #             for idx, unique_context_item in enumerate(unique_context_items):
-        #                 unique_context_item['context'] = str(float(unique_context_item['context']) + offsets[idx])
-        return sorted(ret_data, key=lambda k: k['time'])
+                        unique_context_item['jitter_context'] = str(float(unique_context_item['context']) + offsets[idx])
+                else:
+                    data[0]['jitter_context'] = data[0]['context']
+
+    def buildchart(self):
+        # Jitter Logs
+        orig_data = self._filter_logs()
+        self.jitter_logs(orig_data)
+        return orig_data
 
     def build_datatable(self):
         data = self._filter_logs()
@@ -127,8 +128,8 @@ class Table(object):
                 sort_direction = self.request_values['sSortDir_' + str(i)]
                 # print(len(data))
                 data = sorted(data,
-                              key=lambda x: x[column_name],
-                              reverse=True if sort_direction == 'desc' else False)
+                        key=lambda x: x[column_name],
+                        reverse=True if sort_direction == 'desc' else False)
             return data
         else:
             return data
@@ -169,7 +170,7 @@ class Table(object):
                 'context': list(self.unique_context),
                 'function': list(self.unique_func),
                 'component': list(self.unique_component)
-              }
+                }
 
     def _filter_logs(self):
         if self.filter_request_values is not None:

@@ -78,7 +78,8 @@ $(document).ready(function () {
                     borderWidth: 2,
                     hoverBackgroundColor: "rgba(255,99,132,0.4)",
                     hoverBorderColor: "rgba(255,99,132,1)",
-                    showLine: true,
+                    // showLine: true,
+                    indexAxis: 'x',
                     data: result.plot
                 }]
             };
@@ -109,6 +110,10 @@ $(document).ready(function () {
                 //     }
                 // },
                 plugins: {
+                    decimation: {
+                        enabled: true,
+                        algorithm: 'lttb'
+                    },
                     tooltip: {
                         callbacks: {
                             label: function(tooltipItem) {
@@ -236,10 +241,6 @@ $('.selectpicker, .time').change(function () {
         // removeData(scatter_chart);
         addData(scatter_chart, result.plot);
         scatter_chart.options.plugins.tooltip.callbacks.label = function(tooltipItem) {
-            // console.log('hi');
-            // console.log(tooltipItem);
-            // console.log(result.data);
-            // console.log(result.data[0]);
             var current_log = result.data[tooltipItem.dataIndex];
             var timestamp = current_log.time;
             var context = current_log.context;

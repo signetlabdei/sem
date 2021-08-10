@@ -27,7 +27,7 @@ def filter():
     plot_data = []
     # plot_data = [{'x': x, 'y': y} for x, y in data]
     for i in data:
-        plot_data += [{'x': i['time'], 'y': float(i['context'])}]
+        plot_data += [{'x': i['time'], 'y': float(i['jitter_context'])}]
     ret_dict = {
             'plot': plot_data,
             'data': data
@@ -46,7 +46,7 @@ def make_chart():
     plot_data = []
     # plot_data = [{'x': x, 'y': y} for x, y in data]
     for i in data:
-        plot_data += [{'x': i['time'], 'y': float(i['context'])}]
+        plot_data += [{'x': i['time'], 'y': float(i['jitter_context'])}]
 
     # unique_values = tab.get_unique_values()
     ret_dict = {

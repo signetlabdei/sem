@@ -78,7 +78,8 @@ $(document).ready(function () {
                     borderWidth: 2,
                     hoverBackgroundColor: "rgba(255,99,132,0.4)",
                     hoverBorderColor: "rgba(255,99,132,1)",
-                    showLine: true,
+                    // showLine: true,
+                    indexAxis: 'x',
                     data: result.plot
                 }]
             };
@@ -109,6 +110,10 @@ $(document).ready(function () {
                 //     }
                 // },
                 plugins: {
+                    decimation: {
+                        enabled: true,
+                        algorithm: 'lttb'
+                    },
                     tooltip: {
                         callbacks: {
                             label: function(tooltipItem) {
@@ -130,10 +135,10 @@ $(document).ready(function () {
                         },
                     },
                     zoom: {
-                        pan: {
-                            enabled: true,
-                            mode: 'xy',
-                        },
+                        // pan: {
+                        //     enabled: true,
+                        //     mode: 'xy',
+                        // },
                         zoom: {
                             wheel: {
                                 enabled: true,
@@ -141,9 +146,9 @@ $(document).ready(function () {
                             pinch: {
                                 enabled: true
                             },
-                            // drag: {
-                            //     enabled: true
-                            // },
+                            drag: {
+                                enabled: true
+                            },
                             mode: 'xy',
                         }
                     }
@@ -185,29 +190,9 @@ $(document).ready(function () {
     });
 $('#serverside_table tbody').on('click', 'tr', function(){
     var data = table.row(this).data();
-    console.log(data);
-    console.log(table.row(this));
-    console.log(table.page.info());
     var pageNumber = data.index / table.page.info().length;
-    // table.search('');
-    // table.ajax.reload();
-    // table.draw().columns.adjust();
 
     table.search('').page(pageNumber).draw(false);
-    // $.ajax({
-    //     url: '/page',
-    //     data: {
-    //         index: data.index,
-    //     },
-    //     traditional: true,
-    //     beforeSend: function(){
-    //         $("#overlay").fadeIn(300);　
-    //     },
-    //     success: function(result){
-             
-
-    //     }
-    // });
 });
 
 $('.selectpicker, .time').change(function () {
@@ -256,10 +241,6 @@ $('.selectpicker, .time').change(function () {
         // removeData(scatter_chart);
         addData(scatter_chart, result.plot);
         scatter_chart.options.plugins.tooltip.callbacks.label = function(tooltipItem) {
-            // console.log('hi');
-            // console.log(tooltipItem);
-            // console.log(result.data);
-            // console.log(result.data[0]);
             var current_log = result.data[tooltipItem.dataIndex];
             var timestamp = current_log.time;
             var context = current_log.context;
