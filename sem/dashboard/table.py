@@ -35,8 +35,8 @@ class Table(object):
         db, data_dir = process_logs(log_path)
         # pass_data = filter_logs(db, time_end=0)
         data = db.table('logs').all()
-        for idx, entry in enumerate(data):
-            entry['index'] = idx
+        # for idx, entry in enumerate(data):
+        #     entry['index'] = idx
         # print(filter_logs(db, time_end=0))
         self.cardinality = len(data)
         self.cardinality_filtered = len(data)
@@ -91,7 +91,7 @@ class Table(object):
 
     def _custom_paging(self, data):
         if self.request_values['iDisplayStart'] != "" and int(self.request_values['iDisplayLength']) != -1:
-
+            print(self.request_values['iDisplayStart'])
             start = int(self.request_values['iDisplayStart'])
             length = int(self.request_values['iDisplayLength'])
             if len(data) <= length:

@@ -94,6 +94,7 @@ def parse_logs(log_file):
     # Note: '^$' - Ensures that the entire regex matches the entire log line.
     regex = re.compile(r'^' + time_re + context_extended_context_re + component_function_arguments_re + severity_class_message_re + r'$')
 
+    idx = 0
     with open(log_file) as f:
         for log in f:
             groups = regex.match(log)
@@ -111,6 +112,7 @@ def parse_logs(log_file):
             # If level is function
             if groups.group('severity_class') is None and groups.group('message') is None:
                 temp_dict = {
+                    'index': idx,
                     'time': float(groups.group('time')),
                     'context': groups.group('context'),
                     'extended_context': groups.group('extended_context'),
@@ -122,6 +124,7 @@ def parse_logs(log_file):
                 }
             else:
                 temp_dict = {
+                    'index': idx,
                     'time': float(groups.group('time')),
                     'context': groups.group('context'),
                     'extended_context': groups.group('extended_context'),
@@ -132,6 +135,7 @@ def parse_logs(log_file):
                     'message': message
                 }
             log_list.append(temp_dict)
+            idx += 1
 
     return log_list
 
@@ -151,7 +155,8 @@ def insert_logs(logs, db):
         return
 
     example_result = {
-        k: ['...'] for k in ['time',
+        k: ['...'] for k in ['index',
+                             'time',
                              'context',
                              'component',
                              'extended_context',

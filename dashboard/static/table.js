@@ -156,9 +156,10 @@ $(document).ready(function () {
                             pinch: {
                                 enabled: true
                             },
-                            // drag: {
-                            //     enabled: true
-                            // },
+                            drag: {
+                                enabled: true,
+                                modifierKey: 'ctrl'
+                            },
                             mode: 'xy',
                         }
                     }
@@ -199,8 +200,7 @@ $(document).ready(function () {
     });
     $('#serverside_table tbody').on('click', 'tr', function(){
         var data = table.row(this).data();
-        var pageNumber = data.index / table.page.info().length;
-
+        var pageNumber = Math.floor(data.index / table.page.info().length);
         table.search('').page(pageNumber).draw(false);
     });
 
