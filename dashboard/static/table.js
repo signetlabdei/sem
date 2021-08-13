@@ -78,7 +78,7 @@ $(document).ready(function () {
                     borderWidth: 2,
                     hoverBackgroundColor: "rgba(255,99,132,0.4)",
                     hoverBorderColor: "rgba(255,99,132,1)",
-                    // showLine: true,
+                    showLine: true,
                     indexAxis: 'x',
                     pointRadius: 5,
                     pointHoverRadius: 8,

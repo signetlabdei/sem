@@ -78,7 +78,7 @@ $(document).ready(function () {
                     borderWidth: 2,
                     hoverBackgroundColor: "rgba(255,99,132,0.4)",
                     hoverBorderColor: "rgba(255,99,132,1)",
-                    // showLine: true,
+                    showLine: true,
                     indexAxis: 'x',
                     pointRadius: 5,
                     pointHoverRadius: 8,
@@ -252,9 +252,9 @@ $('.selectpicker, .time').change(function () {
             time_end: upper_window
         },
         traditional: true,
-        // beforeSend: function(){
-        //     $("#overlay").fadeIn(300);　
-        // },
+        beforeSend: function(){
+            $("#overlay").fadeIn(300);　
+        },
         success: function(result){
             // console.log(result);
             // $('.clear-selectpicker').selectpicker('refresh');
@@ -287,11 +287,10 @@ $('.selectpicker, .time').change(function () {
                 }
             }
         }
-    })
-        // .done(function() {
-        // setTimeout(function(){
-        //     $("#overlay").fadeOut(300);
-        // },500);
-    // });
+    }).done(function() {
+        setTimeout(function(){
+            $("#overlay").fadeOut(300);
+        },500);
+    });
 });
 });

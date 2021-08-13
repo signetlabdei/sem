@@ -27,8 +27,8 @@ class dict_list_index_get_member(object):
 class Table(object):
     def __init__(self):
         self.columns = ['time', 'context', 'extended_context', 'component', 'function', 'arguments', 'severity_class', 'message']
-        self.col_search = ['extended_context', 'component', 'arguments', 'message']
-        self.log_class = ['ERROR', 'WARN', 'DEBUG', 'INFO', 'FUNCTION', 'LOGIC'] 
+        self.col_search = ['extended_context', 'arguments', 'message']
+        self.log_class = ['ERROR', 'WARN', 'DEBUG', 'INFO', 'FUNCTION', 'LOGIC']
         self.filter_request_values = None
 
     def set_log_path(self, log_path):
