@@ -28,6 +28,7 @@ class Table(object):
     def __init__(self):
         self.columns = ['time', 'context', 'extended_context', 'component', 'function', 'arguments', 'severity_class', 'message']
         self.col_search = ['extended_context', 'component', 'arguments', 'message']
+        self.log_class = ['ERROR', 'WARN', 'DEBUG', 'INFO', 'FUNCTION', 'LOGIC'] 
         self.filter_request_values = None
 
     def set_log_path(self, log_path):
@@ -169,8 +170,17 @@ class Table(object):
         return{
                 'context': list(self.unique_context),
                 'function': list(self.unique_func),
-                'component': list(self.unique_component)
+                'component': list(self.unique_component),
+                'search_column': list(self.col_search),
+                'all_columns': list(self.columns),
+                'log_class': list(self.log_class)
                 }
+
+    def set_search_columns(self, request):
+        if request.values.__contains__('search_column'):
+            self.col_search = request.values.to_dict(flat=False)['search_column']
+        else:
+            self.col_search = []
 
     def _filter_logs(self):
         if self.filter_request_values is not None:
@@ -183,7 +193,7 @@ class Table(object):
             elif self.filter_request_values['component'] is not None and self.filter_request_values['severity_class'] is None:
                 component = {}
                 for comp in self.filter_request_values['component']:
-                    component[comp] = ['ERROR', 'WARN', 'DEBUG', 'INFO', 'FUNCTION', 'LOGIC']
+                    component[comp] = self.log_class
                 return filter_logs(self.db, context=self.filter_request_values['context'], function=self.filter_request_values['func'], time_begin=self.filter_request_values['time_begin'], time_end=self.filter_request_values['time_end'], components=component)
             else:
                 return filter_logs(self.db, severity_class=self.filter_request_values['severity_class'], context=self.filter_request_values['context'], function=self.filter_request_values['func'], time_begin=self.filter_request_values['time_begin'], time_end=self.filter_request_values['time_end'])

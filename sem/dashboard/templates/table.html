@@ -37,14 +37,14 @@ label {
     border-radius: 50%;
     animation: sp-anime 0.8s infinite linear;
 }
-      @keyframes sp-anime {
-          100% {
-              transform: rotate(360deg);
+          @keyframes sp-anime {
+              100% {
+                  transform: rotate(360deg);
+              }
           }
-      }
-      .is-hide{
-          display:none;
-      }
+          .is-hide{
+              display:none;
+          }
     </style>
     <!-- Bootstrap css -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
@@ -56,7 +56,7 @@ label {
     <!-- waves.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/node-waves/0.7.6/waves.min.css" type="text/css" media="all">
     <!-- Font Awesome -->
-     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <!-- Data Table Css -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.6.4/css/buttons.dataTables.min.css">
@@ -116,12 +116,12 @@ label {
                 <div class="form-group" style="align-self: center; margin: 0">
                     <!-- <label class="input-group-text" for="#log_class" width="10px">Gender</label> -->
                     <select id="log_class" class="selectpicker" multiple data-live-search="true" aria-label=".form-select-sm example" title="Log class filter" data-style="btn-info" data-width="auto" data-actions-box="true" data-header="Select a Log class">
-                        <option>ERROR</option>
-                        <option>WARN</option>
-                        <option>DEBUG</option>
-                        <option>INFO</option>
-                        <option>FUNCTION</option>
-                        <option>LOGIC</option>
+                        <!-- <option>ERROR</option> -->
+                        <!-- <option>WARN</option> -->
+                        <!-- <option>DEBUG</option> -->
+                        <!-- <option>INFO</option> -->
+                        <!-- <option>FUNCTION</option> -->
+                        <!-- <option>LOGIC</option> -->
                     </select>
                 </div>
             </div>
@@ -178,6 +178,14 @@ label {
             <center>
                 <canvas id="chart" width="2000px" height="400"></canvas>
             </center>
+        </div>
+
+        <div class="col-sm-3" style="display: flex;">
+            <div style="align-self: center;margin-right: 1rem">Search Columns:</div>
+            <div class="form-group" style="align-self: center; margin:0">
+                <select id="all_columns" class="search_column" multiple data-live-search="true" aria-label=".form-select-sm example" title="Search in column" data-style="btn-info" data-width="auto" data-actions-box="true" data-header="Select column">
+                </select>
+            </div>
         </div>
         <div class="dt-responsive table-responsive">
             <table id="serverside_table" class="table table-striped table-bordered nowrap">

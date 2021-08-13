@@ -8,7 +8,7 @@ $(document).ready(function () {
         // });
         console.log(data);
         chart.data.datasets[0].data = data;
-        chart.update();
+        chart.update('none');
     }
 
     function removeData(chart) {
@@ -59,7 +59,7 @@ $(document).ready(function () {
             {"data": "severity_class"},
             {"data": "message"}
         ],
-});
+    });
     var scatter_chart;
     $.ajax({
         url: '/chart',
@@ -88,6 +88,7 @@ $(document).ready(function () {
                 parsing: false,
                 normalized: true,
                 animation: false,
+
                 scales: {
                     yAxes: [{
                         stacked: true,
@@ -130,7 +131,14 @@ $(document).ready(function () {
                                 var args = current_log.arguments;
                                 var severity_class = current_log.severity_class;
                                 var mssg = current_log.message;
-                                return "Timestamp: " + timestamp  + ", Context: " + context + ", Extended Context: " + extended_context + ", Component: " + component + ", Function: " + func + ", Arguments: " + args + ", Severity Class: " + severity_class + ", Message: " + mssg;
+                                if (extended_context != null)
+                                {
+                                    return ["Extended Context: " + extended_context, "Component: " + component,  "Function: " + func, "Arguments: " + args, "Severity Class: " + severity_class, "Message: " + mssg];
+                                }
+                                else
+                                {
+                                    return ["Component: " + component,  "Function: " + func, "Arguments: " + args, "Severity Class: " + severity_class, "Message: " + mssg];
+                                }
                             }
                         },
                     },
@@ -167,34 +175,51 @@ $(document).ready(function () {
         url: '/unique_values',
         success: function(result){
             console.log(result)
-            var lis = ["context", "function", " component"];
+            var lis = ["log_class", "context", "function", "component", "all_columns"];
 
-            for (let i=0; i<result['context'].length; i++)
-            {
-                var opt = "<option>" + result['context'][i] + "</option>"
-                $("#context").append(opt)
-            }
-            for (let i=0; i<result['function'].length; i++)
-            {
-                var opt = "<option>" + result['function'][i] + "</option>"
-                $("#function").append(opt)
-            }
-            for (let i=0; i<result['component'].length; i++)
-            {
-                var opt = "<option>" + result['component'][i] + "</option>"
-                $("#component").append(opt)
-            }
-
-            $('.clear-selectpicker').selectpicker('refresh');
+            $.each(lis, function(index, value){
+                for (let j=0;j<result[value].length;j++)
+                {
+                    var opt = "<option>" + result[value][j] + "</option>";
+                    $("#" + value).append(opt);
+                }
+                if (value=='all_columns')
+                {
+                    $('#' + value).selectpicker('val', result['search_column']);
+                }
+                // else
+                // {
+                //     $('#' + value).selectpicker('val', result[value]);
+                // }
+            });
+            $('.selectpicker, .search_column').selectpicker('refresh');
         }
     });
-$('#serverside_table tbody').on('click', 'tr', function(){
-    var data = table.row(this).data();
-    var pageNumber = data.index / table.page.info().length;
+    $('#serverside_table tbody').on('click', 'tr', function(){
+        var data = table.row(this).data();
+        var pageNumber = data.index / table.page.info().length;
 
-    table.search('').page(pageNumber).draw(false);
-});
+        table.search('').page(pageNumber).draw(false);
+    });
 
+    $('.search_column').change(function() {
+        var columns = $("#all_columns").val();
+        $.ajax({
+            url: '/update_search_column',
+            data: {
+                search_column: columns,
+            },
+            traditional: true,
+            beforeSend: function(){
+                $("#overlay").fadeIn(300);　
+            }
+        }).done(function() {
+            setTimeout(function(){
+                $("#overlay").fadeOut(300);
+            },500);
+
+        });
+    });
 $('.selectpicker, .time').change(function () {
     var log_class = $('#log_class').val();
     // alert(log_class);
@@ -227,36 +252,43 @@ $('.selectpicker, .time').change(function () {
         traditional: true,
         beforeSend: function(){
             $("#overlay").fadeIn(300);　
-},
-    success: function(result){
-        // console.log(result);
-        // $('.clear-selectpicker').selectpicker('refresh');
-        // table.ajax.reload().columns.adjust();
-        // table.draw().columns.adjust();
+        },
+        success: function(result){
+            // console.log(result);
+            // $('.clear-selectpicker').selectpicker('refresh');
+            // table.ajax.reload().columns.adjust();
+            // table.draw().columns.adjust();
 
-        table.clear();
-        table.rows.add(result.data)
-        table.draw().columns.adjust();
+            table.clear();
+            table.rows.add(result.data)
+            table.draw().columns.adjust();
 
-        // removeData(scatter_chart);
-        addData(scatter_chart, result.plot);
-        scatter_chart.options.plugins.tooltip.callbacks.label = function(tooltipItem) {
-            var current_log = result.data[tooltipItem.dataIndex];
-            var timestamp = current_log.time;
-            var context = current_log.context;
-            var extended_context = current_log.extended_context;
-            var component = current_log.component;
-            var func = current_log.function;
-            var args = current_log.arguments;
-            var severity_class = current_log.severity_class;
-            var mssg = current_log.message;
-            return "Timestamp: " + timestamp  + ", Context: " + context + ", Extended Context: " + extended_context + ", Component: " + component + ", Function: " + func + ", Arguments: " + args + ", Severity Class: " + severity_class + ", Message: " + mssg;
+            // removeData(scatter_chart);
+            addData(scatter_chart, result.plot);
+            scatter_chart.options.plugins.tooltip.callbacks.label = function(tooltipItem) {
+                var current_log = result.data[tooltipItem.dataIndex];
+                var timestamp = current_log.time;
+                var context = current_log.context;
+                var extended_context = current_log.extended_context;
+                var component = current_log.component;
+                var func = current_log.function;
+                var args = current_log.arguments;
+                var severity_class = current_log.severity_class;
+                var mssg = current_log.message;
+                if (extended_context != null)
+                {
+                    return ["Extended Context: " + extended_context, "Component: " + component,  "Function: " + func, "Arguments: " + args, "Severity Class: " + severity_class, "Message: " + mssg];
+                }
+                else
+                {
+                    return ["Component: " + component,  "Function: " + func, "Arguments: " + args, "Severity Class: " + severity_class, "Message: " + mssg];
+                }
+            }
         }
-    }
-}).done(function() {
-    setTimeout(function(){
-        $("#overlay").fadeOut(300);
-    },500);
-});
+    }).done(function() {
+        setTimeout(function(){
+            $("#overlay").fadeOut(300);
+        },500);
+    });
 });
 });

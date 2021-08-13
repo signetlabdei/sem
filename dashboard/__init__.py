@@ -56,5 +56,10 @@ def make_chart():
             }
     return jsonify(ret_dict)
 
+
+@flask_app.route("/update_search_column", methods=['GET'])
+def set_search_columns():
+    tab.set_search_columns(request)
+    return jsonify('SUCCESS')
 # ef __name__ == '__main__':
 #     flask_app.run()

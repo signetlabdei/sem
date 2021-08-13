@@ -12,6 +12,7 @@ from functools import reduce
 from tinydb import TinyDB, where, Query
 from tinydb.storages import JSONStorage
 from tinydb.middlewares import CachingMiddleware
+from tinydb_smartcache import SmartCacheTable
 
 
 def process_logs(log_file):
@@ -36,6 +37,7 @@ def process_logs(log_file):
 
     db = TinyDB(data_dir,
                 storage=CachingMiddleware(JSONStorage))
+    db.table_class = SmartCacheTable
 
     insert_logs(logs, db)
     return db, data_dir
