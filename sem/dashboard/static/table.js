@@ -148,6 +148,7 @@ $(document).ready(function () {
                         pan: {
                             enabled: true,
                             mode: 'xy',
+                            modifierKey: 'ctrl'
                         },
                         zoom: {
                             wheel: {
@@ -158,7 +159,6 @@ $(document).ready(function () {
                             },
                             drag: {
                                 enabled: true,
-                                modifierKey: 'ctrl'
                             },
                             mode: 'xy',
                         }

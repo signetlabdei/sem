@@ -91,7 +91,6 @@ class Table(object):
 
     def _custom_paging(self, data):
         if self.request_values['iDisplayStart'] != "" and int(self.request_values['iDisplayLength']) != -1:
-            print(self.request_values['iDisplayStart'])
             start = int(self.request_values['iDisplayStart'])
             length = int(self.request_values['iDisplayLength'])
             if len(data) <= length:
