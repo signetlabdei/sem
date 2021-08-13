@@ -1,4 +1,4 @@
-from sem import logging
+from sem import utils, logging
 import sem
 
 #######################
@@ -31,18 +31,21 @@ params = {
     'STA1_x': 5.0,
     'stepsTime': 1,
     'minPower': 0,
-    'steps': 2,
+    'steps': [2],
     'rtsThreshold': 2346,
     'stepsSize': 1
 }
-
 # Log Component in both formats
+
 log_components = {
     'PowerAdaptationDistance': 'all',
-    'FrameExchangeManager': 'info',
+    'ParfWifiManager': 'all',
+    'WifiPhy': 'level_all',
+    'FrameExchangeManager': 'level_all',
+    'OnOffApplication': 'level_all',
+    'MinstrelWifiManager': 'all'
 }
-# log_components = 'NS_LOG="PowerAdaptationDistance=all:FrameExchangeManager=info"'
-
+# log_components = 'NS_LOG="PowerAdaptationDistance=debug:ParfWifiManager=info"'
 runs = 1  # Number of runs to perform for each combination
 
 # Actually run the simulations
@@ -52,9 +55,14 @@ log_path = campaign.run_missing_simulations(
     runs=runs, log_components=log_components)
 
 if log_path:
-    print(log_path)
-    db, db_path = logging.process_logs(log_path[0])
-    print(logging.filter_logs(db, severity_class='debug',
-                              components={'PowerAdaptationDistance': 'info'}))
-
-    logging.wipe_results(db, db_path)
+    db, data_dir = logging.process_logs(log_path[0])
+    print('Filtered Logs:')
+    print(logging.filter_logs(db,
+                              components={'MinstrelWifiManager': 'debug'},
+                              time_begin=0.8,
+                              time_end=0.81))
+    try:
+        # Creates a dashboard the visualize the log file passed
+        utils.visualize_logs(log_path[0])
+    finally:
+        logging.wipe_results(db, data_dir)
