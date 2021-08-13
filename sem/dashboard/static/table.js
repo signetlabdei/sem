@@ -80,6 +80,8 @@ $(document).ready(function () {
                     hoverBorderColor: "rgba(255,99,132,1)",
                     // showLine: true,
                     indexAxis: 'x',
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
                     data: result.plot
                 }]
             };
@@ -250,9 +252,9 @@ $('.selectpicker, .time').change(function () {
             time_end: upper_window
         },
         traditional: true,
-        beforeSend: function(){
-            $("#overlay").fadeIn(300);　
-        },
+        // beforeSend: function(){
+        //     $("#overlay").fadeIn(300);　
+        // },
         success: function(result){
             // console.log(result);
             // $('.clear-selectpicker').selectpicker('refresh');
@@ -285,10 +287,11 @@ $('.selectpicker, .time').change(function () {
                 }
             }
         }
-    }).done(function() {
-        setTimeout(function(){
-            $("#overlay").fadeOut(300);
-        },500);
-    });
+    })
+        // .done(function() {
+        // setTimeout(function(){
+        //     $("#overlay").fadeOut(300);
+        // },500);
+    // });
 });
 });

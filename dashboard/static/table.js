@@ -80,6 +80,8 @@ $(document).ready(function () {
                     hoverBorderColor: "rgba(255,99,132,1)",
                     // showLine: true,
                     indexAxis: 'x',
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
                     data: result.plot
                 }]
             };
