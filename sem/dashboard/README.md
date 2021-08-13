@@ -1,4 +1,36 @@
-Steps to run dashboard:
-- Update path to Log file in __init__.py
-- python __init__.py
-- Navigate to 127.0.0.1::5000
+# Overview of Dashboard features
+The objective of this interactive dashboard is to allow users to visualize the logs genearted by ns-3 efficiently. 
+
+### Snapshot of the dashboard:
+![alt text](https://github.com/akshitpatel01/sem/blob/gsoc-phase2/res/dashboard.png)
+
+### The layout and features of the dashboard:
+Starting from top, the dashboard is divided into the following sections:
+###### Dropdown filters along with a time filter:
+All the filter values in the dropdown are populated (according to the log file passed) as the dashboard first initializes. The dropdown filters have an inbuilt search box as well 'Select All' and 'Deselect All' buttons. A few points to note about the filters:
+- These filters act as global flters for both the graph and the table.
+- Any unspecified filters are assmed to be 'free' and can take any value. For example, if 'context=[0,1]', 'function=['f1']' and 'Upper Time Limit:1', then the logs with (context=0 or context=1) and (function=f1) and (timestamp<1) will be displayed.
+- The log severity class filter acts as a filter for all the components selected by the component filter. For example, if 'componentA' and 'componentB' are selected along with severity class 'INFO', then the logs of 'componentA' with 'INFO' and logs of 'componentB' with 'INFO' will be displayed.
+- If no severity class is selected from the severity class filter, then by default all severity classes will be enabled for the selected components. 
+- If no component is selected from the component filter, then the severity class filter acts as an independent filter.
+
+###### The Graph:
+This is a line graph which allows users to easily analyze logs with resepect to a time axis. A few points to note about the graph:
+- The graph is plotted on a timestamp(X-axis) vs context axis(Y-axis). 
+- As there can be many logs with the same timestamp and context value, for plotting the graph the logs are 'jittered along the context(or Y-axis) axis'. In other words, for logs with the same timestamp and context value, the context value is scattered between +0.2 and -0.2 of the actual context value. 
+- Each point on the graph represents a log line. Hovering the cursor on any point shows the metadata of that particular log.
+- Graph movement and zoom controls
+  - The graph can be zoomed using the mouse wheel or dragging the mouse and selecting a box to enlarge that area to the entire graph space.
+  - Hold Ctrl and drag the mouse to pan the graph.
+
+###### The Table:
+The table allows users to effectivel visualize the logs in a tabular way. A few points to note about the table:
+- The 'Show entries' dropdown menu allows the users to select the number of logs to be displayed on each page.
+- The search box above the table allows the users to search in sepecific columns. the searchable columns can be selected/deselected using the 'Search columns' dropdown as per need.
+- The search box is specific to the table and has no effect on the graph.
+- Clicking on a row in the table jumps to the page where that particular row is diplayed in the table. For example, if user searches for 'xyz' and logs are displayed based on this search query, then on clicking any row, the table will jump to the page (in the original table without the search query) which contains that particular row. 
+- All the columns of the table (except extended_context) can be sorted either in ascending or descending order. 
+- The user can switch pages using the pagination numbers at the bottom-right of the table. 
+
+### Steps to run dashboard:
+Refer examples/logging_example2.py
