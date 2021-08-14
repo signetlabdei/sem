@@ -1,9 +1,6 @@
-import time
 import re
 import numpy as np
-import bisect
 
-from copy import deepcopy
 from copy import deepcopy
 from tinydb import TinyDB, where, Query
 from tinydb.storages import JSONStorage
@@ -24,7 +21,7 @@ class dict_list_index_get_member(object):
         return self.dict_list.__len__()
 
 
-class Table(object):
+class Dashboard(object):
     def __init__(self):
         self.columns = ['time', 'context', 'extended_context', 'component', 'function', 'arguments', 'severity_class', 'message']
         self.col_search = ['extended_context', 'arguments', 'message']

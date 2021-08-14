@@ -1,29 +1,29 @@
 from flask import Flask, render_template, jsonify, request
 
-from sem.dashboard.table import Table
+from sem.dashboard.dashboard import Dashboard
 
 
 flask_app = Flask(__name__)
-tab = Table()
+dashboard = Dashboard()
 
 
 @flask_app.route("/")
 def index():
-    return render_template("table.html")
+    return render_template("dashboard.html")
 
 
 @flask_app.route("/serverside_table", methods=['GET'])
 def serverside_table_content():
-    tab.set_request(request)
-    data = tab.build_datatable()
+    dashboard.set_request(request)
+    data = dashboard.build_datatable()
     return jsonify(data)
 
 
 @flask_app.route("/filters", methods=['GET'])
 def filter():
-    tab.set_filter_request(request)
+    dashboard.set_filter_request(request)
 
-    data = tab.buildchart()
+    data = dashboard.buildchart()
     plot_data = []
     # plot_data = [{'x': x, 'y': y} for x, y in data]
     for i in data:
@@ -37,18 +37,18 @@ def filter():
 
 @flask_app.route("/unique_values", methods=['GET'])
 def get_unique():
-    return jsonify(tab.get_unique_values())
+    return jsonify(dashboard.get_unique_values())
 
 
 @flask_app.route("/chart", methods=['GET'])
 def make_chart():
-    data = tab.buildchart()
+    data = dashboard.buildchart()
     plot_data = []
     # plot_data = [{'x': x, 'y': y} for x, y in data]
     for i in data:
         plot_data += [{'x': i['time'], 'y': float(i['jitter_context'])}]
 
-    # unique_values = tab.get_unique_values()
+    # unique_values = dashboard.get_unique_values()
     ret_dict = {
             'plot': plot_data,
             'data': data,
@@ -59,7 +59,7 @@ def make_chart():
 
 @flask_app.route("/update_search_column", methods=['GET'])
 def set_search_columns():
-    tab.set_search_columns(request)
+    dashboard.set_search_columns(request)
     return jsonify('SUCCESS')
 # ef __name__ == '__main__':
 #     flask_app.run()

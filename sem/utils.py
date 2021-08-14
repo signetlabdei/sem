@@ -12,7 +12,7 @@ import SALib.analyze.sobol
 import SALib.sample.saltelli
 
 from pathlib import Path
-from .dashboard import flask_app, tab
+from .dashboard import flask_app, dashboard
 
 # from flask import Flask, redirect, session
 # from dashboard.table import Table
@@ -498,5 +498,5 @@ def visualize_logs(log_file):
     if not Path(log_file).exists():
         raise FileNotFoundError("Cannot access file '%s'\n" % log_file)
 
-    tab.set_log_path(log_file)
+    dashboard.set_log_path(log_file)
     flask_app.run()
