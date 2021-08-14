@@ -25,7 +25,6 @@ def filter():
 
     data = dashboard.buildchart()
     plot_data = []
-    # plot_data = [{'x': x, 'y': y} for x, y in data]
     for i in data:
         plot_data += [{'x': i['time'], 'y': float(i['jitter_context'])}]
     ret_dict = {
@@ -37,22 +36,19 @@ def filter():
 
 @flask_app.route("/unique_values", methods=['GET'])
 def get_unique():
-    return jsonify(dashboard.get_unique_values())
+    return jsonify(dashboard.get_metadata())
 
 
 @flask_app.route("/chart", methods=['GET'])
 def make_chart():
     data = dashboard.buildchart()
     plot_data = []
-    # plot_data = [{'x': x, 'y': y} for x, y in data]
     for i in data:
         plot_data += [{'x': i['time'], 'y': float(i['jitter_context'])}]
 
-    # unique_values = dashboard.get_unique_values()
     ret_dict = {
             'plot': plot_data,
             'data': data,
-            # 'component': unique_values['component']
             }
     return jsonify(ret_dict)
 
@@ -61,5 +57,3 @@ def make_chart():
 def set_search_columns():
     dashboard.set_search_columns(request)
     return jsonify('SUCCESS')
-# ef __name__ == '__main__':
-#     flask_app.run()

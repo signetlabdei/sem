@@ -30,11 +30,7 @@ class Dashboard(object):
 
     def set_log_path(self, log_path):
         db, data_dir = process_logs(log_path)
-        # pass_data = filter_logs(db, time_end=0)
         data = db.table('logs').all()
-        # for idx, entry in enumerate(data):
-        #     entry['index'] = idx
-        # print(filter_logs(db, time_end=0))
         self.cardinality = len(data)
         self.cardinality_filtered = len(data)
         self.db = db
@@ -44,11 +40,7 @@ class Dashboard(object):
         self.unique_component = set(comp["component"] for comp in data)
 
     def set_request(self, request):
-        # print(self.filter_request_values)
         self.request_values = request.values
-        # print('values')
-        # print(self.request_values)
-        # print(self.filter_request_values)
 
     def getTotalTime(self):
         return self.data[-1]['time']
@@ -68,7 +60,6 @@ class Dashboard(object):
                     data[0]['jitter_context'] = data[0]['context']
 
     def buildchart(self):
-        # Jitter Logs
         orig_data = self._filter_logs()
         self.jitter_logs(orig_data)
         return orig_data
@@ -98,9 +89,6 @@ class Dashboard(object):
                     return data[start:limit]
                 else:
                     return data[start:]
-        # if int(self.request_values['iDisplayLength']) == -1:
-        #     print(len(data))
-        #     return data[0:200000]
 
     def _custom_filter(self, data):
         def check_row(row):
@@ -155,14 +143,8 @@ class Dashboard(object):
         else:
             self.filter_request_values['time_end'] = self.filter_request_values['time_end'][0]
 
-        # print('hi')
-        # print(request.values)
-        # print(self.filter_request_values)
-        # print('time')
-        # print(float(self.filter_request_values['time_begin'][0]))
-        # print(type(float(self.filter_request_values['time_begin'][0])))
 
-    def get_unique_values(self):
+    def get_metadata(self):
         return{
                 'context': list(self.unique_context),
                 'function': list(self.unique_func),
