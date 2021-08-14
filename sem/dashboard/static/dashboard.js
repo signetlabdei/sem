@@ -200,7 +200,11 @@ $(document).ready(function () {
     });
     $('#serverside_table tbody').on('click', 'tr', function(){
         var data = table.row(this).data();
+        // TODO - Write an ajax call to determine the position of selected row
+        // in case where any filters are selected
         var pageNumber = Math.floor(data.index / table.page.info().length);
+        console.log(data);
+        console.log(pageNumber);
         table.search('').page(pageNumber).draw(false);
     });
 
