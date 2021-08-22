@@ -33,4 +33,4 @@ The table allows users to effectively visualize the logs in a tabular way. A few
 - The user can switch pages using the pagination numbers at the bottom-right of the table. 
 
 ### Steps to run dashboard:
-Refer [examples/logging_example2.py](examples/logging_example2.py)
+Refer [examples/logging_example2.py](./../../examples/logging_example2.py)
