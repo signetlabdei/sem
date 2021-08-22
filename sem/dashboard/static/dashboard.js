@@ -107,11 +107,6 @@ $(document).ready(function () {
                         }
                     }]
                 },
-                // elements: {
-                //     line: {
-                //         tension: 0,
-                //     }
-                // },
                 plugins: {
                     decimation: {
                         enabled: true,
@@ -200,12 +195,28 @@ $(document).ready(function () {
     });
     $('#serverside_table tbody').on('click', 'tr', function(){
         var data = table.row(this).data();
-        // TODO - Write an ajax call to determine the position of selected row
-        // in case where any filters are selected
-        var pageNumber = Math.floor(data.index / table.page.info().length);
-        console.log(data);
-        console.log(pageNumber);
-        table.search('').page(pageNumber).draw(false);
+        var actual_index = data.index;
+        $.ajax({
+            url: '/get_index',
+            data: {
+                data_index: data.index
+            },
+            traditional: true,
+            beforeSend: function(){
+                $("#overlay").fadeIn(300);　
+            },
+            success: function(response){
+               actual_index = response; 
+            }
+        }).done(function() {
+            setTimeout(function(){
+                $("#overlay").fadeOut(300);
+            },500);
+
+        });
+        var pageNumber = Math.floor(actual_index / table.page.info().length);
+        table.search('').draw();
+        table.page(pageNumber).draw(false);
     });
 
     $('.search_column').change(function() {

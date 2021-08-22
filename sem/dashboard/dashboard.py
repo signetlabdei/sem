@@ -35,6 +35,7 @@ class Dashboard(object):
         self.cardinality_filtered = len(data)
         self.db = db
         self.data = data
+        self.old_filter_data = None
         self.unique_context = set(ctx['context'] for ctx in data)
         self.unique_func = set(fun['function'] for fun in data)
         self.unique_component = set(comp["component"] for comp in data)
@@ -44,6 +45,14 @@ class Dashboard(object):
 
     def getTotalTime(self):
         return self.data[-1]['time']
+
+    def get_index_in_filtered_data(self, idx):
+        if self.old_filter_data is not None:
+            actual_index = bisect_left(dict_list_index_get_member(self.old_filter_data, 'index'), idx)
+        else:
+            actual_index = bisect_left(dict_list_index_get_member(self.data, 'index'), idx)
+
+        return actual_index
 
     def jitter_logs(self, orig_data):
         unique_time = list(set([data['time'] for data in orig_data]))
@@ -62,6 +71,7 @@ class Dashboard(object):
     def buildchart(self):
         orig_data = self._filter_logs()
         self.jitter_logs(orig_data)
+        self.old_filter_data = orig_data
         return orig_data
 
     def build_datatable(self):

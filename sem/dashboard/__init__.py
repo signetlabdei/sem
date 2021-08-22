@@ -57,3 +57,10 @@ def make_chart():
 def set_search_columns():
     dashboard.set_search_columns(request)
     return jsonify('SUCCESS')
+
+
+@flask_app.route("/get_index", methods=['GET'])
+def get_index():
+    print(request.values)
+    actual_index = dashboard.get_index_in_filtered_data(int(request.values['data_index']))
+    return jsonify(int(actual_index))
