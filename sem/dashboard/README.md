@@ -7,7 +7,7 @@ The objective of this interactive dashboard is to allow users to visualize the l
 ### The layout and features of the dashboard:
 Starting from the top, the dashboard is divided into the following sections:
 ###### Dropdown filters along with a time filter:
-All the filter values in the dropdown are populated (according to the log file passed) as the dashboard first initializes. The dropdown filters have an inbuilt search box as well 'Select All' and 'Deselect All' buttons. A few points to note about the filters:
+All the filter values in the dropdown are populated (according to the log file passed) as the dashboard first initializes. The dropdown filters have an inbuilt search box as well as 'Select All' and 'Deselect All' buttons. A few points to note about the filters:
 - These filters act as global filters for both the graph and the table.
 - Any unspecified filters are assumed to be 'free' and can take any value. For example, if 'context=[0,1]', 'function=['f1']' and 'Upper Time Limit:1', then the logs with (context=0 or context=1) and (function=f1) and (timestamp<1) will be displayed.
 - The log severity class filter acts as a filter for all the components selected by the component filter. For example, if 'componentA' and 'componentB' are selected along with severity class 'INFO', then the logs of 'componentA' with 'INFO' and logs of 'componentB' with 'INFO' will be displayed.
@@ -26,10 +26,10 @@ This is a line graph that allows users to easily analyze logs with respect to a 
 ###### The Table:
 The table allows users to effectively visualize the logs in a tabular way. A few points to note about the table:
 - The 'Show entries' dropdown menu allows the users to select the number of logs to be displayed on each page.
-- The search box above the table allows the users to search in specific columns. the searchable columns can be selected/deselected using the 'Search columns' dropdown as per need.
+- The search box above the table allows the users to search in specific columns. the searchable columns can be selected/deselected using the 'Search columns' dropdown as needed.
 - The search box is specific to the table and has no effect on the graph.
 - Clicking on a row in the table jumps to the page where that particular row is displayed in the table. For example, if the user searches for 'xyz' and logs are displayed based on this search query, then on clicking any row, the table will jump to the page (in the original table without the search query) which contains that particular row. 
-- All the columns of the table (except extended_context) can be sorted either in ascending or descending order. 
+- All the columns of the table (except for extended_context) can be sorted either in ascending or descending order. 
 - The user can switch pages using the pagination numbers at the bottom-right of the table. 
 
 ### Steps to run dashboard:
