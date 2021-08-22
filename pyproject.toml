@@ -20,6 +20,8 @@ numpy = "*"
 pandas = "*"
 click = "*"
 salib = "^1.3.8"
+Flask = "^2.0.1"
+tinydb-smartcache = "^2.0.0"
 
 [tool.poetry.dev-dependencies]
 sphinx = "*"
