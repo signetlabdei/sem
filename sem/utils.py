@@ -11,6 +11,9 @@ import numpy.core.numeric as nx
 import SALib.analyze.sobol
 import SALib.sample.saltelli
 
+from pathlib import Path
+from .dashboard import flask_app, dashboard
+
 try:
     DRMAA_AVAILABLE = True
     import drmaa
@@ -479,3 +482,19 @@ def convert_environment_str_to_dict(log_components):
             raise ValueError("Provided log_components string '%s' is invalid\n" % log_components)
 
     return log_components_dict
+
+
+def visualize_logs(log_file):
+    """
+    Creates a dashboard for the log file passed.
+
+    Note: This function does not return anything.
+
+    Args:
+        log_file (str): Path to where the log file is stored
+    """
+    if not Path(log_file).exists():
+        raise FileNotFoundError("Cannot access file '%s'\n" % log_file)
+
+    dashboard.set_log_path(log_file)
+    flask_app.run()

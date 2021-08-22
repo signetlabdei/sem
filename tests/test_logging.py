@@ -25,6 +25,7 @@ log_ls = ['+0.000000000s -1 [node -1] FrameExchangeManager:SetWifiMac(0x55765956
           ]
 
 expected_list = [{
+                    'index': 0,
                     'time': 0.000000000,
                     'context': '-1',
                     'extended_context': 'node -1',
@@ -35,6 +36,7 @@ expected_list = [{
                     'message': ''
                 },
                 {
+                    'index': 1,
                     'time': 0.045510017,
                     'context': '1',
                     'extended_context': 'mac=00:00:00:00:00:01',
@@ -45,6 +47,7 @@ expected_list = [{
                     'message': ''
                 },
                 {
+                    'index': 2,
                     'time': 0.000000000,
                     'context': '-1',
                     'extended_context': None,
@@ -55,6 +58,7 @@ expected_list = [{
                     'message': 'Saving channel number configuration for initialization'
                 },
                 {
+                    'index': 3,
                     'time': 0.506390387,
                     'context': '1',
                     'extended_context': 'mac=00:00:00:00:00:01',
@@ -65,6 +69,7 @@ expected_list = [{
                     'message': 'MPDU payload size=36, to=00:00:00:00:00:02, seq=16'
                 },
                 {
+                    'index': 4,
                      'time': 2.999074264,
                      'context': '0',
                      'extended_context': 'mac=00:00:00:00:00:02',
@@ -75,6 +80,7 @@ expected_list = [{
                      'message': ''
                  },
                 {
+                    'index': 5,
                     'time': 0.000000000,
                     'context': '-1',
                     'extended_context': None,
@@ -85,6 +91,7 @@ expected_list = [{
                     'message': ''
                 },
                 {
+                    'index': 6,
                     'time': 0.000000000,
                     'context': '-1',
                     'extended_context': None,
@@ -95,6 +102,7 @@ expected_list = [{
                     'message': ':()[]:./-='
                 },
                 {
+                    'index': 7,
                      'time': 2.999825333,
                      'context': '1',
                      'extended_context': None,
@@ -105,6 +113,7 @@ expected_list = [{
                      'message': 'txPowerDbm=17 with txPowerDbmPerMhz=3.9897 over 20 MHz'
                  },
                 {
+                    'index': 8,
                      'time': 2.999825333,
                      'context': '1',
                      'extended_context': None,
