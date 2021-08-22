@@ -1,7 +1,4 @@
 $(document).ready(function () {
-    // $(document).ajaxSend(function() {
-    //     $("#overlay").fadeIn(300);　
-    // });
     function addData(chart, data) {
         // chart.data.datasets.forEach((dataset) => {
         //     dataset.data.push(data);

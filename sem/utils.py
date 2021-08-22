@@ -14,8 +14,6 @@ import SALib.sample.saltelli
 from pathlib import Path
 from .dashboard import flask_app, dashboard
 
-# from flask import Flask, redirect, session
-# from dashboard.table import Table
 try:
     DRMAA_AVAILABLE = True
     import drmaa

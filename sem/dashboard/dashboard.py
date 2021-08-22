@@ -2,9 +2,6 @@ import re
 import numpy as np
 
 from copy import deepcopy
-from tinydb import TinyDB, where, Query
-from tinydb.storages import JSONStorage
-from tinydb.middlewares import CachingMiddleware
 from sem.logging import process_logs, filter_logs
 from bisect import bisect_left, bisect_right
 

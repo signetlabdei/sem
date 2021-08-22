@@ -25,8 +25,9 @@ def filter():
 
     data = dashboard.buildchart()
     plot_data = []
-    for i in data:
-        plot_data += [{'x': i['time'], 'y': float(i['jitter_context'])}]
+    plot_data = [{'x': row['time'],
+                 'y': float(row['jitter_context'])}
+                 for row in data]
     ret_dict = {
             'plot': plot_data,
             'data': data
@@ -43,9 +44,9 @@ def get_unique():
 def make_chart():
     data = dashboard.buildchart()
     plot_data = []
-    for i in data:
-        plot_data += [{'x': i['time'], 'y': float(i['jitter_context'])}]
-
+    plot_data = [{'x': row['time'],
+                 'y': float(row['jitter_context'])}
+                 for row in data]
     ret_dict = {
             'plot': plot_data,
             'data': data,
