@@ -1,11 +1,12 @@
 from sem import utils, logging
 import sem
+import os
 
 #######################
 # Create the campaign #
 #######################
 script = 'wifi-power-adaptation-distance'
-ns_path = './examples/ns-3'
+ns_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ns-3')
 campaign_dir = "/tmp/sem-test/wifi-plotting-example"
 
 campaign = sem.CampaignManager.new(ns_path, script, campaign_dir,

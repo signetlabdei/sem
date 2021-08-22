@@ -215,6 +215,7 @@ $(document).ready(function () {
 
         });
         var pageNumber = Math.floor(actual_index / table.page.info().length);
+        // TODO - search('').draw() does not draw table correctly without the searched text
         table.search('').draw();
         table.page(pageNumber).draw(false);
     });
