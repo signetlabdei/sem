@@ -1,0 +1,261 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Detailed Functionality &#8212; sem 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples walkthrough" href="examples.html" />
+    <link rel="prev" title="Command Line Interface" href="cli.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="detailed-functionality">
+<span id="id1"></span><h1>Detailed Functionality<a class="headerlink" href="#detailed-functionality" title="Permalink to this headline">¶</a></h1>
+<p>This document details the functionality provided by the SEM Python library,
+describing how to leverage all the available features. See the examples to see
+how the functionality described here can be used in practice, and refer to
+<a class="reference internal" href="cli.html#cli"><span class="std std-ref">Command Line Interface</span></a> for a primer on command-line interface features.</p>
+<section id="the-simulation-campaign-paradigm">
+<h2>The simulation campaign paradigm<a class="headerlink" href="#the-simulation-campaign-paradigm" title="Permalink to this headline">¶</a></h2>
+<p>First of all: what do we mean with “simulation campaign”? Running a simulation
+campaign means using an ns-3 simulation script to gather results (in the form of
+output files and messages that are printed on the screen when the simulation is
+run). The script may take various input parameters, that will influence the
+results we obtain. In the following of this document, we will use the term
+campaign as short for an instance of a <a class="reference internal" href="api.html#sem.CampaignManager" title="sem.CampaignManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">sem.CampaignManager</span></code></a>: this class
+is the way SEM represents a campaign, with its script, parameters and results.</p>
+<p>The <a class="reference internal" href="api.html#sem.CampaignManager" title="sem.CampaignManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">sem.CampaignManager</span></code></a> class collects a <a class="reference internal" href="api.html#sem.DatabaseManager" title="sem.DatabaseManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">sem.DatabaseManager</span></code></a>
+and a <a class="reference internal" href="api.html#sem.SimulationRunner" title="sem.SimulationRunner"><code class="xref py py-class docutils literal notranslate"><span class="pre">sem.SimulationRunner</span></code></a>, providing an higher-level interface to
+simulation running and database management. All ‘major’ actions involving the
+administration of a simulation campaign, such as running simulations with
+precise parameter combinations, checking out the results and elaborating them
+can be performed by interacting with a <a class="reference internal" href="api.html#sem.CampaignManager" title="sem.CampaignManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">sem.CampaignManager</span></code></a> object.</p>
+<section id="obtaining-a-campaignmanager-object">
+<h3>Obtaining a CampaignManager object<a class="headerlink" href="#obtaining-a-campaignmanager-object" title="Permalink to this headline">¶</a></h3>
+<p>In order to obtain a simulation campaign, we must create a
+<a class="reference internal" href="api.html#sem.CampaignManager" title="sem.CampaignManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">sem.CampaignManager</span></code></a> object, either by creating a new campaign through
+the <a class="reference internal" href="api.html#sem.CampaignManager.new" title="sem.CampaignManager.new"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sem.CampaignManager.new()</span></code></a> method or by loading it via
+<a class="reference internal" href="api.html#sem.CampaignManager.load" title="sem.CampaignManager.load"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sem.CampaignManager.load()</span></code></a>. Note that creating a campaign from scratch
+requires you to specify an ns-3 installation path, whereas loading one doesn’t,
+so that results from existing campaign can still be viewed without a working
+ns-3 installation. Of course, an ns-3 installation must be specified if the
+campaign object will also be used to run simulations.</p>
+<p>Both campaign creation methods will, under the hood, create a
+<a class="reference internal" href="api.html#sem.DatabaseManager" title="sem.DatabaseManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">sem.DatabaseManager</span></code></a> and a <a class="reference internal" href="api.html#sem.SimulationRunner" title="sem.SimulationRunner"><code class="xref py py-class docutils literal notranslate"><span class="pre">sem.SimulationRunner</span></code></a>. The following
+sections will briefly describe some implementation details of these classes.</p>
+</section>
+<section id="database-management-briefly">
+<span id="database-management"></span><h3>Database management, briefly<a class="headerlink" href="#database-management-briefly" title="Permalink to this headline">¶</a></h3>
+<p>SEM’s <a class="reference internal" href="api.html#sem.DatabaseManager" title="sem.DatabaseManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">sem.DatabaseManager</span></code></a> works with a folder, referred to as the
+<cite>campaign_dir</cite> in the code, that contains a <cite>.json</cite> file and a <cite>data</cite> folder.
+The <cite>.json</cite> file is a <cite>TinyDB</cite> database file, containing two tables: one for the
+campaign information (namely the ns-3 script the campaign uses, its available
+parameters and the hash of the commit at which the results were obtained), and
+one containing dictionaries containing simulation results. This is an example of a result entry:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+   <span class="s2">&quot;meta&quot;</span><span class="p">:</span> <span class="p">{</span>
+     <span class="s2">&quot;elapsed_time&quot;</span><span class="p">:</span> <span class="mf">0.12293100357055664</span><span class="p">,</span>
+     <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;241ec0ef-34b3-466f-9eb1-08b736b8afd5&quot;</span>
+   <span class="p">},</span>
+   <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span>
+     <span class="s2">&quot;RngRun&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+     <span class="s2">&quot;appPeriod&quot;</span><span class="p">:</span> <span class="mi">600</span><span class="p">,</span>
+     <span class="s2">&quot;nDevices&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+     <span class="s2">&quot;radius&quot;</span><span class="p">:</span> <span class="mi">5500</span><span class="p">,</span>
+     <span class="s2">&quot;simulationTime&quot;</span><span class="p">:</span> <span class="mi">600</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The <cite>‘meta’</cite> entry contains information about the time needed to perform the
+simulation, and an unique id representing the simulation. The <cite>‘params’</cite> entry,
+instead, contains the parameters that were used to perform the simulation and
+their values. The <cite>id</cite> entry is used to link the database entry to a folder,
+inside the <cite>data</cite> folder, which contains all files generated by the simulation
+(i.e., the simulation output). The simulation results are saved separately from
+the database for practical reasons: copying the file over to the database is
+very expensive, and could inflate the database file’s size considerably and
+needlessly.</p>
+<p>Results are typically added to the <a class="reference internal" href="api.html#sem.DatabaseManager" title="sem.DatabaseManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">sem.DatabaseManager</span></code></a> via the
+<a class="reference internal" href="api.html#sem.DatabaseManager.insert_result" title="sem.DatabaseManager.insert_result"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sem.DatabaseManager.insert_result()</span></code></a> by the campaign object after
+simulations are run by a <a class="reference internal" href="api.html#sem.SimulationRunner" title="sem.SimulationRunner"><code class="xref py py-class docutils literal notranslate"><span class="pre">sem.SimulationRunner</span></code></a>.</p>
+</section>
+<section id="simulation-runners-briefly">
+<h3>Simulation runners, briefly<a class="headerlink" href="#simulation-runners-briefly" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference internal" href="api.html#sem.SimulationRunner" title="sem.SimulationRunner"><code class="xref py py-class docutils literal notranslate"><span class="pre">SimulationRunner</span></code></a> class serves both as an
+interface definition and as a simple implementation of the SEM component tasked
+with running ns-3 simulations and, more in general, interfacing with the ns-3
+installation. The most notable method provided by this class is
+<a class="reference internal" href="api.html#sem.SimulationRunner.run_simulations" title="sem.SimulationRunner.run_simulations"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sem.SimulationRunner.run_simulations()</span></code></a>, which takes a list of parameter
+combination definitions, in the form of dictionaries, and runs those
+simulations.</p>
+<p>The <code class="xref py py-class docutils literal notranslate"><span class="pre">ParallelRunner</span></code> class takes the base methods
+provided by <a class="reference internal" href="api.html#sem.SimulationRunner" title="sem.SimulationRunner"><code class="xref py py-class docutils literal notranslate"><span class="pre">SimulationRunner</span></code></a> and overloads
+<a class="reference internal" href="api.html#sem.SimulationRunner.run_simulations" title="sem.SimulationRunner.run_simulations"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sem.SimulationRunner.run_simulations()</span></code></a>, leveraging multi-core systems to
+perform parallel execution of simulations. Finally, the <code class="xref py py-class docutils literal notranslate"><span class="pre">GridRunner</span></code> class similarly overloads some methods, to leverage DRMAA
+clusters for parallel execution of simulations.</p>
+</section>
+</section>
+<section id="running-simulations">
+<span id="id2"></span><h2>Running simulations<a class="headerlink" href="#running-simulations" title="Permalink to this headline">¶</a></h2>
+<p>As stated above, it’s not really necessary to know about
+<a class="reference internal" href="api.html#sem.SimulationRunner" title="sem.SimulationRunner"><code class="xref py py-class docutils literal notranslate"><span class="pre">SimulationRunner</span></code></a> to run simulations. This task
+can be performed through the <a class="reference internal" href="api.html#sem.CampaignManager" title="sem.CampaignManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">sem.CampaignManager</span></code></a> interface, which
+provides the <a class="reference internal" href="api.html#sem.CampaignManager.run_missing_simulations" title="sem.CampaignManager.run_missing_simulations"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sem.CampaignManager.run_missing_simulations()</span></code></a> method. This
+method takes either a list of parameter combinations or a dictionary specifying
+a parameter space to explore, in the following form:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">space</span> <span class="o">=</span> <span class="p">{</span>
+   <span class="s1">&#39;param1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">value1</span><span class="p">,</span> <span class="n">value2</span><span class="p">],</span>
+   <span class="s1">&#39;param2&#39;</span><span class="p">:</span> <span class="n">value3</span><span class="p">,</span>
+   <span class="o">...</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Note that if <a class="reference internal" href="api.html#sem.CampaignManager.run_missing_simulations" title="sem.CampaignManager.run_missing_simulations"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sem.CampaignManager.run_missing_simulations()</span></code></a> is run twice
+with the same parameters, it will only actually perform the simulations on the
+first execution (i.e., it will only run the specified simulations that are
+missing from the database): under the hood, the method checks among the
+currently available results to see which parameter combinations are already
+available, and only performs the ones that are not already in the database. As
+soon as simulations finish, results are inserted in the database.</p>
+</section>
+<section id="results">
+<h2>Results<a class="headerlink" href="#results" title="Permalink to this headline">¶</a></h2>
+<p>Results can be accessed in two ways: either through the database manager or
+through one of the export functions provided by <a class="reference internal" href="api.html#sem.CampaignManager" title="sem.CampaignManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">sem.CampaignManager</span></code></a>.</p>
+<section id="getting-single-results">
+<h3>Getting single results<a class="headerlink" href="#getting-single-results" title="Permalink to this headline">¶</a></h3>
+<p>Single results can be accessed via
+<a class="reference internal" href="api.html#sem.DatabaseManager.get_complete_results" title="sem.DatabaseManager.get_complete_results"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sem.DatabaseManager.get_complete_results()</span></code></a>. This method will return a list
+of dictionaries like the ones described in <a class="reference internal" href="#database-management"><span class="std std-ref">Database management, briefly</span></a>, with an
+additional <cite>‘output’</cite> field, containing a dictionary pairing each <cite>filename</cite>
+generated by the simulation script with that output file’s contents. The method
+accepts a <cite>params</cite> argument, consisting in a dictionary in which a query is
+specified as described in <a class="reference internal" href="#running-simulations"><span class="std std-ref">Running simulations</span></a>, with parameter keys and
+corresponding values consisting in the desired parameter value or values,
+specified as a python list.</p>
+<p>To access a campaign’s <cite>DatabaseManager</cite> simply use the campaign object’s db
+member variable, and call the desired method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">campaign</span> <span class="o">=</span> <span class="n">CampaignManager</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;path/to/campaign&#39;</span><span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">campaign</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">get_complete_results</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="exporting-results">
+<h3>Exporting results<a class="headerlink" href="#exporting-results" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="api.html#sem.CampaignManager" title="sem.CampaignManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">sem.CampaignManager</span></code></a> provides five main export methods:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="api.html#sem.CampaignManager.get_results_as_numpy_array" title="sem.CampaignManager.get_results_as_numpy_array"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sem.CampaignManager.get_results_as_numpy_array()</span></code></a></p></li>
+<li><p><a class="reference internal" href="api.html#sem.CampaignManager.get_results_as_xarray" title="sem.CampaignManager.get_results_as_xarray"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sem.CampaignManager.get_results_as_xarray()</span></code></a></p></li>
+<li><p><a class="reference internal" href="api.html#sem.CampaignManager.save_to_npy_file" title="sem.CampaignManager.save_to_npy_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sem.CampaignManager.save_to_npy_file()</span></code></a></p></li>
+<li><p><a class="reference internal" href="api.html#sem.CampaignManager.save_to_mat_file" title="sem.CampaignManager.save_to_mat_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sem.CampaignManager.save_to_mat_file()</span></code></a></p></li>
+<li><p><a class="reference internal" href="api.html#sem.CampaignManager.save_to_folders" title="sem.CampaignManager.save_to_folders"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sem.CampaignManager.save_to_folders()</span></code></a></p></li>
+</ul>
+<p>The first two methods perform user-defined processing on the results and return
+them in a <cite>numpy</cite> or <cite>xarray</cite> structure, while the last three methods will save
+the results to an output format.</p>
+<p>User-defined processing can be specified by passing a result-parsing function to
+the export functions, as shown in the scripts in the <cite>examples/</cite> folder.</p>
+</section>
+</section>
+<section id="class-diagram">
+<h2>Class diagram<a class="headerlink" href="#class-diagram" title="Permalink to this headline">¶</a></h2>
+<figure class="align-center align-default" id="id3">
+<a class="reference internal image-reference" href="_images/classes_sem.png"><img alt="_images/classes_sem.png" src="_images/classes_sem.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-text">Class diagram for the SEM module.</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3><a href="index.html">Home</a></h3>
+<h3><a href="index.html">Contents</a></h3>
+<ul>
+<li><a class="reference internal" href="#">Detailed Functionality</a><ul>
+<li><a class="reference internal" href="#the-simulation-campaign-paradigm">The simulation campaign paradigm</a><ul>
+<li><a class="reference internal" href="#obtaining-a-campaignmanager-object">Obtaining a CampaignManager object</a></li>
+<li><a class="reference internal" href="#database-management-briefly">Database management, briefly</a></li>
+<li><a class="reference internal" href="#simulation-runners-briefly">Simulation runners, briefly</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#running-simulations">Running simulations</a></li>
+<li><a class="reference internal" href="#results">Results</a><ul>
+<li><a class="reference internal" href="#getting-single-results">Getting single results</a></li>
+<li><a class="reference internal" href="#exporting-results">Exporting results</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#class-diagram">Class diagram</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="cli.html" title="previous chapter">Command Line Interface</a></li>
+      <li>Next: <a href="examples.html" title="next chapter">Examples walkthrough</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Davide Magrin.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/detailed-functionality.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

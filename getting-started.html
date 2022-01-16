@@ -1,0 +1,322 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Getting started &#8212; sem 0.1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Command Line Interface" href="cli.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="getting-started">
+<h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p>This page only provides an initial guide that illustrates the SEM workflow using
+the Python API. For a more comprehensive overview of how things work under
+the hood, refer to the <a class="reference internal" href="detailed-functionality.html#detailed-functionality"><span class="std std-ref">Detailed Functionality</span></a> page. If you are interested
+in using SEM from the command line, check out the <a class="reference internal" href="cli.html#cli"><span class="std std-ref">Command Line Interface</span></a> page instead.</p>
+<p><cite>SEM</cite> operates on simulation campaigns, which consist in a collection of results
+obtained from running a specific <cite>ns-3</cite> simulation script with possibly varying
+command line parameters.</p>
+<p>Simulation campaigns are saved in a single folder for portability, and are
+accessible through a <cite>CampaignManager</cite> object. Through this class it’s possible
+to create new campaigns, load existing ones, run simulations and export results
+to a variety of formats for analysis and plotting.</p>
+<p>In the following sections we will use <cite>SEM</cite> to go from a vanilla ns-3
+installation (assumed to be available at <cite>./examples/ns-3</cite>) to plots visualizing
+the results, in as few commands as possible. A script containing many commands
+of this section is available at the sem project <a class="reference external" href="https://github.com/signetlabdei/sem">github</a>, under
+<cite>examples/wifi_example.py</cite>.</p>
+<section id="creating-and-loading-a-simulation-campaign">
+<h2>Creating and loading a simulation campaign<a class="headerlink" href="#creating-and-loading-a-simulation-campaign" title="Permalink to this headline">¶</a></h2>
+<p>Creation of a new campaign requires:</p>
+<ul class="simple">
+<li><p>The path of the ns-3 installation to use</p></li>
+<li><p>The name of the simulation script that will be run</p></li>
+<li><p>The location of the folder where the campaign will be saved.</p></li>
+</ul>
+<p>We can create a campaign using the following instructions in a Python
+interpreter or script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">sem</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ns_path</span> <span class="o">=</span> <span class="s1">&#39;examples/ns-3&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">script</span> <span class="o">=</span> <span class="s1">&#39;wifi-multi-tos&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">campaign_dir</span> <span class="o">=</span> <span class="s1">&#39;/tmp/wifi-plotting-example&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">campaign</span> <span class="o">=</span> <span class="n">sem</span><span class="o">.</span><span class="n">CampaignManager</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">ns_path</span><span class="p">,</span> <span class="n">script</span><span class="p">,</span> <span class="n">campaign_dir</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Internally, <cite>SEM</cite> also checks whether the path points to a valid ns-3
+installation, and whether the script is actually available for execution or not.
+If a simulation campaign already exists at the specified <cite>campaign_dir</cite>, and if
+it points to the same <cite>ns_path</cite> and <cite>script</cite> values, that campaign is loaded
+instead. Otherwise, the <cite>campaign_dir</cite> folder is created from scratch and a new
+campaign is created.</p>
+<p><cite>CampaignManager</cite> objects can also be directly printed to inspect the status of
+the campaign:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">campaign</span><span class="p">)</span> 
+<span class="go">--- Campaign info ---</span>
+<span class="go">script: wifi-multi-tos</span>
+<span class="go">params: [&#39;nWifi&#39;, &#39;distance&#39;, &#39;simulationTime&#39;, &#39;useRts&#39;, &#39;mcs&#39;,</span>
+<span class="go">         &#39;channelWidth&#39;, &#39;useShortGuardInterval&#39;]</span>
+<span class="go">HEAD: 9386dc7d106fd9241ff151195a0e6e5cb954d363</span>
+<span class="go">---------------------</span>
+</pre></div>
+</div>
+<p>Note that, additionally to the path and script we specified in the campaign
+creation process, <cite>SEM</cite> also retrieved a list of the available script parameters
+and the SHA of the current HEAD of the git repository at the <cite>ns-3</cite> path.</p>
+</section>
+<section id="running-simulations">
+<h2>Running simulations<a class="headerlink" href="#running-simulations" title="Permalink to this headline">¶</a></h2>
+<p>Simulations can be run by specifying a list of parameter combinations.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">param_combination</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>   <span class="s1">&#39;nWifi&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>   <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>   <span class="s1">&#39;simulationTime&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>   <span class="s1">&#39;useRts&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span>   <span class="s1">&#39;mcs&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
+<span class="gp">... </span>   <span class="s1">&#39;channelWidth&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+<span class="gp">... </span>   <span class="s1">&#39;useShortGuardInterval&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span>   <span class="s1">&#39;RngRun&#39;</span><span class="p">:</span> <span class="mi">0</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">campaign</span><span class="o">.</span><span class="n">run_simulations</span><span class="p">([</span><span class="n">param_combination</span><span class="p">])</span>
+
+<span class="go">Running simulations: 100% 1/1 [00:10&lt;00:00, 10.81s/simulation]</span>
+</pre></div>
+</div>
+<p>As simulations are run, the results are also saved in the campaign database, at
+the previously specified <cite>campaign_dir</cite> path. After the simulation finishes, the
+results (i.e., any generated output files and the standard output) are added to
+the database and can be retrieved later on. A progress bar is displayed to
+indicate progress and give an estimate of the remaining time.</p>
+<p>Multiple simulations corresponding to the exploration of a parameter space can
+be easily run by employing the <cite>list_param_combinations</cite> function, which can
+take a dictionary specifying multiple values for a key and translate it into a
+list of dictionaries specifying all combinations of parameter values. For
+example, let’s try the same simulation parameters as before, but perform the
+simulations both for the <cite>true</cite> and <cite>false</cite> values of the <cite>useRts</cite> parameter:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">param_combinations</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">&#39;nWifi&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;simulationTime&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;useRts&#39;</span><span class="p">:</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;mcs&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;channelWidth&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;useShortGuardInterval&#39;</span><span class="p">:</span> <span class="kc">False</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">campaign</span><span class="o">.</span><span class="n">run_missing_simulations</span><span class="p">(</span><span class="n">param_combinations</span><span class="p">,</span>
+<span class="gp">... </span>                                 <span class="n">runs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="go">Running simulations: 100% 1/1 [00:09&lt;00:00,  9.63s/simulation]</span>
+</pre></div>
+</div>
+<p>From the output, it can be noticed that only one simulation was run: in fact,
+since we used the <cite>run_missing_simulations</cite> function, before running the
+specified simulations, <cite>SEM</cite> checked whether some results were already available
+in the database, found the previously executed simulation, and only performed
+the simulation for which no result employing the requested parameter combination
+was already available. Additionally, the <cite>run_missing_simulations</cite> function
+requires a <cite>runs</cite> parameter, specifying how many runs should be performed for
+each parameter combination. Note the difference with <cite>run_simulations</cite>:
+<cite>run_simulations</cite> will run all the simulations in the specified list, regardless
+of the number of already available reproductions we have.
+<cite>run_missing_simulations</cite>, instead, will only run the simulations that are
+needed to obtain <cite>runs</cite> repetitions of a set parameter combination (hence the
+need for the <cite>runs</cite> parameter, which is not required by <cite>run_simulations</cite>).</p>
+<p>Finally, let’s make <cite>SEM</cite> run multiple simulations so that we have something to
+plot. In order to do this, first we define a new <cite>param_combinations</cite>
+dictionary, ranging the <cite>mcs</cite> parameter from 0 to 7 and turning on and off the
+<cite>RequestToSend</cite> and <cite>ShortGuardInterval</cite> parameters:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">param_combinations</span> <span class="o">=</span> <span class="p">{</span>
+<span class="gp">... </span>    <span class="s1">&#39;nWifi&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;simulationTime&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;useRts&#39;</span><span class="p">:</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="s1">&#39;mcs&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+<span class="gp">... </span>    <span class="s1">&#39;channelWidth&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s1">&#39;useShortGuardInterval&#39;</span><span class="p">:</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">]</span>
+<span class="gp">... </span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">campaign</span><span class="o">.</span><span class="n">run_missing_simulations</span><span class="p">(</span><span class="n">param_combinations</span><span class="p">,</span>
+<span class="gp">... </span>                                 <span class="n">runs</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="go">Running simulations: 100% 32/32 [02:57&lt;00:00,  3.86s/simulation]</span>
+</pre></div>
+</div>
+</section>
+<section id="exporting-results">
+<h2>Exporting results<a class="headerlink" href="#exporting-results" title="Permalink to this headline">¶</a></h2>
+<p>Results can be exported to the <cite>numpy</cite> and <cite>xarray</cite> formats for Python
+elaboration, and to a directory tree, <cite>.mat</cite> and <cite>.npy</cite> file formats for
+processing outside Python.</p>
+<p>Available results can be inspected using the <cite>DatabaseManager</cite> object associated
+to the <cite>CampaignManager</cite>, and available as the <cite>db</cite> attribute of the campaign.
+For instance, let’s check out the first result:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">campaign</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">get_results</span><span class="p">())</span>
+<span class="go">32</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">campaign</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">get_results</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> 
+<span class="go">{</span>
+<span class="go">  &#39;nWifi&#39;: 1,</span>
+<span class="go">  &#39;distance&#39;: 1,</span>
+<span class="go">  &#39;simulationTime&#39;: 10,</span>
+<span class="go">  &#39;useRts&#39;: False,</span>
+<span class="go">  &#39;mcs&#39;: 7,</span>
+<span class="go">  &#39;channelWidth&#39;: 20,</span>
+<span class="go">  &#39;useShortGuardInterval&#39;: False,</span>
+<span class="go">  &#39;RngRun&#39;: 1,</span>
+<span class="go">  &#39;id&#39;: &#39;771e0511-43b9-4e33-aa6a-dc4266be24f1&#39;,</span>
+<span class="go">  &#39;elapsed_time&#39;: 4.270819187164307,</span>
+<span class="go">  &#39;stdout&#39;: &#39;Aggregated throughput: 49.2696 Mbit/s\n&#39;</span>
+<span class="go">}</span>
+</pre></div>
+</div>
+<p>Results are returned as dictionaries, with a key-value pair for each available
+script parameter, and the following additional fields:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><cite>RngRun</cite>: the <cite>–RngRun</cite> value that was used for this simulation (used to
+set the “<cite>seed</cite>” of the simulator’s random number generator);</p></li>
+<li><p><cite>id</cite>: an unique identifier for the simulation;</p></li>
+<li><p><cite>elapsed_time</cite>: the required time, in seconds, to run the simulation;</p></li>
+<li><p><cite>stdout</cite>: the output of the simulation script.</p></li>
+</ul>
+</div></blockquote>
+<p>At its current state, the <cite>SEM</cite> library supports automatic parsing of the
+<cite>stdout</cite> result field: in the following lines we will define a
+<cite>get_average_throughput</cite> function, which transforms strings formatted like the
+<cite>stdout</cite> field of the result above into float numbers containing the average
+throughput measured by the simulation. <cite>SEM</cite> will then use the function to
+automatically clean up the results before putting them in an <cite>xarray</cite>
+structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">get_average_throughput</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="c1"># This function takes a result and parses its standard output to extract</span>
+<span class="gp">... </span>    <span class="c1"># relevant information</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;output&#39;</span><span class="p">][</span><span class="s1">&#39;stdout&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">])]</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">campaign</span><span class="o">.</span><span class="n">get_results_as_xarray</span><span class="p">(</span><span class="n">param_combinations</span><span class="p">,</span>
+<span class="gp">... </span>                                         <span class="n">get_average_throughput</span><span class="p">,</span>
+<span class="gp">... </span>                                         <span class="p">[</span><span class="s1">&#39;AvgThroughput&#39;</span><span class="p">],</span> <span class="n">runs</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="go">    &lt;xarray.DataArray (useRts: 2, mcs: 8, useShortGuardInterval: 2, runs: 2)&gt;</span>
+<span class="go">    array([[[[10.8351 , 10.8057 , 10.8163 ],</span>
+<span class="go">            [11.849  , 11.8549 , 11.7901 ]],</span>
+
+<span class="go">            [...]</span>
+
+<span class="go">            [[35.2868 , 35.3763 , 35.3044 ],</span>
+<span class="go">            [36.4903 , 36.4137 , 36.4432 ]]]])</span>
+<span class="go">    Coordinates:</span>
+<span class="go">      * useRts                 (useRts) &lt;U5 &#39;false&#39; &#39;true&#39;</span>
+<span class="go">      * mcs                    (mcs) int64 0 1 2 3 4 5 6 7</span>
+<span class="go">      * useShortGuardInterval  (useShortGuardInterval) &lt;U5 &#39;false&#39; &#39;true&#39;</span>
+<span class="go">      * runs                   (runs) int64 0 1 2</span>
+</pre></div>
+</div>
+<p>Finally, we can easily plot the obtained results by appropriately slicing the
+<cite>DataArray</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Iterate over all possible parameter values</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">useShortGuardInterval</span> <span class="ow">in</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">]:</span> 
+<span class="gp">... </span>  <span class="k">for</span> <span class="n">useRts</span> <span class="ow">in</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">]:</span>
+<span class="gp">... </span>      <span class="n">avg</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">useShortGuardInterval</span><span class="o">=</span><span class="n">useShortGuardInterval</span><span class="p">,</span>
+<span class="gp">... </span>                        <span class="n">useRts</span><span class="o">=</span><span class="n">useRts</span><span class="p">)</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span> <span class="s1">&#39;runs&#39;</span><span class="p">)</span>
+<span class="gp">... </span>      <span class="n">std</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span><span class="n">useShortGuardInterval</span><span class="o">=</span><span class="n">useShortGuardInterval</span><span class="p">,</span>
+<span class="gp">... </span>                        <span class="n">useRts</span><span class="o">=</span><span class="n">useRts</span><span class="p">)</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">,</span> <span class="s1">&#39;runs&#39;</span><span class="p">)</span>
+<span class="gp">... </span>      <span class="n">eb</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">param_combinations</span><span class="p">[</span><span class="s1">&#39;mcs&#39;</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="n">avg</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="mi">6</span><span class="o">*</span><span class="n">std</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="n">label</span><span class="o">=</span><span class="s1">&#39;SGI </span><span class="si">%s</span><span class="s1">, RTS </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">useShortGuardInterval</span><span class="p">,</span> <span class="n">useRts</span><span class="p">))</span>
+<span class="gp">... </span>      <span class="n">xlb</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;MCS&#39;</span><span class="p">)</span>
+<span class="gp">... </span>      <span class="n">ylb</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Throughput [Mbit/s]&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">legend</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span> 
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;docs/throughput.png&#39;</span><span class="p">)</span> 
+</pre></div>
+</div>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="_images/throughput.png"><img alt="_images/throughput.png" src="_images/throughput.png" style="width: 100%;" /></a>
+<figcaption>
+<p><span class="caption-text">The plot obtained from the simulations.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><h3><a href="index.html">Home</a></h3>
+<h3><a href="index.html">Contents</a></h3>
+<ul>
+<li><a class="reference internal" href="#">Getting started</a><ul>
+<li><a class="reference internal" href="#creating-and-loading-a-simulation-campaign">Creating and loading a simulation campaign</a></li>
+<li><a class="reference internal" href="#running-simulations">Running simulations</a></li>
+<li><a class="reference internal" href="#exporting-results">Exporting results</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="installation.html" title="previous chapter">Installation</a></li>
+      <li>Next: <a href="cli.html" title="next chapter">Command Line Interface</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Davide Magrin.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/getting-started.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
