@@ -50,7 +50,7 @@ manage virtual environments and install dependencies, make sure it is installed.
 Typically, the following is enough:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+curl -sSL https://install.python-poetry.org | python3 -
 ```
 
 Note that, if poetry's installer does not add poetry's path to your shell's startup file properly, you may need to add
