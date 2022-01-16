@@ -19,7 +19,7 @@ results and collect them in processing-friendly data structures.
 # How does this work? #
 
 For complete step-by-step usage and installation instructions, check out
-[readthedocs][rtd].
+[our documentation][docs].
 
 # How to cite us #
 
@@ -36,7 +36,7 @@ https://doi.org/10.1145/3345768.3355942
 # Contributing #
 
 This section contains information on how to contribute to the project. If you
-are only interested in using SEM, check out the [documentation][rtd].
+are only interested in using SEM, check out the [documentation][docs].
 
 If you want to contribute to sem development, first of all you'll need an
 installation that allows you to modify the code, immediately see the results and
@@ -115,9 +115,6 @@ Documentation can be built locally using the makefile's `docs` target:
 make docs
 ```
 
-The documentation of the current version of the package is also available on
-[readthedocs][rtd].
-
 ## Running examples ##
 
 The scripts in `examples/` can be directly run:
@@ -145,4 +142,4 @@ After this step, it becomes possible to install SEM in editable mode.
 
 Davide Magrin
 
-[rtd]: https://simulationexecutionmanager.rtfd.io
+[docs]: https://signetlabdei.github.io/sem
