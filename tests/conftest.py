@@ -14,6 +14,11 @@ ns_3_test_compiled = os.path.join(os.path.dirname(os.path.realpath(__file__)),
 ns_3_test_compiled_debug = os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                   'ns-3-compiled-debug')
 
+def get_build_program(ns_3_dir):
+    if os.path.exists(os.path.join(ns_3_dir, "ns3")):
+        return "ns3"
+    else:
+        return "waf"
 
 @pytest.fixture(scope='function')
 def ns_3(tmpdir):
@@ -29,9 +34,11 @@ def ns_3_compiled(tmpdir):
     ns_3_tempdir = str(tmpdir.join('ns-3-compiled'))
     shutil.copytree(ns_3_test_compiled, ns_3_tempdir, symlinks=True)
 
+    build_program = get_build_program(ns_3_tempdir)
+
     # Relocate build by running the same command in the new directory
-    if subprocess.call(['./waf', 'configure', '--disable-gtk',
-                        '--disable-python', '--build-profile=optimized',
+    if subprocess.call(['python', build_program, 'configure', '--disable-gtk',
+                        '--build-profile=optimized',
                         '--out=build/optimized', 'build'],
                        cwd=ns_3_tempdir,
                        stdout=subprocess.DEVNULL,
@@ -46,9 +53,11 @@ def ns_3_compiled_debug(tmpdir):
     ns_3_tempdir = str(tmpdir.join('ns-3-compiled-debug'))
     shutil.copytree(ns_3_test_compiled_debug, ns_3_tempdir, symlinks=True)
 
+    build_program = get_build_program(ns_3_tempdir)
+
     # Relocate build by running the same command in the new directory
-    if subprocess.call(['./waf', 'configure', '--disable-gtk',
-                        '--disable-python', '--build-profile=debug',
+    if subprocess.call(['python', build_program, 'configure', '--disable-gtk',
+                        '--build-profile=debug',
                         '--out=build', 'build'],
                        cwd=ns_3_tempdir,
                        stdout=subprocess.DEVNULL,
@@ -133,24 +142,30 @@ def get_and_compile_ns_3():
     if not os.path.exists(ns_3_test_compiled_debug):
         shutil.copytree(ns_3_test, ns_3_test_compiled_debug, symlinks=True)
 
-    if subprocess.call(['python3', 'waf', 'configure', '--disable-gtk',
-                        '--disable-python', '--build-profile=optimized',
+    build_program = get_build_program(ns_3_test_compiled)
+
+    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
+                        '--build-profile=optimized',
                         '--out=build/optimized', 'build'],
                        cwd=ns_3_test_compiled,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.STDOUT) != 0:
         raise Exception("Optimized test build failed.")
 
-    if subprocess.call(['python3', 'waf', 'configure', '--disable-gtk',
-                        '--disable-python', '--build-profile=debug',
+    build_program = get_build_program(ns_3_test_compiled_debug)
+
+    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
+                        '--build-profile=debug',
                         '--out=build', 'build'],
                        cwd=ns_3_test_compiled_debug,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.STDOUT) != 0:
         raise Exception("Debug test build failed.")
 
-    if subprocess.call(['python3', 'waf', 'configure', '--disable-gtk',
-                        '--disable-python', '--build-profile=optimized',
+    build_program = get_build_program(ns_3_examples)
+
+    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
+                        '--build-profile=optimized',
                         '--out=build/optimized', 'build'],
                        cwd=ns_3_examples,
                        stdout=subprocess.DEVNULL,

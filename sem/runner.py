@@ -133,16 +133,18 @@ class SimulationRunner(object):
             show_progress (bool): whether or not to display a progress bar
                 during compilation.
             optimized (bool): whether to use an optimized build. If False, use
-                a standard ./waf configure.
+                a standard configure.
             skip_configuration (bool): whether to skip the configuration step,
                 and only perform compilation.
         """
 
+        build_program = "ns3" if os.path.exists(os.path.join(self.path, "ns3")) else "waf"
+
         # Only configure if necessary
         if not skip_configuration:
-            configuration_command = ['python3', 'waf', 'configure',
+            configuration_command = ['python3', build_program, 'configure',
                                      '--enable-examples', '--disable-gtk',
-                                     '--disable-python']
+                                     '--disable-werror']
 
             if optimized:
                 configuration_command += ['--build-profile=optimized',
@@ -154,7 +156,7 @@ class SimulationRunner(object):
 
         # Build ns-3
         j_argument = ['-j', str(self.max_parallel_processes)] if self.max_parallel_processes else []
-        build_process = subprocess.Popen(['python3', 'waf', 'build'] +
+        build_process = subprocess.Popen(['python3', build_program, 'build'] +
                                          j_argument,
                                          cwd=self.path,
                                          stdout=subprocess.PIPE,
@@ -162,14 +164,23 @@ class SimulationRunner(object):
 
         # Show a progress bar
         if show_progress:
-            line_iterator = self.get_build_output(build_process)
+            if build_program == "ns3":
+                bar_format = '{desc}: {percentage:3.0f}%|{bar}| [{elapsed}<{remaining}]'
+            else:
+                bar_format = None
+            line_iterator = self.get_build_output(build_process,
+                                                  build_program)
             pbar = None
             try:
                 [initial, total] = next(line_iterator)
-                pbar = tqdm(initial=initial, total=total,
-                            unit='file', desc='Building ns-3', smoothing=0)
+                pbar = tqdm(initial=initial,
+                            total=total,
+                            unit='file',
+                            desc='Building ns-3',
+                            smoothing=0,
+                            bar_format=bar_format)
                 with pbar as progress_bar:
-                    for current, total in line_iterator:
+                    for _, total in line_iterator:
                         progress_bar.update(1)
                     progress_bar.n = progress_bar.total
             except (StopIteration):
@@ -178,7 +189,7 @@ class SimulationRunner(object):
         else:  # Wait for the build to finish anyway
             build_process.communicate()
 
-    def get_build_output(self, process):
+    def get_build_output(self, process, build_program):
         """
         Parse the output of the ns-3 build process to extract the information
         that is needed to draw the progress bar.
@@ -197,13 +208,21 @@ class SimulationRunner(object):
                                      process.stdout.read()))
                 return
             if output:
-                # Parse the output to get current and total tasks
-                # This assumes the progress displayed by waf is in the form
-                # [current/total]
-                matches = re.search(r'\[\s*(\d+?)/(\d+)\].*',
-                                    output.strip().decode('utf-8'))
-                if matches is not None:
-                    yield [int(matches.group(1)), int(matches.group(2))]
+                if build_program == "ns3":
+                    # Parse the output to get current and total tasks In
+                    # case we are using ns3, the format will be as a
+                    # percentage between square brackets:
+                    matches = re.search(r'\[\s*(\d+?)%].*',
+                                        output.strip().decode('utf-8'))
+                    if matches is not None:
+                        yield [int(matches.group(1)), 100]
+                else:
+                    # In case we are using waf, the progress is displayed
+                    # in the form [current/total]
+                    matches = re.search(r'\[\s*(\d+?)/(\d+)\].*',
+                                        output.strip().decode('utf-8'))
+                    if matches is not None:
+                        yield [int(matches.group(1)), int(matches.group(2))]
 
     def get_available_parameters(self):
         """
@@ -280,7 +299,7 @@ class SimulationRunner(object):
                 simulation output.
         """
 
-        for idx, parameter in enumerate(parameter_list):
+        for _, parameter in enumerate(parameter_list):
 
             current_result = {
                 'params': {},
@@ -309,10 +328,6 @@ class SimulationRunner(object):
             end = time.time()  # Time execution
 
             if return_code != 0:
-                complete_command = [self.script]
-                complete_command.extend(command[1:])
-                complete_command = "python3 waf --run \"%s\"" % (
-                    ' '.join(complete_command))
                 with open(stdout_file_path, 'r') as stdout_file, open(
                         stderr_file_path, 'r') as stderr_file:
                     complete_command = sem.utils.get_command_from_result(self.script, current_result)
