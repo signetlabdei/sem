@@ -4,17 +4,10 @@
 
 # A Simulation Execution Manager for ns-3 #
 
-[![Build Status](https://app.travis-ci.com/signetlabdei/sem.svg?branch=master)](https://app.travis-ci.com/signetlabdei/sem)
-[![codecov](https://codecov.io/gh/signetlabdei/sem/branch/master/graph/badge.svg)](https://codecov.io/gh/signetlabdei/sem)
-[![Join the chat at https://gitter.im/ns-3-sem/Lobby](https://badges.gitter.im/ns-3-sem/Lobby.svg)](https://gitter.im/ns-3-sem/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/signetlabdei/sem/develop?urlpath=lab)
 
 This is a Python library to perform multiple ns-3 script executions, manage the
 results and collect them in processing-friendly data structures.
-
-<!-- <p align="center"> -->
-<!--   <img src="res/semdemo.gif"> -->
-<!-- </p> -->
 
 # How does this work? #
 
@@ -38,9 +31,9 @@ https://doi.org/10.1145/3345768.3355942
 This section contains information on how to contribute to the project. If you
 are only interested in using SEM, check out the [documentation][docs].
 
-If you want to contribute to sem development, first of all you'll need an
-installation that allows you to modify the code, immediately see the results and
-run tests.
+If you want to contribute to sem development, first of all you'll need
+an installation that allows you to modify the code, immediately see
+the results and run tests.
 
 ## Building the module from scratch ##
 
