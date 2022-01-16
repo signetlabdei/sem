@@ -36,6 +36,7 @@ importmagic = "*"
 flake8 = "*"
 check-manifest = "*"
 seaborn = "*"
+pyright = "^0.0.13"
 
 [tool.poetry.scripts]
 sem = 'sem:cli'
