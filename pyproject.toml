@@ -1,22 +1,22 @@
 [tool.poetry]
 name = "sem"
 version = "0.3.0"
-description = "A simulation execution manager for ns-3"
+description = "A Simulation Execution Manager for ns-3"
 authors = ["Davide Magrin <magrinda@dei.unipd.it>"]
 license = "GPL-2.0-only"
 readme = "README.md"
 repository = "https://github.com/signetlabdei/sem"
 homepage = "https://github.com/signetlabdei/sem"
-keywords = ["ns-3","simulation","execution"]
+keywords = ["ns-3", "simulation", "execution"]
 
 [tool.poetry.dependencies]
-python = "^3.6.1"
+python = ">3.8,<3.11"
 tqdm = "*"
 gitpython = "*"
 drmaa = "*"
 tinydb = "^4.0.0"
 xarray = "*"
-numpy = "*"
+numpy = "^1.21.5"
 pandas = "*"
 click = "*"
 salib = "^1.3.8"
@@ -25,17 +25,16 @@ salib = "^1.3.8"
 sphinx = "*"
 pylint = "*"
 sphinxcontrib-napoleon = "*"
-pytest-cov = "*"
 pytest = "*"
+pytest-cov = "*"
+pytest-xdist = "*"
 matplotlib = "*"
 graphviz = "*"
 scipy = "*"
 pygments = "*"
-pytest-xdist = "*"
 importmagic = "*"
 flake8 = "*"
 check-manifest = "*"
-ptvsd = "^4.3.2"
 seaborn = "*"
 
 [tool.poetry.scripts]
