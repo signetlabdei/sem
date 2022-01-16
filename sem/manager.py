@@ -658,7 +658,7 @@ class CampaignManager(object):
 
         # Add a dimension label for each non-singular dimension
         dimension_labels = [{key: np.array(parameter_space[key],
-                                           dtype=np.object)} for key in
+                                           dtype=object)} for key in
                             parameter_space.keys() if len(parameter_space[key])
                             > 0] + [{'runs': range(runs)}]
 
@@ -669,7 +669,7 @@ class CampaignManager(object):
             {'results':
              self.get_results_as_numpy_array(parameter_space,
                                              result_parsing_function,
-                                             runs=runs).astype(np.object),
+                                             runs=runs).astype(object),
              'dimension_labels': dimension_labels})
 
     def save_to_npy_file(self, parameter_space,
