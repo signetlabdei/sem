@@ -4,7 +4,7 @@
 
 # A Simulation Execution Manager for ns-3 #
 
-[![Build Status](https://travis-ci.com/signetlabdei/sem.svg)](https://travis-ci.org/signetlabdei/sem)
+[![Build Status](https://app.travis-ci.com/signetlabdei/sem.svg?branch=master)](https://app.travis-ci.com/signetlabdei/sem)
 [![codecov](https://codecov.io/gh/signetlabdei/sem/branch/master/graph/badge.svg)](https://codecov.io/gh/signetlabdei/sem)
 [![Join the chat at https://gitter.im/ns-3-sem/Lobby](https://badges.gitter.im/ns-3-sem/Lobby.svg)](https://gitter.im/ns-3-sem/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/signetlabdei/sem/develop?urlpath=lab)
