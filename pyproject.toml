@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sem"
-version = "0.3.0"
+version = "0.3.1"
 description = "A Simulation Execution Manager for ns-3"
 authors = ["Davide Magrin <magrinda@dei.unipd.it>"]
 license = "GPL-2.0-only"
