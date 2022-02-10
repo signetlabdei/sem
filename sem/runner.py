@@ -156,8 +156,7 @@ class SimulationRunner(object):
 
         # Build ns-3
         j_argument = ['-j', str(self.max_parallel_processes)] if self.max_parallel_processes else []
-        build_process = subprocess.Popen(['python3', build_program, 'build'] +
-                                         j_argument,
+        build_process = subprocess.Popen(['python3', build_program] + j_argument + ['build'],
                                          cwd=self.path,
                                          stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE)
