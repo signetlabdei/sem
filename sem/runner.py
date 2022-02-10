@@ -179,8 +179,9 @@ class SimulationRunner(object):
                             smoothing=0,
                             bar_format=bar_format)
                 with pbar as progress_bar:
-                    for _, total in line_iterator:
-                        progress_bar.update(1)
+                    for current, total in line_iterator:
+                        progress_bar.n = current
+                        progress_bar.update(0)
                     progress_bar.n = progress_bar.total
             except (StopIteration):
                 if pbar is not None:
