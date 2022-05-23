@@ -272,7 +272,7 @@ class SimulationRunner(object):
                         params[k] = float(v)
                     except ValueError:
                         # Keep it as a string
-                        if str(v) == "" or any(not c.isalnum() for c in v):
+                        if str(v) == "":
                             params[k] = None
                         else:
                             params[k] = str(v)
