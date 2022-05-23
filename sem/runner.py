@@ -271,11 +271,8 @@ class SimulationRunner(object):
                     try:
                         params[k] = float(v)
                     except ValueError:
-                        # Keep it as a string
-                        if str(v) == "":
-                            params[k] = None
-                        else:
-                            params[k] = str(v)
+                        # Keep it as a (possibly empty) string
+                        params[k] = str(v)
         if len(global_options):
             params.update({k:v for k, v in re.findall(r'.*--(.*?)[?::|=].*\[(.*?)\]',
                                                       global_options, re.MULTILINE) if k
