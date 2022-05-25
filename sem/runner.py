@@ -1,6 +1,7 @@
 import importlib
 import os
 import re
+from signal import SIGKILL
 import subprocess
 import time
 import uuid
@@ -327,26 +328,30 @@ class SimulationRunner(object):
             if return_code != 0:
                 with open(stdout_file_path, 'r') as stdout_file, open(
                         stderr_file_path, 'r') as stderr_file:
-                    complete_command = sem.utils.get_command_from_result(self.script, current_result)
-                    complete_command_debug = sem.utils.get_command_from_result(self.script, current_result, debug=True)
-                    error_message = ('\nSimulation exited with an error.\n'
-                                     'Params: %s\n'
-                                     'Stderr: %s\n'
-                                     'Stdout: %s\n'
-                                     'Use this command to reproduce:\n'
-                                     '%s\n'
-                                     'Debug with gdb:\n'
-                                     '%s'
-                                     % (parameter,
-                                        stderr_file.read(),
-                                        stdout_file.read(),
-                                        complete_command,
-                                        complete_command_debug))
-                    if stop_on_errors:
-                        raise Exception(error_message)
-                    print(error_message)
-                    print('Return code:')
-                    print(return_code)
+                    common_error_message = ('\nSimulation exited with an error.\n'
+                                            'Params: %s\n'
+                                            'Stderr: %s\n'
+                                            'Stdout: %s\n'
+                                            % (parameter,
+                                               stderr_file.read(),
+                                               stdout_file.read()))
+                    if return_code == SIGKILL:
+                        error_message = common_error_message + \
+                                        'Simulation likely killed due to an out of memory error.\n' + \
+                                        'Check kernel logs (dmesg, for instance) to confirm.'
+                    else:
+                        complete_command = sem.utils.get_command_from_result(self.script, current_result)
+                        complete_command_debug = sem.utils.get_command_from_result(self.script, current_result, debug=True)
+                        error_message = common_error_message + \
+                                        ('Use this command to reproduce:\n'
+                                         '%s\n'
+                                         'Debug with gdb:\n'
+                                         '%s'
+                                         % (complete_command,
+                                            complete_command_debug))
+                        if stop_on_errors:
+                            raise Exception(error_message)
+                        print(error_message)                                    
 
             current_result['meta']['elapsed_time'] = end-start
             current_result['meta']['exitcode'] = return_code
