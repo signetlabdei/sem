@@ -336,9 +336,9 @@ class SimulationRunner(object):
                                                stderr_file.read(),
                                                stdout_file.read()))
                     if return_code == SIGKILL_CODE:
-                        error_message = common_error_message + \
-                                        '\nSimulation likely killed due to an out of memory error.\n' + \
-                                        'Check kernel logs (dmesg, for instance) to confirm\n.'
+                        error_message = '\nSimulation likely killed due to an out of memory error.\n' + \
+                                        'Check kernel logs (dmesg, for instance) to confirm\n.' + \
+                                        common_error_message 
                     else:
                         complete_command = sem.utils.get_command_from_result(self.script, current_result)
                         complete_command_debug = sem.utils.get_command_from_result(self.script, current_result, debug=True)
