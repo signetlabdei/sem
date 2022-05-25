@@ -329,8 +329,7 @@ class SimulationRunner(object):
             if return_code != 0:
                 with open(stdout_file_path, 'r') as stdout_file, open(
                         stderr_file_path, 'r') as stderr_file:
-                    common_error_message = ('\nSimulation exited with an error.\n'
-                                            'Params: %s\n'
+                    common_error_message = ('Params: %s\n'
                                             'Stderr: %s\n'
                                             'Stdout: %s\n'
                                             % (parameter,
@@ -338,12 +337,13 @@ class SimulationRunner(object):
                                                stdout_file.read()))
                     if return_code == SIGKILL_CODE:
                         error_message = common_error_message + \
-                                        'Simulation likely killed due to an out of memory error.\n' + \
-                                        'Check kernel logs (dmesg, for instance) to confirm.'
+                                        '\nSimulation likely killed due to an out of memory error.\n' + \
+                                        'Check kernel logs (dmesg, for instance) to confirm\n.'
                     else:
                         complete_command = sem.utils.get_command_from_result(self.script, current_result)
                         complete_command_debug = sem.utils.get_command_from_result(self.script, current_result, debug=True)
-                        error_message = common_error_message + \
+                        error_message = '\nSimulation exited with an error.\n' + \
+                                        common_error_message + \
                                         ('Use this command to reproduce:\n'
                                          '%s\n'
                                          'Debug with gdb:\n'
