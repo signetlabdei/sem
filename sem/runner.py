@@ -9,7 +9,7 @@ import sem.utils
 from tqdm import tqdm
 from typing import Final
 
-SIGKILL_CODE: Final = -9    # Return code used to identify out of memory events.
+SIGKILL_CODE: Final = -9    # POSIX return code which usually corresponds to out of memory events.
 
 class SimulationRunner(object):
     """
@@ -337,7 +337,7 @@ class SimulationRunner(object):
                                                stdout_file.read()))
                     if return_code == SIGKILL_CODE:
                         error_message = '\nSimulation likely killed due to an out of memory error.\n' + \
-                                        'Check kernel logs (dmesg, for instance) to confirm\n.' + \
+                                        'Check kernel logs (dmesg, for instance) to confirm.\n' + \
                                         common_error_message 
                     else:
                         complete_command = sem.utils.get_command_from_result(self.script, current_result)
