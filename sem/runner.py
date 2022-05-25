@@ -345,6 +345,8 @@ class SimulationRunner(object):
                     if stop_on_errors:
                         raise Exception(error_message)
                     print(error_message)
+                    print('Return code:')
+                    print(return_code)
 
             current_result['meta']['elapsed_time'] = end-start
             current_result['meta']['exitcode'] = return_code
