@@ -1,14 +1,15 @@
 import importlib
 import os
 import re
-from signal import SIGKILL
 import subprocess
 import time
 import uuid
 import sem.utils
 
 from tqdm import tqdm
+from typing import Final
 
+SIGKILL_CODE: Final = -9    # Return code used to identify out of memory events.
 
 class SimulationRunner(object):
     """
@@ -335,7 +336,7 @@ class SimulationRunner(object):
                                             % (parameter,
                                                stderr_file.read(),
                                                stdout_file.read()))
-                    if return_code == SIGKILL:
+                    if return_code == SIGKILL_CODE:
                         error_message = common_error_message + \
                                         'Simulation likely killed due to an out of memory error.\n' + \
                                         'Check kernel logs (dmesg, for instance) to confirm.'
