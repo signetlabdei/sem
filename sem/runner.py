@@ -332,11 +332,13 @@ class SimulationRunner(object):
                     common_error_message = ('Params: %s\n'
                                             'Stderr: %s\n'
                                             'Stdout: %s\n'
+                                            'Return code: %s\n'
                                             % (parameter,
                                                stderr_file.read(),
-                                               stdout_file.read()))
+                                               stdout_file.read(),
+                                               return_code))
                     if return_code == SIGKILL_CODE:
-                        error_message = '\nSimulation likely killed due to an out of memory error.\n' + \
+                        error_message = '\nSimulation was killed. Possible causes may include an out of memory error.\n' + \
                                         'Check kernel logs (dmesg, for instance) to confirm.\n' + \
                                         common_error_message 
                     else:
@@ -353,7 +355,7 @@ class SimulationRunner(object):
                                             
                     if stop_on_errors:
                         raise Exception(error_message)
-                    print(error_message)                                    
+                    print(error_message)
 
             current_result['meta']['elapsed_time'] = end-start
             current_result['meta']['exitcode'] = return_code
