@@ -332,7 +332,7 @@ class SimulationRunner(object):
                     common_error_message = ('Params: %s\n'
                                             'Stderr: %s\n'
                                             'Stdout: %s\n'
-                                            'Return code: %s\n'
+                                            'Return code: %d\n'
                                             % (parameter,
                                                stderr_file.read(),
                                                stdout_file.read(),
