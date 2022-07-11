@@ -63,17 +63,24 @@ class SimulationRunner(object):
 
         # ns-3's build status output is used to get the executable path for the
         # specified script.
-        if optimized:
-            build_status_path = os.path.join(path,
-                                             'build/optimized/build-status.py')
+        if os.path.exists(os.path.join(self.path, "ns3")):
+            build_status_path = os.path.join(path, '.lock-ns3_linux_build')
         else:
-            build_status_path = os.path.join(path,
-                                             'build/build-status.py')
+            if optimized:
+                build_status_path = os.path.join(path,
+                                                'build/optimized/build-status.py')
+            else:
+                build_status_path = os.path.join(path,
+                                                'build/build-status.py')
 
         # By importing the file, we can naturally get the dictionary
         try:  # This only works on Python >= 3.5
-            spec = importlib.util.spec_from_file_location('build_status',
-                                                          build_status_path)
+            if os.path.exists(os.path.join(self.path, "ns3")):
+                spec = importlib.util.spec_from_file_location('.lock-ns3_linux_build',
+                                                            build_status_path)
+            else:
+                spec = importlib.util.spec_from_file_location('build_status',
+                                                            build_status_path)
             build_status = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(build_status)
         except (AttributeError):  # This happens in Python <= 3.4
