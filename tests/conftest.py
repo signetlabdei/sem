@@ -39,11 +39,18 @@ def ns_3_compiled(tmpdir):
     # Relocate build by running the same command in the new directory
     if subprocess.call(['python', build_program, 'configure', '--disable-gtk',
                         '--build-profile=optimized',
-                        '--out=build/optimized', 'build'],
+                        '--out=build/optimized'],
+                       cwd=ns_3_tempdir,
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL) > 0:
+        raise Exception("Configuration failed")
+    
+    if subprocess.call(['python', build_program, 'build'],
                        cwd=ns_3_tempdir,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL) > 0:
         raise Exception("Build failed")
+
     return ns_3_tempdir
 
 
@@ -58,11 +65,18 @@ def ns_3_compiled_debug(tmpdir):
     # Relocate build by running the same command in the new directory
     if subprocess.call(['python', build_program, 'configure', '--disable-gtk',
                         '--build-profile=debug',
-                        '--out=build', 'build'],
+                        '--out=build'],
+                       cwd=ns_3_tempdir,
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL) > 0:
+        raise Exception("Configuration failed")
+    
+    if subprocess.call(['python', build_program, 'build'],
                        cwd=ns_3_tempdir,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL) > 0:
         raise Exception("Build failed")
+
     return ns_3_tempdir
 
 
@@ -131,8 +145,7 @@ def manager(ns_3_compiled, config):
 def get_and_compile_ns_3():
     # Clone ns-3
     if not os.path.exists(ns_3_test):
-        Repo.clone_from('http://github.com/signetlabdei/sem-ns-3-dev.git', ns_3_test,
-                        branch='sem-tests')
+        Repo.clone_from('https://gitlab.com/nsnam/ns-3-dev.git', ns_3_test)
 
     # Copy folder to compile in optimized mode
     if not os.path.exists(ns_3_test_compiled):
@@ -146,30 +159,48 @@ def get_and_compile_ns_3():
 
     if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
                         '--build-profile=optimized',
-                        '--out=build/optimized', 'build'],
+                        '--out=build/optimized'],
                        cwd=ns_3_test_compiled,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.STDOUT) != 0:
+        raise Exception("Optimized test configuration failed.")
+    
+    if subprocess.call(['python', build_program, 'build'],
+                       cwd=ns_3_test_compiled,
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL) > 0:
         raise Exception("Optimized test build failed.")
 
     build_program = get_build_program(ns_3_test_compiled_debug)
 
     if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
                         '--build-profile=debug',
-                        '--out=build', 'build'],
+                        '--out=build'],
                        cwd=ns_3_test_compiled_debug,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.STDOUT) != 0:
+        raise Exception("Debug test configuration failed.")
+    
+    if subprocess.call(['python', build_program, 'build'],
+                       cwd=ns_3_test_compiled,
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL) > 0:
         raise Exception("Debug test build failed.")
 
     build_program = get_build_program(ns_3_examples)
 
     if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
                         '--build-profile=optimized',
-                        '--out=build/optimized', 'build'],
+                        '--out=build/optimized'],
                        cwd=ns_3_examples,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.STDOUT) != 0:
+        raise Exception("Examples configuration failed.")
+    
+    if subprocess.call(['python', build_program, 'build'],
+                       cwd=ns_3_test_compiled,
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL) > 0:
         raise Exception("Examples build failed.")
 
 #########################################################################
