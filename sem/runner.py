@@ -110,7 +110,8 @@ class SimulationRunner(object):
         self.script_executable = max(match_percentages,
                                      key=lambda x: x['percentage'])['path']
 
-        if "scratch" in self.script_executable:
+        # This step is not needed for CMake versions of ns-3
+        if "scratch" in self.script_executable and not os.path.exists(os.path.join(self.path, "ns3")):
             path_with_subdir = self.script_executable.split("/scratch/")[-1]
             if ("/" in path_with_subdir):  # Script is in a subdir
                 executable_subpath = "%s/%s" % (self.script, self.script)
