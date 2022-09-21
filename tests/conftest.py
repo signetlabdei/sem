@@ -32,7 +32,9 @@ def ns_3(tmpdir):
 def ns_3_compiled(tmpdir):
     # Copy the test ns-3 installation in the temporary directory
     ns_3_tempdir = str(tmpdir.join('ns-3-compiled'))
-    shutil.copytree(ns_3_test_compiled, ns_3_tempdir, symlinks=True)
+    shutil.copytree(ns_3_test_compiled, ns_3_tempdir, symlinks=True, 
+                    # Do not copy cmake's cache, as it is directory-dependant 
+                    ignore=shutil.ignore_patterns("cmake-cache"))  
 
     build_program = get_build_program(ns_3_tempdir)
 
@@ -155,9 +157,13 @@ def get_and_compile_ns_3():
     if not os.path.exists(ns_3_test_compiled_debug):
         shutil.copytree(ns_3_test, ns_3_test_compiled_debug, symlinks=True)
 
+    # Copy folder to run examples
+    if not os.path.exists(ns_3_examples):
+        shutil.copytree(ns_3_test, ns_3_examples, symlinks=True)
+
     build_program = get_build_program(ns_3_test_compiled)
 
-    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
+    if subprocess.call(['python', build_program, 'configure', '--disable-gtk',
                         '--build-profile=optimized',
                         '--out=build/optimized'],
                        cwd=ns_3_test_compiled,
@@ -173,7 +179,7 @@ def get_and_compile_ns_3():
 
     build_program = get_build_program(ns_3_test_compiled_debug)
 
-    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
+    if subprocess.call(['python', build_program, 'configure', '--disable-gtk',
                         '--build-profile=debug',
                         '--out=build'],
                        cwd=ns_3_test_compiled_debug,
@@ -189,12 +195,13 @@ def get_and_compile_ns_3():
 
     build_program = get_build_program(ns_3_examples)
 
-    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
+    if subprocess.call(['python', build_program, 'configure', '--disable-gtk',
                         '--build-profile=optimized',
                         '--out=build/optimized'],
                        cwd=ns_3_examples,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.STDOUT) != 0:
+
         raise Exception("Examples configuration failed.")
     
     if subprocess.call(['python', build_program, 'build'],
