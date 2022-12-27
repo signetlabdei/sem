@@ -16,9 +16,9 @@ ns_3_test_compiled_debug = os.path.join(os.path.dirname(os.path.realpath(__file_
 
 def get_build_program(ns_3_dir):
     if os.path.exists(os.path.join(ns_3_dir, "ns3")):
-        return "ns3"
+        return "./ns3"
     else:
-        return "waf"
+        return "./waf"
 
 @pytest.fixture(scope='function')
 def ns_3(tmpdir):
@@ -39,7 +39,7 @@ def ns_3_compiled(tmpdir):
     build_program = get_build_program(ns_3_tempdir)
 
     # Relocate build by running the same command in the new directory
-    if subprocess.call(['python', build_program, 'configure', '--disable-gtk',
+    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
                         '--build-profile=optimized',
                         '--out=build/optimized'],
                        cwd=ns_3_tempdir,
@@ -47,7 +47,7 @@ def ns_3_compiled(tmpdir):
                        stderr=subprocess.DEVNULL) > 0:
         raise Exception("Configuration failed")
     
-    if subprocess.call(['python', build_program, 'build'],
+    if subprocess.call(['python3', build_program, 'build'],
                        cwd=ns_3_tempdir,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL) > 0:
@@ -65,7 +65,7 @@ def ns_3_compiled_debug(tmpdir):
     build_program = get_build_program(ns_3_tempdir)
 
     # Relocate build by running the same command in the new directory
-    if subprocess.call(['python', build_program, 'configure', '--disable-gtk',
+    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
                         '--build-profile=debug',
                         '--out=build'],
                        cwd=ns_3_tempdir,
@@ -73,7 +73,7 @@ def ns_3_compiled_debug(tmpdir):
                        stderr=subprocess.DEVNULL) > 0:
         raise Exception("Configuration failed")
     
-    if subprocess.call(['python', build_program, 'build'],
+    if subprocess.call(['python3', build_program, 'build'],
                        cwd=ns_3_tempdir,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL) > 0:
@@ -111,14 +111,14 @@ def result(config):
 @pytest.fixture(scope='function')
 def parameter_combination_no_rngrun():
     # We need to explicitly state we want an OrderedDict here in order to
-    # support Python < 3.6 - since Python 3.6, dicts are ordered by default
+    # support python3 < 3.6 - since python3 3.6, dicts are ordered by default
     return collections.OrderedDict([('dict', '/usr/share/dict/web2'),
                                     ('time', False)])
 
 @pytest.fixture(scope='function')
 def parameter_combination():
     # We need to explicitly state we want an OrderedDict here in order to
-    # support Python < 3.6 - since Python 3.6, dicts are ordered by default
+    # support python3 < 3.6 - since python3 3.6, dicts are ordered by default
     return collections.OrderedDict([('dict', '/usr/share/dict/web2'),
                                     ('time', False),
                                     ('RngRun', '0')])
@@ -163,7 +163,7 @@ def get_and_compile_ns_3():
 
     build_program = get_build_program(ns_3_test_compiled)
 
-    if subprocess.call(['python', build_program, 'configure', '--disable-gtk',
+    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
                         '--build-profile=optimized',
                         '--out=build/optimized'],
                        cwd=ns_3_test_compiled,
@@ -171,7 +171,7 @@ def get_and_compile_ns_3():
                        stderr=subprocess.STDOUT) != 0:
         raise Exception("Optimized test configuration failed.")
     
-    if subprocess.call(['python', build_program, 'build'],
+    if subprocess.call(['python3', build_program, 'build'],
                        cwd=ns_3_test_compiled,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL) > 0:
@@ -179,7 +179,7 @@ def get_and_compile_ns_3():
 
     build_program = get_build_program(ns_3_test_compiled_debug)
 
-    if subprocess.call(['python', build_program, 'configure', '--disable-gtk',
+    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
                         '--build-profile=debug',
                         '--out=build'],
                        cwd=ns_3_test_compiled_debug,
@@ -187,7 +187,7 @@ def get_and_compile_ns_3():
                        stderr=subprocess.STDOUT) != 0:
         raise Exception("Debug test configuration failed.")
     
-    if subprocess.call(['python', build_program, 'build'],
+    if subprocess.call(['python3', build_program, 'build'],
                        cwd=ns_3_test_compiled,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL) > 0:
@@ -195,7 +195,7 @@ def get_and_compile_ns_3():
 
     build_program = get_build_program(ns_3_examples)
 
-    if subprocess.call(['python', build_program, 'configure', '--disable-gtk',
+    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
                         '--build-profile=optimized',
                         '--out=build/optimized'],
                        cwd=ns_3_examples,
@@ -204,7 +204,7 @@ def get_and_compile_ns_3():
 
         raise Exception("Examples configuration failed.")
     
-    if subprocess.call(['python', build_program, 'build'],
+    if subprocess.call(['python3', build_program, 'build'],
                        cwd=ns_3_test_compiled,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL) > 0:
