@@ -150,7 +150,7 @@ class SimulationRunner(object):
                 and only perform compilation.
         """
 
-        build_program = "ns3" if os.path.exists(os.path.join(self.path, "ns3")) else "waf"
+        build_program = "./ns3" if os.path.exists(os.path.join(self.path, "ns3")) else "./waf"
 
         # Only configure if necessary
         if not skip_configuration:
