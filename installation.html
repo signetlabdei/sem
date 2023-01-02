@@ -1,18 +1,17 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Installation &#8212; sem 0.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Getting started" href="getting-started.html" />
@@ -34,39 +33,39 @@
           <div class="body" role="main">
             
   <section id="installation">
-<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this heading">¶</a></h1>
 <section id="via-pip">
-<h2>Via pip<a class="headerlink" href="#via-pip" title="Permalink to this headline">¶</a></h2>
+<h2>Via pip<a class="headerlink" href="#via-pip" title="Permalink to this heading">¶</a></h2>
 <p>You can easily install SEM using pip:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 install --user sem
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>sem
 </pre></div>
 </div>
 <p>To get the latest development version, install directly from the develop branch
 of the Github repository:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 install --user -U https://github.com/signetlabdei/sem/archive/develop.zip
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>-U<span class="w"> </span>https://github.com/signetlabdei/sem/archive/develop.zip
 </pre></div>
 </div>
 <p>This will install the sem package and its dependencies in your current python
 library path. This same command can also be re-issued to update the library.</p>
 <p>In any case, SEM can be removed from the system by issuing:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3 uninstall sem
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip3<span class="w"> </span>uninstall<span class="w"> </span>sem
 </pre></div>
 </div>
 </section>
 <section id="installing-ns-3">
-<h2>Installing ns-3<a class="headerlink" href="#installing-ns-3" title="Permalink to this headline">¶</a></h2>
+<h2>Installing ns-3<a class="headerlink" href="#installing-ns-3" title="Permalink to this heading">¶</a></h2>
 <p>An ns-3 installation is required to use SEM. Detailed setup instructions for
 ns-3 are available <a class="reference external" href="https://www.nsnam.org/wiki/Installation">here</a>, however, in most cases, cloning the ns-3 project is
 enough to get started. The following command downloads the development version
 of ns-3 to the ns-3-dev folder:</p>
 <blockquote>
 <div></div></blockquote>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/nsnam/ns-3-dev-git ns-3-dev
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/nsnam/ns-3-dev-git<span class="w"> </span>ns-3-dev
 </pre></div>
 </div>
 <p>Optionally, from the <cite>ns-3-dev</cite> folder, one can then checkout a precise ns-3
 release with the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git checkout ns-3.33
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>checkout<span class="w"> </span>ns-3.33
 </pre></div>
 </div>
 </section>
@@ -105,7 +104,7 @@ release with the following command:</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -114,7 +113,7 @@ release with the following command:</p>
       &copy;2021, Davide Magrin.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.0.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

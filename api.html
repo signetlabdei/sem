@@ -1,18 +1,17 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>API Reference &#8212; sem 0.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Contribution guidelines" href="contributing.html" />
@@ -33,9 +32,9 @@
           <div class="body" role="main">
             
   <section id="api-reference">
-<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading">¶</a></h1>
 <section id="campaignmanager">
-<h2>CampaignManager<a class="headerlink" href="#campaignmanager" title="Permalink to this headline">¶</a></h2>
+<h2>CampaignManager<a class="headerlink" href="#campaignmanager" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="sem.CampaignManager">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sem.</span></span><span class="sig-name descname"><span class="pre">CampaignManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">campaign_db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">campaign_runner</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_repo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager" title="Permalink to this definition">¶</a></dt>
@@ -58,7 +57,7 @@ saved in the campaign database, and that the ns-3 repository is clean
 <dd><p>Create a SimulationRunner from a string containing the desired
 class implementation, and return it.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ns_path</strong> (<em>str</em>) – path to the ns-3 installation to employ in this
 SimulationRunner.</p></li>
@@ -92,7 +91,7 @@ each file. Typically used to perform parsing externally.</p>
 <dd><p>Return a list of the simulations among the required ones that are not
 available in the database.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>param_list</strong> (<em>list</em>) – a list of dictionaries containing all the
 parameters combinations.</p></li>
@@ -120,7 +119,7 @@ each result in the database will yield a number of rows in the output
 dataframe that is equal to the length of the result_parsing_function
 output computed on that result.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>result_parsing_function</strong> (<em>function</em>) – user-defined function, taking a
 result dictionary as input and returning a list of outputs or a list
 of lists of outputs.</p>
@@ -134,7 +133,7 @@ of lists of outputs.</p>
 <dd><p>Return the results relative to the desired parameter space in the form
 of a numpy array.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>parameter_space</strong> (<em>dict</em>) – dictionary containing
 parameter/list-of-values pairs.</p></li>
@@ -154,7 +153,7 @@ combination.</p></li>
 <dd><p>Return the results relative to the desired parameter space in the form
 of an xarray data structure.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>parameter_space</strong> (<em>dict</em>) – The space of parameters to export.</p></li>
 <li><p><strong>result_parsing_function</strong> (<em>function</em>) – user-defined function, taking a
@@ -197,7 +196,7 @@ representing the space. In other words, if the parameter space is:</p>
 represents b. This nested-array structure can then be easily converted
 to a numpy array via np.array().</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>current_query</strong> (<em>dict</em>) – the query to apply to the structure.</p></li>
 <li><p><strong>param_space</strong> (<em>dict</em>) – representation of the parameter space.</p></li>
@@ -220,7 +219,7 @@ this method: existing results will be available, but in order to run
 additional simulations it will be necessary to specify a
 SimulationRunner object, and assign it to the CampaignManager.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>campaign_dir</strong> (<em>str</em>) – path to the directory in which to save the
 simulation campaign database.</p></li>
@@ -260,7 +259,7 @@ the commit at which the simulations are run, enforce reproducibility
 and avoid mixing results coming from different versions of ns-3 and its
 libraries.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ns_path</strong> (<em>str</em>) – path to the ns-3 installation to employ in this
 campaign.</p></li>
@@ -298,7 +297,7 @@ for each parameter combination.</p>
 parameter combinations or a dictionary containing multiple values for
 each parameter, to be expanded into a list.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>param_list</strong> (<em>list</em><em>, </em><em>dict</em>) – either a list of parameter combinations or
 a dictionary to be expanded into a list through the
@@ -319,7 +318,7 @@ specification doesn’t feature an ‘RngRun’ key already.</p></li>
 required simulations in the database - it just runs all the parameter
 combinations that are specified in the list.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>param_list</strong> (<em>list</em>) – list of parameter combinations to execute.
 Items of this list are dictionaries, with one key for each
@@ -344,7 +343,7 @@ percentage and expected remaining time.</p></li>
 <dd><p>Return the results relative to the desired parameter space in the form
 of a .mat file.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>parameter_space</strong> (<em>dict</em>) – dictionary containing
 parameter/list-of-values pairs.</p></li>
@@ -376,7 +375,7 @@ nested structure.</p>
 
 </section>
 <section id="simulationrunner">
-<h2>SimulationRunner<a class="headerlink" href="#simulationrunner" title="Permalink to this headline">¶</a></h2>
+<h2>SimulationRunner<a class="headerlink" href="#simulationrunner" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="sem.SimulationRunner">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sem.</span></span><span class="sig-name descname"><span class="pre">SimulationRunner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_parallel_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner" title="Permalink to this definition">¶</a></dt>
@@ -387,7 +386,7 @@ system.</p>
 <span class="sig-name descname"><span class="pre">configure_and_build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner.configure_and_build"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner.configure_and_build" title="Permalink to this definition">¶</a></dt>
 <dd><p>Configure and build the ns-3 code.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>show_progress</strong> (<em>bool</em>) – whether or not to display a progress bar
 during compilation.</p></li>
@@ -412,7 +411,7 @@ and only perform compilation.</p></li>
 <dd><p>Parse the output of the ns-3 build process to extract the information
 that is needed to draw the progress bar.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>process</strong> – the subprocess instance to listen to.</p>
 </dd>
 </dl>
@@ -424,7 +423,7 @@ that is needed to draw the progress bar.</p>
 <dd><p>Run several simulations using a certain combination of parameters.</p>
 <p>Yields results as simulations are completed.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>parameter_list</strong> (<em>list</em>) – list of parameter combinations to simulate.</p></li>
 <li><p><strong>data_folder</strong> (<em>str</em>) – folder in which to save subfolders containing
@@ -438,7 +437,7 @@ simulation output.</p></li>
 
 </section>
 <section id="databasemanager">
-<h2>DatabaseManager<a class="headerlink" href="#databasemanager" title="Permalink to this headline">¶</a></h2>
+<h2>DatabaseManager<a class="headerlink" href="#databasemanager" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="sem.DatabaseManager">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sem.</span></span><span class="sig-name descname"><span class="pre">DatabaseManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager" title="Permalink to this definition">¶</a></dt>
@@ -473,7 +472,7 @@ also read the corresponding output files for each result, and
 incorporate them in the result dictionary under the output key, as a
 dictionary of filename: file_contents.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>params</strong> (<em>dict</em>) – parameter specification of the desired parameter
 values, as described in the get_results documentation.</p>
 </dd>
@@ -577,7 +576,7 @@ and param2 equal to value2 or value3.</p>
 unspecified parameters are assumed to be ‘free’, and can take any
 value.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>A list of results matching the query. Returned results have the
 same structure as results inserted with the insert_result method.</p>
 </dd>
@@ -652,7 +651,7 @@ folder.</p>
 <p>It is assumed that the database json file has the same name as its
 containing folder.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>campaign_dir</strong> (<em>str</em>) – The path to the campaign directory.</p>
 </dd>
 </dl>
@@ -664,7 +663,7 @@ containing folder.</p>
 <dd><p>Initialize a new class instance with a set configuration and filename.</p>
 <p>The created database has the same name of the campaign directory.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>script</strong> (<em>str</em>) – the ns-3 name of the script that will be used in this
 campaign;</p></li>
@@ -691,7 +690,7 @@ overwritten.</p></li>
 
 </section>
 <section id="module-sem.utils">
-<span id="utils"></span><h2>Utils<a class="headerlink" href="#module-sem.utils" title="Permalink to this headline">¶</a></h2>
+<span id="utils"></span><h2>Utils<a class="headerlink" href="#module-sem.utils" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="sem.utils.automatic_parser">
 <span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">automatic_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtypes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">converters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/utils.html#automatic_parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.utils.automatic_parser" title="Permalink to this definition">¶</a></dt>
@@ -700,7 +699,7 @@ list structures.</p>
 <p>Under the hood, this function essentially applies the genfromtxt function
 to all files in the output, and passes it the additional kwargs.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>result</strong> (<em>dict</em>) – the result to parse.</p></li>
 <li><p><strong>dtypes</strong> (<em>dict</em>) – a dictionary containing the dtype specification to perform
@@ -740,7 +739,7 @@ values for the parameter.
 <span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">get_command_from_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/utils.html#get_command_from_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.utils.get_command_from_result" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the command that is needed to obtain a certain result.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>params</strong> (<em>dict</em>) – Dictionary containing parameter: value pairs.</p></li>
 <li><p><strong>debug</strong> (<em>bool</em>) – Whether the command should include the debugging
@@ -783,7 +782,7 @@ specification.</p>
 <p>Under the hood, this function essentially applies the genfromtxt function
 to the stdout.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>result</strong> (<em>dict</em>) – the result to parse.</p>
 </dd>
 </dl>
@@ -802,10 +801,72 @@ to the stdout.</p>
 <h3><a href="index.html">Contents</a></h3>
 <ul>
 <li><a class="reference internal" href="#">API Reference</a><ul>
-<li><a class="reference internal" href="#campaignmanager">CampaignManager</a></li>
-<li><a class="reference internal" href="#simulationrunner">SimulationRunner</a></li>
-<li><a class="reference internal" href="#databasemanager">DatabaseManager</a></li>
-<li><a class="reference internal" href="#module-sem.utils">Utils</a></li>
+<li><a class="reference internal" href="#campaignmanager">CampaignManager</a><ul>
+<li><a class="reference internal" href="#sem.CampaignManager"><code class="docutils literal notranslate"><span class="pre">CampaignManager</span></code></a><ul>
+<li><a class="reference internal" href="#sem.CampaignManager.check_repo_ok"><code class="docutils literal notranslate"><span class="pre">CampaignManager.check_repo_ok()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.create_runner"><code class="docutils literal notranslate"><span class="pre">CampaignManager.create_runner()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.files_in_dictionary"><code class="docutils literal notranslate"><span class="pre">CampaignManager.files_in_dictionary()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.get_missing_simulations"><code class="docutils literal notranslate"><span class="pre">CampaignManager.get_missing_simulations()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.get_results_as_dataframe"><code class="docutils literal notranslate"><span class="pre">CampaignManager.get_results_as_dataframe()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.get_results_as_numpy_array"><code class="docutils literal notranslate"><span class="pre">CampaignManager.get_results_as_numpy_array()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.get_results_as_xarray"><code class="docutils literal notranslate"><span class="pre">CampaignManager.get_results_as_xarray()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.get_space"><code class="docutils literal notranslate"><span class="pre">CampaignManager.get_space()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.load"><code class="docutils literal notranslate"><span class="pre">CampaignManager.load()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.new"><code class="docutils literal notranslate"><span class="pre">CampaignManager.new()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.run_missing_simulations"><code class="docutils literal notranslate"><span class="pre">CampaignManager.run_missing_simulations()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.run_simulations"><code class="docutils literal notranslate"><span class="pre">CampaignManager.run_simulations()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.save_to_folders"><code class="docutils literal notranslate"><span class="pre">CampaignManager.save_to_folders()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.save_to_mat_file"><code class="docutils literal notranslate"><span class="pre">CampaignManager.save_to_mat_file()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.save_to_npy_file"><code class="docutils literal notranslate"><span class="pre">CampaignManager.save_to_npy_file()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.space_to_folders"><code class="docutils literal notranslate"><span class="pre">CampaignManager.space_to_folders()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#simulationrunner">SimulationRunner</a><ul>
+<li><a class="reference internal" href="#sem.SimulationRunner"><code class="docutils literal notranslate"><span class="pre">SimulationRunner</span></code></a><ul>
+<li><a class="reference internal" href="#sem.SimulationRunner.configure_and_build"><code class="docutils literal notranslate"><span class="pre">SimulationRunner.configure_and_build()</span></code></a></li>
+<li><a class="reference internal" href="#sem.SimulationRunner.get_available_parameters"><code class="docutils literal notranslate"><span class="pre">SimulationRunner.get_available_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#sem.SimulationRunner.get_build_output"><code class="docutils literal notranslate"><span class="pre">SimulationRunner.get_build_output()</span></code></a></li>
+<li><a class="reference internal" href="#sem.SimulationRunner.run_simulations"><code class="docutils literal notranslate"><span class="pre">SimulationRunner.run_simulations()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#databasemanager">DatabaseManager</a><ul>
+<li><a class="reference internal" href="#sem.DatabaseManager"><code class="docutils literal notranslate"><span class="pre">DatabaseManager</span></code></a><ul>
+<li><a class="reference internal" href="#sem.DatabaseManager.delete_result"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.delete_result()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_all_values_of_all_params"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_all_values_of_all_params()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_commit"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_commit()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_complete_results"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_complete_results()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_config"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_config()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_data_dir"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_data_dir()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_next_rngruns"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_next_rngruns()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_next_values"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_next_values()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_params"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_params()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_result_files"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_result_files()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_results"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_results()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_script"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_script()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.have_same_structure"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.have_same_structure()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.insert_result"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.insert_result()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.load"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.load()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.new"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.new()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.wipe_results"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.wipe_results()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-sem.utils">Utils</a><ul>
+<li><a class="reference internal" href="#sem.utils.automatic_parser"><code class="docutils literal notranslate"><span class="pre">automatic_parser()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.compute_sensitivity_analysis"><code class="docutils literal notranslate"><span class="pre">compute_sensitivity_analysis()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.constant_array_parser"><code class="docutils literal notranslate"><span class="pre">constant_array_parser()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.get_bounds"><code class="docutils literal notranslate"><span class="pre">get_bounds()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.get_command_from_result"><code class="docutils literal notranslate"><span class="pre">get_command_from_result()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.list_param_combinations"><code class="docutils literal notranslate"><span class="pre">list_param_combinations()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.salib_param_values_to_params"><code class="docutils literal notranslate"><span class="pre">salib_param_values_to_params()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.stdout_automatic_parser"><code class="docutils literal notranslate"><span class="pre">stdout_automatic_parser()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -826,7 +887,7 @@ to the stdout.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -835,7 +896,7 @@ to the stdout.</p>
       &copy;2021, Davide Magrin.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.0.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
