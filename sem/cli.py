@@ -8,6 +8,7 @@ import re
 import glob
 import shutil
 from tinydb import TinyDB
+from tinydb.table import Document
 
 
 @click.group()
@@ -360,10 +361,15 @@ def merge(move, output_dir, sources):
     db.table('config').insert_multiple(reference_config.all())
 
     # Import results from all databases to the new JSON file
+    new_doc_id = 1
     for s in sources:
         filename = "%s.json" % os.path.split(s)[1]
         current_db = TinyDB(os.path.join(s, filename))
-        db.table('results').insert_multiple(current_db.table('results').all())
+
+        # Assign a globally unique document ID to the result entries
+        for result in current_db.table('results').all():
+            db.table('results').insert(Document(result, doc_id=new_doc_id))
+            new_doc_id = new_doc_id + 1
 
     # Copy or move results to new data folder
     for s in sources:
