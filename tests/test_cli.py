@@ -15,7 +15,7 @@ def test_cli_run(tmpdir, ns_3_compiled, config):
     runner.invoke(sem.cli, ['run', '--ns-3-path=%s' % ns_3_compiled,
                             '--results-dir=%s' % tmpdir.join('results'),
                             '--script=%s' % config['script']],
-                  input="'/usr/share/dict/web2'\n'false'\n1\n",
+                  input="'/usr/share/dict/american-english'\n'false'\n1\n",
                   catch_exceptions=False)
 
 
@@ -26,7 +26,7 @@ def test_parameters_from_file(tmpdir, ns_3_compiled, config):
     param_file = str(tmpdir.join("parameters.txt"))
     with open(param_file, 'w') as f:
         lines = [
-            "dict: '/usr/share/dict/web2'\n",
+            "dict: '/usr/share/dict/american-english'\n",
             "time: [False, True]"
         ]
         f.writelines(lines)
@@ -62,13 +62,13 @@ def test_cli_merge(tmpdir, ns_3_compiled, config):
     runner.invoke(sem.cli, ['run', '--ns-3-path=%s' % ns_3_compiled,
                             '--results-dir=%s' % tmpdir.join('results_primary'),
                             '--script=%s' % config['script']],
-                  input="'/usr/share/dict/web2'\n'false'\n1\n",
+                  input="'/usr/share/dict/american-english'\n'false'\n1\n",
                   catch_exceptions=False)
 
     runner.invoke(sem.cli, ['run', '--ns-3-path=%s' % ns_3_compiled,
                             '--results-dir=%s' % tmpdir.join('results_secondary'),
                             '--script=%s' % config['script']],
-                  input="'/usr/share/dict/web2'\n'false'\n1\n",
+                  input="'/usr/share/dict/american-english'\n'false'\n1\n",
                   catch_exceptions=False)
 
     runner.invoke(sem.cli, ['merge', str(tmpdir.join('results_merged')),
@@ -79,7 +79,9 @@ def test_cli_merge(tmpdir, ns_3_compiled, config):
     runner.invoke(sem.cli, ['merge', '--move', str(tmpdir.join('results_merged_moved')),
                             str(tmpdir.join('results_primary')),
                             str(tmpdir.join('results_secondary'))],
-                  catch_exceptions=False)
+                  catch_exceptions=False) 
+
+    print("stop here!")
 
     # TODO Check that the new folders actually have all results we expect them
     # to have
@@ -92,7 +94,7 @@ def test_cli_workflow(tmpdir, ns_3_compiled, config):
     runner.invoke(sem.cli, ['run', '--ns-3-path=%s' % ns_3_compiled,
                             '--results-dir=%s' % tmpdir.join('results'),
                             '--script=%s' % config['script']],
-                  input="'/usr/share/dict/web2'\n'false'\n1\n",
+                  input="'/usr/share/dict/american-english'\n'false'\n1\n",
                   catch_exceptions=False)
 
     # Run again, this time defaults should be shown since we have already some
@@ -134,7 +136,7 @@ def test_cli_workflow(tmpdir, ns_3_compiled, config):
     # Accept a query
     runner.invoke(sem.cli, ['view', '--results-dir=%s' %
                             tmpdir.join('results')],
-                  input="['/usr/share/dict/web2']\n['false']\nq",
+                  input="['/usr/share/dict/american-english']\n['false']\nq",
                   catch_exceptions=False)
 
     # Show results including simulation output

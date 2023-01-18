@@ -112,29 +112,29 @@ def result(config):
 def parameter_combination_no_rngrun():
     # We need to explicitly state we want an OrderedDict here in order to
     # support python3 < 3.6 - since python3 3.6, dicts are ordered by default
-    return collections.OrderedDict([('dict', '/usr/share/dict/web2'),
+    return collections.OrderedDict([('dict', '/usr/share/dict/american-english'),
                                     ('time', False)])
 
 @pytest.fixture(scope='function')
 def parameter_combination():
     # We need to explicitly state we want an OrderedDict here in order to
     # support python3 < 3.6 - since python3 3.6, dicts are ordered by default
-    return collections.OrderedDict([('dict', '/usr/share/dict/web2'),
+    return collections.OrderedDict([('dict', '/usr/share/dict/american-english'),
                                     ('time', False),
                                     ('RngRun', '0')])
 
 
 @pytest.fixture(scope='function')
 def parameter_combination_2():
-    return collections.OrderedDict([('dict', '/usr/share/dict/web2a'),
+    return collections.OrderedDict([('dict', '/usr/share/dict/british-english'),
                                     ('time', True),
                                     ('RngRun', '0')])
 
 
 @pytest.fixture(scope='function')
 def parameter_combination_range():
-    return collections.OrderedDict([('dict', ['/usr/share/dict/web2',
-                                              '/usr/share/dict/web2a']),
+    return collections.OrderedDict([('dict', ['/usr/share/dict/american-english',
+                                              '/usr/share/dict/british-english']),
                                     ('time', [False, True])])
 
 

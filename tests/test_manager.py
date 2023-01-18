@@ -125,7 +125,7 @@ def test_get_results_as_numpy_array(tmpdir, manager,
 def test_save_to_mat_file(tmpdir, manager, result, parameter_combination):
     mat_file = str(tmpdir.join('results.mat'))
     manager.run_missing_simulations(parameter_combination)
-    manager.save_to_mat_file({'time': 'false', 'dict': '/usr/share/dict/web2'},
+    manager.save_to_mat_file({'time': 'false', 'dict': '/usr/share/dict/american-english'},
                              sem.utils.constant_array_parser,
                              mat_file, 1)
     # Just check the file was created

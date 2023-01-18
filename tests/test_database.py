@@ -161,19 +161,19 @@ def test_results_queries(db, result):
     assert sorted([d['params']['RngRun'] for d in results]) == list(range(10))
 
     # Insert other runs for a different parameter combination
-    result['params']['dict'] = '/usr/share/dict/web2a'
+    result['params']['dict'] = '/usr/share/dict/british-english'
     for runIdx in range(10, 20, 1):
         result['params']['RngRun'] = runIdx
         db.insert_result(result)
 
     # This query should return all results
-    results = list(db.get_results({'dict': ['/usr/share/dict/web2a',
-                                       '/usr/share/dict/web2']}))
+    results = list(db.get_results({'dict': ['/usr/share/dict/british-english',
+                                            '/usr/share/dict/american-english']}))
     assert len(results) == 20
     assert sorted([d['params']['RngRun'] for d in results]) == list(range(20))
 
     # This one should only return the second batch
-    results = list(db.get_results({'dict': ['/usr/share/dict/web2a']}))
+    results = list(db.get_results({'dict': ['/usr/share/dict/british-english']}))
     assert len(results) == 10
     assert sorted([d['params']['RngRun'] for d in results]) == list(range(10,
                                                                           20,
