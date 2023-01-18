@@ -96,7 +96,7 @@ def config(tmpdir, ns_3_compiled):
 def result(config):
     r = {
         'params': collections.OrderedDict(
-            [('dict', '/usr/share/dict/web2'),
+            [('dict', '/usr/share/dict/american-english'),
              ('time', False),
              ('RngRun', 10)]),
         'meta': {
