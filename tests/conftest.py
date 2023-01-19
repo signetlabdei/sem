@@ -18,13 +18,15 @@ def get_build_program(ns_3_dir):
     if os.path.exists(os.path.join(ns_3_dir, "ns3")):
         return "./ns3"
     else:
-        return "./waf"
+        return "python3 ./waf"
 
 @pytest.fixture(scope='function')
 def ns_3(tmpdir):
     # Copy the test ns-3 installation in the temporary directory
     ns_3_tempdir = tmpdir.join('ns-3')
-    shutil.copytree(ns_3_test, str(ns_3_tempdir), symlinks=True)
+    shutil.copytree(ns_3_test, str(ns_3_tempdir), symlinks=True,
+                    # Do not copy cmake's cache, as it is directory-dependant 
+                    ignore=shutil.ignore_patterns("cmake-cache"))  
     return ns_3_tempdir
 
 
@@ -39,7 +41,7 @@ def ns_3_compiled(tmpdir):
     build_program = get_build_program(ns_3_tempdir)
 
     # Relocate build by running the same command in the new directory
-    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
+    if subprocess.call([build_program, 'configure', '--disable-gtk',
                         '--build-profile=optimized',
                         '--out=build/optimized'],
                        cwd=ns_3_tempdir,
@@ -47,7 +49,7 @@ def ns_3_compiled(tmpdir):
                        stderr=subprocess.DEVNULL) > 0:
         raise Exception("Configuration failed")
     
-    if subprocess.call(['python3', build_program, 'build'],
+    if subprocess.call([build_program, 'build'],
                        cwd=ns_3_tempdir,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL) > 0:
@@ -60,12 +62,14 @@ def ns_3_compiled(tmpdir):
 def ns_3_compiled_debug(tmpdir):
     # Copy the test ns-3 installation in the temporary directory
     ns_3_tempdir = str(tmpdir.join('ns-3-compiled-debug'))
-    shutil.copytree(ns_3_test_compiled_debug, ns_3_tempdir, symlinks=True)
+    shutil.copytree(ns_3_test_compiled_debug, ns_3_tempdir, symlinks=True,
+                    # Do not copy cmake's cache, as it is directory-dependant 
+                    ignore=shutil.ignore_patterns("cmake-cache"))  
 
     build_program = get_build_program(ns_3_tempdir)
 
     # Relocate build by running the same command in the new directory
-    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
+    if subprocess.call([build_program, 'configure', '--disable-gtk',
                         '--build-profile=debug',
                         '--out=build'],
                        cwd=ns_3_tempdir,
@@ -73,7 +77,7 @@ def ns_3_compiled_debug(tmpdir):
                        stderr=subprocess.DEVNULL) > 0:
         raise Exception("Configuration failed")
     
-    if subprocess.call(['python3', build_program, 'build'],
+    if subprocess.call([build_program, 'build'],
                        cwd=ns_3_tempdir,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL) > 0:
@@ -151,19 +155,25 @@ def get_and_compile_ns_3():
 
     # Copy folder to compile in optimized mode
     if not os.path.exists(ns_3_test_compiled):
-        shutil.copytree(ns_3_test, ns_3_test_compiled, symlinks=True)
+        shutil.copytree(ns_3_test, ns_3_test_compiled, symlinks=True,
+                        # Do not copy cmake's cache, as it is directory-dependant 
+                        ignore=shutil.ignore_patterns("cmake-cache"))  
 
     # Copy folder to compile in debug mode
     if not os.path.exists(ns_3_test_compiled_debug):
-        shutil.copytree(ns_3_test, ns_3_test_compiled_debug, symlinks=True)
+        shutil.copytree(ns_3_test, ns_3_test_compiled_debug, symlinks=True,
+                        # Do not copy cmake's cache, as it is directory-dependant 
+                        ignore=shutil.ignore_patterns("cmake-cache"))  
 
     # Copy folder to run examples
     if not os.path.exists(ns_3_examples):
-        shutil.copytree(ns_3_test, ns_3_examples, symlinks=True)
+        shutil.copytree(ns_3_test, ns_3_examples, symlinks=True,
+                        # Do not copy cmake's cache, as it is directory-dependant 
+                        ignore=shutil.ignore_patterns("cmake-cache"))  
 
     build_program = get_build_program(ns_3_test_compiled)
 
-    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
+    if subprocess.call([build_program, 'configure', '--disable-gtk',
                         '--build-profile=optimized',
                         '--out=build/optimized'],
                        cwd=ns_3_test_compiled,
@@ -171,7 +181,7 @@ def get_and_compile_ns_3():
                        stderr=subprocess.STDOUT) != 0:
         raise Exception("Optimized test configuration failed.")
     
-    if subprocess.call(['python3', build_program, 'build'],
+    if subprocess.call([build_program, 'build'],
                        cwd=ns_3_test_compiled,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL) > 0:
@@ -179,7 +189,7 @@ def get_and_compile_ns_3():
 
     build_program = get_build_program(ns_3_test_compiled_debug)
 
-    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
+    if subprocess.call([build_program, 'configure', '--disable-gtk',
                         '--build-profile=debug',
                         '--out=build'],
                        cwd=ns_3_test_compiled_debug,
@@ -187,7 +197,7 @@ def get_and_compile_ns_3():
                        stderr=subprocess.STDOUT) != 0:
         raise Exception("Debug test configuration failed.")
     
-    if subprocess.call(['python3', build_program, 'build'],
+    if subprocess.call([build_program, 'build'],
                        cwd=ns_3_test_compiled,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL) > 0:
@@ -195,7 +205,7 @@ def get_and_compile_ns_3():
 
     build_program = get_build_program(ns_3_examples)
 
-    if subprocess.call(['python3', build_program, 'configure', '--disable-gtk',
+    if subprocess.call([build_program, 'configure', '--disable-gtk',
                         '--build-profile=optimized',
                         '--out=build/optimized'],
                        cwd=ns_3_examples,
@@ -204,7 +214,7 @@ def get_and_compile_ns_3():
 
         raise Exception("Examples configuration failed.")
     
-    if subprocess.call(['python3', build_program, 'build'],
+    if subprocess.call([build_program, 'build'],
                        cwd=ns_3_test_compiled,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL) > 0:
