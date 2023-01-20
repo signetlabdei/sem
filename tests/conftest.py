@@ -91,7 +91,7 @@ def config(tmpdir, ns_3_compiled):
     return {
         'script': 'hash-example',
         'commit': Repo(ns_3_compiled).head.commit.hexsha,
-        'params': {'dict': None, 'time': False},
+        'params': {'dict': '/usr/share/dict/words', 'time': False},
         'campaign_dir': str(tmpdir.join('test_campaign')),
     }
 
@@ -144,8 +144,9 @@ def parameter_combination_range():
 
 @pytest.fixture(scope='function')
 def manager(ns_3_compiled, config):
-    return CampaignManager.new(ns_3_compiled, config['script'],
+    manager = CampaignManager.new(ns_3_compiled, config['script'],
                                config['campaign_dir'])
+    return manager
 
 
 def get_and_compile_ns_3():
