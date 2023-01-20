@@ -37,6 +37,7 @@
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">uuid</span>
 <span class="kn">import</span> <span class="nn">sem.utils</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 
 <span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
 
@@ -95,17 +96,27 @@
 
         <span class="c1"># ns-3&#39;s build status output is used to get the executable path for the</span>
         <span class="c1"># specified script.</span>
-        <span class="k">if</span> <span class="n">optimized</span><span class="p">:</span>
-            <span class="n">build_status_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span>
-                                             <span class="s1">&#39;build/optimized/build-status.py&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;ns3&quot;</span><span class="p">)):</span>
+            <span class="c1"># In newer versions of ns-3 (3.36+), the name of the build status file is </span>
+            <span class="c1"># platform-dependent</span>
+            <span class="n">build_status_fname</span> <span class="o">=</span> <span class="s2">&quot;.lock-ns3_</span><span class="si">%s</span><span class="s2">_build&quot;</span> <span class="o">%</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span>
+            <span class="n">build_status_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">build_status_fname</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">build_status_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span>
-                                             <span class="s1">&#39;build/build-status.py&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">optimized</span><span class="p">:</span>
+                <span class="n">build_status_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span>
+                                                <span class="s1">&#39;build/optimized/build-status.py&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">build_status_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span>
+                                                <span class="s1">&#39;build/build-status.py&#39;</span><span class="p">)</span>
 
         <span class="c1"># By importing the file, we can naturally get the dictionary</span>
         <span class="k">try</span><span class="p">:</span>  <span class="c1"># This only works on Python &gt;= 3.5</span>
-            <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span><span class="s1">&#39;build_status&#39;</span><span class="p">,</span>
-                                                          <span class="n">build_status_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;ns3&quot;</span><span class="p">)):</span>
+                <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span><span class="n">build_status_fname</span><span class="p">,</span>
+                                                              <span class="n">build_status_path</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span><span class="s1">&#39;build_status&#39;</span><span class="p">,</span>
+                                                              <span class="n">build_status_path</span><span class="p">)</span>
             <span class="n">build_status</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">module_from_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
             <span class="n">spec</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">exec_module</span><span class="p">(</span><span class="n">build_status</span><span class="p">)</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">):</span>  <span class="c1"># This happens in Python &lt;= 3.4</span>
@@ -135,7 +146,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">script_executable</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">match_percentages</span><span class="p">,</span>
                                      <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;percentage&#39;</span><span class="p">])[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
 
-        <span class="k">if</span> <span class="s2">&quot;scratch&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">script_executable</span><span class="p">:</span>
+        <span class="c1"># This step is not needed for CMake versions of ns-3</span>
+        <span class="k">if</span> <span class="s2">&quot;scratch&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">script_executable</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;ns3&quot;</span><span class="p">)):</span>
             <span class="n">path_with_subdir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">script_executable</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/scratch/&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
             <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;/&quot;</span> <span class="ow">in</span> <span class="n">path_with_subdir</span><span class="p">):</span>  <span class="c1"># Script is in a subdir</span>
                 <span class="n">executable_subpath</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">script</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">script</span><span class="p">)</span>
@@ -170,7 +182,7 @@
 <span class="sd">                and only perform compilation.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="n">build_program</span> <span class="o">=</span> <span class="s2">&quot;ns3&quot;</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;ns3&quot;</span><span class="p">))</span> <span class="k">else</span> <span class="s2">&quot;waf&quot;</span>
+        <span class="n">build_program</span> <span class="o">=</span> <span class="s2">&quot;./ns3&quot;</span> <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;ns3&quot;</span><span class="p">))</span> <span class="k">else</span> <span class="s2">&quot;./waf&quot;</span>
 
         <span class="c1"># Only configure if necessary</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">skip_configuration</span><span class="p">:</span>
@@ -416,8 +428,8 @@
       &copy;2021, Davide Magrin.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.0.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 6.1.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
       
     </div>
 
