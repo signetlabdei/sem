@@ -18,7 +18,7 @@ def get_build_program(ns_3_dir):
     if os.path.exists(os.path.join(ns_3_dir, "ns3")):
         return "./ns3"
     else:
-        return "python3 ./waf"
+        return "./waf"
 
 @pytest.fixture(scope='function')
 def ns_3(tmpdir):
