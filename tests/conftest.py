@@ -173,14 +173,21 @@ def get_and_compile_ns_3():
                         ignore=shutil.ignore_patterns("cmake-cache"))  
 
     build_program = get_build_program(ns_3_test_compiled)
-
-    if subprocess.call([build_program, 'configure', '--disable-gtk',
+    try:
+        subprocess.check_output([build_program, 'configure', '--disable-gtk',
                         '--build-profile=optimized',
                         '--out=build/optimized'],
                        cwd=ns_3_test_compiled,
-                       stdout=subprocess.DEVNULL,
-                       stderr=subprocess.STDOUT) != 0:
-        raise Exception("Optimized test configuration failed.")
+                       stderr=subprocess.PIPE)
+    except subprocess.CalledProcessError as e:
+        print(e.stderr)
+        print(e.stdout)
+
+    if 1 != 0:
+        print (f'Path: {ns_3_test_compiled}')
+        print (f'Optimized test configuration failed.\nBuild program {build_program}')
+        print (f'Configure command {build_program} configure --disable-gtk --build-profile=optimized --out=build/optimized')
+        raise Exception("Optimized failed")
     
     if subprocess.call([build_program, 'build'],
                        cwd=ns_3_test_compiled,

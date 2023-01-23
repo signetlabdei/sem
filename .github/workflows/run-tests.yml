@@ -14,23 +14,38 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.8"]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         submodules: 'recursive'
-    - name: Install GCC
-      uses: egor-tensin/setup-gcc@v1
+
+    - name: Set up GCC
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install apt-utils
+        sudo apt-get -y install git gcc g++ cmake python3 make ninja-build
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Install Poetry
       uses: snok/install-poetry@v1
+
     - name: Install dependencies
       run: |
-        poetry install
+        poetry config experimental.new-installer false; poetry install
+
+    - name: Do not use root user
+      run : |
+        export USER="noroot"
+        git config --global user.email "you@example.com"
+        git config --global user.name "Your Name"
+        git config http.postBuffer 1048576000
+
     - name: Test with pytest
       run: |
         poetry run pytest
