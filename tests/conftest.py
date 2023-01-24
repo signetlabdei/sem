@@ -189,7 +189,6 @@ def get_and_compile_ns_3():
     try:
         subprocess.check_output([build_program, 'build'],
                        cwd=ns_3_test_compiled,
-                       stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError as e:
         print(f'STDERR: {e.stderr}')
@@ -205,7 +204,6 @@ def get_and_compile_ns_3():
                         '--build-profile=debug',
                         '--out=build'],
                        cwd=ns_3_test_compiled_debug,
-                       stdout=subprocess.DEVNULL,
                        stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         print(f'STDERR: {e.stderr}')
@@ -217,7 +215,6 @@ def get_and_compile_ns_3():
     try:
         subprocess.check_output([build_program, 'build'],
                        cwd=ns_3_test_compiled,
-                       stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError as e:
         print(f'STDERR: {e.stderr}')
@@ -233,7 +230,6 @@ def get_and_compile_ns_3():
                         '--build-profile=optimized',
                         '--out=build/optimized'],
                        cwd=ns_3_examples,
-                       stdout=subprocess.DEVNULL,
                        stderr=subprocess.STDOUT)
 
     except subprocess.CalledProcessError as e:
@@ -246,7 +242,6 @@ def get_and_compile_ns_3():
     try:
         subprocess.check_output([build_program, 'build'],
                        cwd=ns_3_test_compiled,
-                       stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError as e:
         print(f'STDERR: {e.stderr}')
