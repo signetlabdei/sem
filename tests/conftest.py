@@ -166,12 +166,6 @@ def get_and_compile_ns_3():
                         # Do not copy cmake's cache, as it is directory-dependant 
                         ignore=shutil.ignore_patterns("cmake-cache"))  
 
-    # Copy folder to run examples
-    if not os.path.exists(ns_3_examples):
-        shutil.copytree(ns_3_test, ns_3_examples, symlinks=True,
-                        # Do not copy cmake's cache, as it is directory-dependant 
-                        ignore=shutil.ignore_patterns("cmake-cache"))  
-
     build_program = get_build_program(ns_3_test_compiled)
     try:
         subprocess.check_output([build_program, 'configure', '--disable-gtk',
@@ -208,18 +202,18 @@ def get_and_compile_ns_3():
     except subprocess.CalledProcessError as e:
         print(f'STDERR: {e.stderr}')
         print(f'STDOUT: {e.stdout}')
-        print (f'Path: {ns_3_test_compiled}')
+        print (f'Path: {ns_3_test_compiled_debug}')
         print (f'Debug test build failed.\nBuild program {build_program}')
         raise Exception("Optimized failed")
     
     try:
         subprocess.check_output([build_program, 'build'],
-                       cwd=ns_3_test_compiled,
+                       cwd=ns_3_test_compiled_debug,
                        stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError as e:
         print(f'STDERR: {e.stderr}')
         print(f'STDOUT: {e.stdout}')
-        print (f'Path: {ns_3_test_compiled}')
+        print (f'Path: {ns_3_test_compiled_debug}')
         print (f'Debug test build failed.\nBuild program {build_program}')
         raise Exception("Debug failed")
 
@@ -235,18 +229,18 @@ def get_and_compile_ns_3():
     except subprocess.CalledProcessError as e:
         print(f'STDERR: {e.stderr}')
         print(f'STDOUT: {e.stdout}')
-        print (f'Path: {ns_3_test_compiled}')
+        print (f'Path: {ns_3_examples}')
         print (f'Debug test build failed.\nBuild program {build_program}')
         raise Exception("Optimized failed")
     
     try:
         subprocess.check_output([build_program, 'build'],
-                       cwd=ns_3_test_compiled,
+                       cwd=ns_3_examples,
                        stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError as e:
         print(f'STDERR: {e.stderr}')
         print(f'STDOUT: {e.stdout}')
-        print (f'Path: {ns_3_test_compiled}')
+        print (f'Path: {ns_3_examples}')
         print (f'Debug test build failed.\nBuild program {build_program}')
         raise Exception("Optimized failed")
 
