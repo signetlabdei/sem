@@ -1,4 +1,4 @@
 [submodule "examples/ns-3"]
 	path = examples/ns-3
-	url = https://github.com/signetlabdei/sem-ns-3-dev
-	branch = sem-examples
+	url = https://gitlab.com/nsnam/ns-3-dev
+	branch = ns-3.35
