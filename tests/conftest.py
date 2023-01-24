@@ -180,10 +180,8 @@ def get_and_compile_ns_3():
                        cwd=ns_3_test_compiled,
                        stderr=subprocess.PIPE)
     except subprocess.CalledProcessError as e:
-        print(e.stderr)
-        print(e.stdout)
-
-    if 1 != 0:
+        print(f'STDERR: {e.stderr}')
+        print(f'STDOUT: {e.stdout}')
         print (f'Path: {ns_3_test_compiled}')
         print (f'Optimized test configuration failed.\nBuild program {build_program}')
         print (f'Configure command {build_program} configure --disable-gtk --build-profile=optimized --out=build/optimized')
