@@ -193,7 +193,7 @@ def get_and_compile_ns_3():
         raise Exception("Debug test configuration failed.")
     
     if subprocess.call([build_program, 'build'],
-                       cwd=ns_3_test_compiled,
+                       cwd=ns_3_test_compiled_debug,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL) > 0:
         raise Exception("Debug test build failed.")
@@ -207,7 +207,6 @@ def get_and_compile_ns_3():
                        cwd=ns_3_examples,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.STDOUT) != 0:
-
         raise Exception("Examples configuration failed.")
     
     if subprocess.call([build_program, 'build'],
