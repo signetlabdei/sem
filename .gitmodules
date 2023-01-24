@@ -1,4 +1,0 @@
-[submodule "examples/ns-3"]
-	path = examples/ns-3
-	url = https://gitlab.com/nsnam/ns-3-dev.git
-	branch = ac88b75eac1818c673cf2c939a96ac3005b1f051
