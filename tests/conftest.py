@@ -183,48 +183,77 @@ def get_and_compile_ns_3():
         print(f'STDERR: {e.stderr}')
         print(f'STDOUT: {e.stdout}')
         print (f'Path: {ns_3_test_compiled}')
-        print (f'Optimized test configuration failed.\nBuild program {build_program}')
-        print (f'Configure command {build_program} configure --disable-gtk --build-profile=optimized --out=build/optimized')
+        print (f'Optimized test build failed.\nBuild program {build_program}')
         raise Exception("Optimized failed")
     
-    if subprocess.call([build_program, 'build'],
+    try:
+        subprocess.check_output([build_program, 'build'],
                        cwd=ns_3_test_compiled,
                        stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL) > 0:
-        raise Exception("Optimized test build failed.")
+                       stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError as e:
+        print(f'STDERR: {e.stderr}')
+        print(f'STDOUT: {e.stdout}')
+        print (f'Path: {ns_3_test_compiled}')
+        print (f'Optimized test build failed.\nBuild program {build_program}')
+        raise Exception("Optimized failed")
 
     build_program = get_build_program(ns_3_test_compiled_debug)
 
-    if subprocess.call([build_program, 'configure', '--disable-gtk',
+    try:
+        subprocess.check_output([build_program, 'configure', '--disable-gtk',
                         '--build-profile=debug',
                         '--out=build'],
                        cwd=ns_3_test_compiled_debug,
                        stdout=subprocess.DEVNULL,
-                       stderr=subprocess.STDOUT) != 0:
-        raise Exception("Debug test configuration failed.")
+                       stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        print(f'STDERR: {e.stderr}')
+        print(f'STDOUT: {e.stdout}')
+        print (f'Path: {ns_3_test_compiled}')
+        print (f'Debug test build failed.\nBuild program {build_program}')
+        raise Exception("Optimized failed")
     
-    if subprocess.call([build_program, 'build'],
+    try:
+        subprocess.check_output([build_program, 'build'],
                        cwd=ns_3_test_compiled,
                        stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL) > 0:
-        raise Exception("Debug test build failed.")
+                       stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError as e:
+        print(f'STDERR: {e.stderr}')
+        print(f'STDOUT: {e.stdout}')
+        print (f'Path: {ns_3_test_compiled}')
+        print (f'Debug test build failed.\nBuild program {build_program}')
+        raise Exception("Debug failed")
 
     build_program = get_build_program(ns_3_examples)
 
-    if subprocess.call([build_program, 'configure', '--disable-gtk',
+    try:
+        subprocess.check_output([build_program, 'configure', '--disable-gtk',
                         '--build-profile=optimized',
                         '--out=build/optimized'],
                        cwd=ns_3_examples,
                        stdout=subprocess.DEVNULL,
-                       stderr=subprocess.STDOUT) != 0:
+                       stderr=subprocess.STDOUT)
 
-        raise Exception("Examples configuration failed.")
+    except subprocess.CalledProcessError as e:
+        print(f'STDERR: {e.stderr}')
+        print(f'STDOUT: {e.stdout}')
+        print (f'Path: {ns_3_test_compiled}')
+        print (f'Debug test build failed.\nBuild program {build_program}')
+        raise Exception("Optimized failed")
     
-    if subprocess.call([build_program, 'build'],
+    try:
+        subprocess.check_output([build_program, 'build'],
                        cwd=ns_3_test_compiled,
                        stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL) > 0:
-        raise Exception("Examples build failed.")
+                       stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError as e:
+        print(f'STDERR: {e.stderr}')
+        print(f'STDOUT: {e.stdout}')
+        print (f'Path: {ns_3_test_compiled}')
+        print (f'Debug test build failed.\nBuild program {build_program}')
+        raise Exception("Optimized failed")
 
 #########################################################################
 # Clean up after each session                                           #
