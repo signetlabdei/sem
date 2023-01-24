@@ -42,12 +42,8 @@ jobs:
       run: |
         poetry config experimental.new-installer false; poetry install
 
-    - name: Do not use root user
-      run : |
-        export USER="noroot"
-        git config --global user.email "you@example.com"
-        git config --global user.name "Your Name"
-        git config http.postBuffer 1048576000
+    - name: Check again user
+      run: whoami
 
     - name: Test with pytest
       run: |
