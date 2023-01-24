@@ -42,7 +42,7 @@ def ns_3_compiled(tmpdir):
 
     # Relocate build by running the same command in the new directory
     if subprocess.call([build_program, 'configure', '--disable-gtk',
-                        '--build-profile=optimized',
+                        '--build-profile=optimized', '--enable-modules=core',
                         '--out=build/optimized'],
                        cwd=ns_3_tempdir,
                        stdout=subprocess.DEVNULL,
@@ -70,7 +70,7 @@ def ns_3_compiled_debug(tmpdir):
 
     # Relocate build by running the same command in the new directory
     if subprocess.call([build_program, 'configure', '--disable-gtk',
-                        '--build-profile=debug',
+                        '--build-profile=debug', '--enable-modules=core',
                         '--out=build'],
                        cwd=ns_3_tempdir,
                        stdout=subprocess.DEVNULL,
@@ -150,7 +150,7 @@ def manager(ns_3_compiled, config):
 
 
 def get_and_compile_ns_3():
-    # Clone ns-3
+    # Clone latest ns-3
     if not os.path.exists(ns_3_test):
         Repo.clone_from('https://gitlab.com/nsnam/ns-3-dev.git', ns_3_test)
 
@@ -164,18 +164,12 @@ def get_and_compile_ns_3():
     if not os.path.exists(ns_3_test_compiled_debug):
         shutil.copytree(ns_3_test, ns_3_test_compiled_debug, symlinks=True,
                         # Do not copy cmake's cache, as it is directory-dependant 
-                        ignore=shutil.ignore_patterns("cmake-cache"))  
-
-    # Copy folder to run examples
-    if not os.path.exists(ns_3_examples):
-        shutil.copytree(ns_3_test, ns_3_examples, symlinks=True,
-                        # Do not copy cmake's cache, as it is directory-dependant 
-                        ignore=shutil.ignore_patterns("cmake-cache"))  
+                        ignore=shutil.ignore_patterns("cmake-cache"))    
 
     build_program = get_build_program(ns_3_test_compiled)
 
     if subprocess.call([build_program, 'configure', '--disable-gtk',
-                        '--build-profile=optimized',
+                        '--build-profile=optimized', '--enable-modules=core',
                         '--out=build/optimized'],
                        cwd=ns_3_test_compiled,
                        stdout=subprocess.DEVNULL,
@@ -191,7 +185,7 @@ def get_and_compile_ns_3():
     build_program = get_build_program(ns_3_test_compiled_debug)
 
     if subprocess.call([build_program, 'configure', '--disable-gtk',
-                        '--build-profile=debug',
+                        '--build-profile=debug', '--enable-modules=core',
                         '--out=build'],
                        cwd=ns_3_test_compiled_debug,
                        stdout=subprocess.DEVNULL,
@@ -204,10 +198,11 @@ def get_and_compile_ns_3():
                        stderr=subprocess.DEVNULL) > 0:
         raise Exception("Debug test build failed.")
 
+    # Configure and build WAF-based ns-3
     build_program = get_build_program(ns_3_examples)
 
     if subprocess.call([build_program, 'configure', '--disable-gtk',
-                        '--build-profile=optimized',
+                        '--build-profile=optimized', '--enable-modules=core',
                         '--out=build/optimized'],
                        cwd=ns_3_examples,
                        stdout=subprocess.DEVNULL,
@@ -216,7 +211,7 @@ def get_and_compile_ns_3():
         raise Exception("Examples configuration failed.")
     
     if subprocess.call([build_program, 'build'],
-                       cwd=ns_3_test_compiled,
+                       cwd=ns_3_examples,
                        stdout=subprocess.DEVNULL,
                        stderr=subprocess.DEVNULL) > 0:
         raise Exception("Examples build failed.")
