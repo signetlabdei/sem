@@ -170,8 +170,7 @@ class SimulationRunner(object):
         j_argument = ['-j', str(self.max_parallel_processes)] if self.max_parallel_processes else []
         build_process = subprocess.Popen(['python3', build_program] + j_argument + ['build'],
                                          cwd=self.path,
-                                         stdout=subprocess.PIPE,
-                                         stderr=subprocess.PIPE)
+                                         stdout=subprocess.PIPE)
 
         # Show a progress bar
         if show_progress:
@@ -215,9 +214,8 @@ class SimulationRunner(object):
             if output == b'' and process.poll() is not None:
                 if process.returncode > 0:
                     raise Exception("Compilation ended with an error"
-                                    ".\nSTDERR\n%s\nSTDOUT\n%s" %
-                                    (process.stderr.read(),
-                                     process.stdout.read()))
+                                    ".\nSTDOUT\n%s" %
+                                    (process.stdout.read()))
                 return
             if output:
                 if build_program == "ns3":
