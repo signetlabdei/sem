@@ -115,14 +115,14 @@ def result(config):
 @pytest.fixture(scope='function')
 def parameter_combination_no_rngrun():
     # We need to explicitly state we want an OrderedDict here in order to
-    # support python3 < 3.6 - since python3 3.6, dicts are ordered by default
+    # support Python < 3.6 - since Python 3.6, dicts are ordered by default
     return collections.OrderedDict([('dict', '/usr/share/dict/american-english'),
                                     ('time', False)])
 
 @pytest.fixture(scope='function')
 def parameter_combination():
     # We need to explicitly state we want an OrderedDict here in order to
-    # support python3 < 3.6 - since python3 3.6, dicts are ordered by default
+    # support Python < 3.6 - since Python 3.6, dicts are ordered by default
     return collections.OrderedDict([('dict', '/usr/share/dict/american-english'),
                                     ('time', False),
                                     ('RngRun', '0')])
