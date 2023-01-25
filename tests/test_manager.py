@@ -63,7 +63,6 @@ def test_load_campaign(manager, config, parameter_combination):
     del config['campaign_dir']
     assert loaded_manager.db.get_config() == config
     # This campaign should not be able to run simulations
-    #TODO: Why, no runner ? Also how can the two configs be equal ?
     with pytest.raises(Exception):
         loaded_manager.run_simulations([parameter_combination])
 
