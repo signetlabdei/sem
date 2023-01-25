@@ -144,9 +144,8 @@ def parameter_combination_range():
 
 @pytest.fixture(scope='function')
 def manager(ns_3_compiled, config):
-    manager = CampaignManager.new(ns_3_compiled, config['script'],
+    return CampaignManager.new(ns_3_compiled, config['script'],
                                config['campaign_dir'])
-    return manager
 
 
 def get_and_compile_ns_3():
