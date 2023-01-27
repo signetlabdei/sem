@@ -1,4 +1,5 @@
 import io
+import os
 import math
 import copy
 import warnings
@@ -99,21 +100,26 @@ def list_param_combinations(param_ranges):
     return [param_ranges_copy]
 
 
-def get_command_from_result(script, result, debug=False):
+def get_command_from_result(script, path, result, debug=False):
     """
     Return the command that is needed to obtain a certain result.
 
     Args:
         params (dict): Dictionary containing parameter: value pairs.
+        path (str): The path to the ns-3 folder, used to discern which
+            build system (waf/CMake) is used
         debug (bool): Whether the command should include the debugging
             template.
     """
+    command = "python3 "
+    command += "./ns3 run " if os.path.exists(os.path.join(path, "ns3")) else " ./waf --run "
+
     if not debug:
-        command = "python3 waf --run \"" + script + " " + " ".join(
+        command += script + " " + " ".join(
             ['--%s=%s' % (param, value) for param, value in
              result['params'].items()]) + "\""
     else:
-        command = "python3 waf --run " + script + " --command-template=\"" +\
+        command += script + " --command-template=\"" +\
             "gdb --args %s " + " ".join(['--%s=%s' % (param, value) for
                                          param, value in
                                          result['params'].items()]) + "\""
