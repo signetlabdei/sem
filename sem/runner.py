@@ -352,8 +352,8 @@ class SimulationRunner(object):
 
                 with open(stdout_file_path, 'r') as stdout_file, open(
                         stderr_file_path, 'r') as stderr_file:
-                    complete_command = sem.utils.get_command_from_result(self.script, current_result)
-                    complete_command_debug = sem.utils.get_command_from_result(self.script, current_result, debug=True)
+                    complete_command = sem.utils.get_command_from_result(self.script, self.path, current_result)
+                    complete_command_debug = sem.utils.get_command_from_result(self.script, self.path, current_result, debug=True)
                     error_message = ('\nSimulation exited with an error.\n'
                                      'Params: %s\n'
                                      'Stderr: %s\n'
