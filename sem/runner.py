@@ -6,6 +6,8 @@ import time
 import uuid
 import sem.utils
 import sys
+from importlib.machinery import SourceFileLoader
+import types
 
 from tqdm import tqdm
 
@@ -78,18 +80,10 @@ class SimulationRunner(object):
                                                 'build/build-status.py')
 
         # By importing the file, we can naturally get the dictionary
-        try:  # This only works on Python >= 3.5
-            if os.path.exists(os.path.join(self.path, "ns3")):
-                spec = importlib.util.spec_from_file_location(build_status_fname,
-                                                              build_status_path)
-            else:
-                spec = importlib.util.spec_from_file_location('build_status',
-                                                              build_status_path)
-            build_status = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(build_status)
-        except (AttributeError):  # This happens in Python <= 3.4
-            import imp
-            build_status = imp.load_source('build_status', build_status_path)
+        loader = importlib.machinery.SourceFileLoader(build_status_fname, build_status_path)
+        mod = types.ModuleType(loader.name)
+        loader.exec_module(mod)
+            
 
         # Search is simple: we look for the script name in the program field.
         # Note that this could yield multiple matches, in case the script name
@@ -97,7 +91,7 @@ class SimulationRunner(object):
         # matches contains [program, path] for each program matching the script
         matches = [{'name': program,
                     'path': os.path.abspath(os.path.join(path, program))} for
-                   program in build_status.ns3_runnable_programs if self.script
+                   program in mod.ns3_runnable_programs if self.script
                    in program]
 
         if not matches:
