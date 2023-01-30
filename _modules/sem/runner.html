@@ -104,6 +104,7 @@
             <span class="n">build_status_fname</span> <span class="o">=</span> <span class="s2">&quot;.lock-ns3_</span><span class="si">%s</span><span class="s2">_build&quot;</span> <span class="o">%</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span>
             <span class="n">build_status_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">build_status_fname</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
+            <span class="n">build_status_fname</span> <span class="o">=</span> <span class="s2">&quot;build-status.py&quot;</span>
             <span class="k">if</span> <span class="n">optimized</span><span class="p">:</span>
                 <span class="n">build_status_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span>
                                                 <span class="s1">&#39;build/optimized/build-status.py&#39;</span><span class="p">)</span>
