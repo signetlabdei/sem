@@ -1,4 +1,4 @@
-[submodule "examples/sem-ns-3-dev"]
-	path = examples/sem-ns-3-dev
+[submodule "examples/ns-3"]
+	path = examples/ns-3
 	url = https://github.com/signetlabdei/sem-ns-3-dev.git
 	branch = sem-examples

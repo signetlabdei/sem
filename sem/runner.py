@@ -72,6 +72,7 @@ class SimulationRunner(object):
             build_status_fname = ".lock-ns3_%s_build" % sys.platform
             build_status_path = os.path.join(path, build_status_fname)
         else:
+            build_status_fname = "build-status.py"
             if optimized:
                 build_status_path = os.path.join(path,
                                                 'build/optimized/build-status.py')
