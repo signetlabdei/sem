@@ -1,3 +1,0 @@
-[submodule "examples/ns-3"]
-	path = examples/ns-3
-	url = https://gitlab.com/nsnam/ns-3-dev.git
