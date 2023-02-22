@@ -316,10 +316,7 @@ class CallbackBase(ABC):
     def __init__(self, verbose: int = 0):
         super().__init__()
         # Number of time the callback was called
-<<<<<<< HEAD
         self.controlled_by_parent = False
-=======
->>>>>>> 35bf57f0e9cc11476eb264700f00b2f65c7779e2
         self.n_runs_over = 0  # type: int
         self.n_runs_over_no_errors = 0  # type: int
         self.n_runs_over_errors = 0  # type: int
@@ -327,7 +324,6 @@ class CallbackBase(ABC):
         self.run_sim_times = []
         self.verbose = verbose
 
-<<<<<<< HEAD
     def init_callback(self, controlled_by_parent) -> None:
         """
         Initialize the callbacke.
@@ -338,14 +334,6 @@ class CallbackBase(ABC):
     def is_controlled_by_parent(self) -> bool:
         return self.controlled_by_parent
 
-=======
-    def init_callback(self) -> None:
-        """
-        Initialize the callbacke.
-        """
-        self._init_callback()
-
->>>>>>> 35bf57f0e9cc11476eb264700f00b2f65c7779e2
     def on_simulation_start(self, n_runs_total) -> None:
         self.n_runs_total = n_runs_total
         self._on_simulation_start()
