@@ -290,7 +290,7 @@ class CampaignManager(object):
     # Simulation running #
     ######################
 
-    def run_simulations(self, param_list, show_progress=True, stop_on_errors=True):
+    def run_simulations(self, param_list, show_progress=True, callbacks: list = [], stop_on_errors=True):
         """
         Run several simulations specified by a list of parameter combinations.
 
@@ -339,6 +339,7 @@ class CampaignManager(object):
         # computation is performed on this line.
         results = self.runner.run_simulations(param_list,
                                               self.db.get_data_dir(),
+                                              callbacks=callbacks,
                                               stop_on_errors=stop_on_errors)
 
         # Wrap the result generator in the progress bar generator.
