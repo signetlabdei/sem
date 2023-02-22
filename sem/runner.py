@@ -301,15 +301,10 @@ class SimulationRunner(object):
                 simulation output.
         """
         
-<<<<<<< HEAD
         # Log simulation start if not already done by parent class
         for cb in callbacks:
             if not cb.is_controlled_by_parent():
                 cb.on_simulation_start(len(enumerate(parameter_list)))
-=======
-        for cb in callbacks:
-            cb.on_simulation_start(len(enumerate(parameter_list)))
->>>>>>> 35bf57f0e9cc11476eb264700f00b2f65c7779e2
 
         for _, parameter in enumerate(parameter_list):
 
@@ -373,14 +368,8 @@ class SimulationRunner(object):
             current_result['meta']['exitcode'] = return_code
 
             yield current_result
-<<<<<<< HEAD
         
         # Log simulation start if not already done by parent class
         for cb in callbacks:
             if not cb.is_controlled_by_parent():
                 cb.on_simulation_end()
-=======
-
-        for cb in callbacks:
-            cb.on_simulation_end(return_code, end-start)
->>>>>>> 35bf57f0e9cc11476eb264700f00b2f65c7779e2
