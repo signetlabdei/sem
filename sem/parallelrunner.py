@@ -18,14 +18,14 @@ class ParallelRunner(SimulationRunner):
         """
 
         for cb in callbacks:
-            cb.on_simulation_start(len(enumerate(parameter_list)))
+            cb.on_simulation_start(len(list(enumerate(parameter_list))))
 
         self.data_folder = data_folder
         self.stop_on_errors = stop_on_errors
+        self.callbacks = callbacks
         with Pool(processes=self.max_parallel_processes) as pool:
             for result in pool.imap_unordered(self.launch_simulation,
-                                              parameter_list,
-                                              callbacks):
+                                              parameter_list):
                 yield result
 
         for cb in callbacks:
@@ -43,5 +43,5 @@ class ParallelRunner(SimulationRunner):
         """
         return next(SimulationRunner.run_simulations(self, [parameter],
                                                      self.data_folder,
-                                                     callbacks=callbacks,
+                                                     callbacks=self.callbacks,
                                                      stop_on_errors=self.stop_on_errors))

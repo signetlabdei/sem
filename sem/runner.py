@@ -304,7 +304,7 @@ class SimulationRunner(object):
         # Log simulation start if not already done by parent class
         for cb in callbacks:
             if not cb.is_controlled_by_parent():
-                cb.on_simulation_start(len(enumerate(parameter_list)))
+                cb.on_simulation_start(len(list(enumerate(parameter_list))))
 
         for _, parameter in enumerate(parameter_list):
 
