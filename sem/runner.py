@@ -72,7 +72,7 @@ class SimulationRunner(object):
             build_status_fname = ".lock-ns3_%s_build" % sys.platform
             build_status_path = os.path.join(path, build_status_fname)
         else:
-            build_status_fname = "build-status.py"
+            build_status_fname = "build.py"
             if optimized:
                 build_status_path = os.path.join(path,
                                                 'build/optimized/build-status.py')
@@ -289,7 +289,7 @@ class SimulationRunner(object):
     # Simulation running #
     ######################
 
-    def run_simulations(self, parameter_list, data_folder, stop_on_errors=False):
+    def run_simulations(self, parameter_list, data_folder, callbacks: list = [], stop_on_errors=False):
         """
         Run several simulations using a certain combination of parameters.
 
@@ -300,6 +300,9 @@ class SimulationRunner(object):
             data_folder (str): folder in which to save subfolders containing
                 simulation output.
         """
+        
+        for cb in callbacks:
+            cb.on_simulation_start(len(enumerate(parameter_list)))
 
         for _, parameter in enumerate(parameter_list):
 
@@ -321,6 +324,10 @@ class SimulationRunner(object):
             start = time.time()  # Time execution
             stdout_file_path = os.path.join(temp_dir, 'stdout')
             stderr_file_path = os.path.join(temp_dir, 'stderr')
+
+            for cb in callbacks:
+                cb.on_run_start()
+
             with open(stdout_file_path, 'w') as stdout_file, open(
                     stderr_file_path, 'w') as stderr_file:
                 return_code = subprocess.call(command, cwd=temp_dir,
@@ -329,7 +336,11 @@ class SimulationRunner(object):
                                               stderr=stderr_file)
             end = time.time()  # Time execution
 
+            for cb in callbacks:
+                cb.on_run_end(return_code, end-start)
+
             if return_code != 0:
+
                 with open(stdout_file_path, 'r') as stdout_file, open(
                         stderr_file_path, 'r') as stderr_file:
                     complete_command = sem.utils.get_command_from_result(self.script, current_result)
@@ -349,9 +360,12 @@ class SimulationRunner(object):
                                         complete_command_debug))
                     if stop_on_errors:
                         raise Exception(error_message)
-                    print(error_message)
+                    print(error_message) 
 
             current_result['meta']['elapsed_time'] = end-start
             current_result['meta']['exitcode'] = return_code
 
             yield current_result
+
+        for cb in callbacks:
+            cb.on_simulation_end(return_code, end-start)

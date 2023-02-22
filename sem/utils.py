@@ -4,6 +4,8 @@ import copy
 import warnings
 from itertools import product
 from functools import wraps
+from abc import ABC, abstractmethod
+from typing import Dict, Any
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -304,6 +306,68 @@ def compute_sensitivity_analysis(
          for p in sem_parameter_list])
     return salib_analyze_function(problem, results)
 
+
+class CallbackBase(ABC):
+    """
+    Base class for SEM callbacks.
+    :param verbose: Verbosity level: 0 for no output, 1 for info messages, 2 for debug messages
+    """
+
+    def __init__(self, verbose: int = 0):
+        super().__init__()
+        # Number of time the callback was called
+        self.n_runs_over = 0  # type: int
+        self.n_runs_over_no_errors = 0  # type: int
+        self.n_runs_over_errors = 0  # type: int
+        self.n_runs_total = 0  # type: int
+        self.run_sim_times = []
+        self.verbose = verbose
+
+    def init_callback(self) -> None:
+        """
+        Initialize the callbacke.
+        """
+        self._init_callback()
+
+    def on_simulation_start(self, n_runs_total) -> None:
+        self.n_runs_total = n_runs_total
+        self._on_simulation_start()
+
+    def _on_simulation_start(self) -> None:
+        pass
+
+    def on_run_start(self) -> None:
+        self._on_run_start()
+
+    def _on_run_start(self) -> None:
+        pass
+
+    @abstractmethod
+    def _on_run_end(self) -> bool:
+        """
+        :return: If the callback returns False, training is aborted early.
+        """
+        return True
+
+    def on_run_end(self, return_code: int, sim_time: int) -> bool:
+        """
+        This method will be called when each simulation run finishes
+        :return: If the callback returns False, a run has failed.
+        """
+        self.n_runs_over += 1
+        self.run_sim_times.append(sim_time)
+        if (return_code == 0):
+            self.n_runs_over_no_errors = 0  # type: int
+        else:
+            self.n_runs_over_errors = 0  # type: int
+        
+        self._on_run_end()
+
+    def on_simulation_end(self) -> None:
+         self._on_simulation_end()
+
+    def _on_simulation_end(self) -> None:
+        pass
 
 # def interactive_plot(campaign, param_ranges, result_parsing_function, x_axis,
 #                      runs=None):
