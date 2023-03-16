@@ -319,7 +319,8 @@ class SimulationRunner(object):
                                                   parameter.items()]
 
             # Run from dedicated temporary folder
-            current_result['meta']['id'] = str(uuid.uuid4())
+            sim_uuid = str(uuid.uuid4())
+            current_result['meta']['id'] = sim_uuid
             temp_dir = os.path.join(data_folder, current_result['meta']['id'])
             os.makedirs(temp_dir)
 
@@ -328,7 +329,7 @@ class SimulationRunner(object):
             stderr_file_path = os.path.join(temp_dir, 'stderr')
 
             for cb in callbacks:
-                cb.on_run_start()
+                cb.on_run_start(sim_uuid)
 
             with open(stdout_file_path, 'w') as stdout_file, open(
                     stderr_file_path, 'w') as stderr_file:
