@@ -344,21 +344,22 @@ class CallbackBase(ABC):
     def on_run_start(self, sim_uuid) -> None:
         self._on_run_start(sim_uuid)
 
-    def _on_run_start(self, sim_uuid) -> None:
+    @abstractmethod
+    def _on_run_start(self, sim_uuid: str) -> None:
         pass
 
     @abstractmethod
-    def _on_run_end(self) -> bool:
+    def _on_run_end(self, sim_uuid: str) -> bool:
         """
         :return: If the callback returns False, training is aborted early.
-        # TODO maybe it does not make a lot of sense since this will be eventually overridden by th callback user
+        # TODO maybe it does not make a lot of sense since this will be eventually overridden by the callback user
         """
         return True
 
-    def on_run_end(self, return_code: int, sim_time: int) -> bool:
+    def on_run_end(self, sim_uuid: str, return_code: int, sim_time: int) -> bool:
         """
         This method will be called when each simulation run finishes
-        # TODO maybe it does not make a lot of sense since this will be eventually overridden by th callback user
+        # TODO maybe it does not make a lot of sense since this will be eventually overridden by the callback user
         :return: If the callback returns False, a run has failed.
         """
         self.n_runs_over += 1
@@ -368,7 +369,7 @@ class CallbackBase(ABC):
         else:
             self.n_runs_over_errors += 1  # type: int
 
-        return self._on_run_end()
+        return self._on_run_end(sim_uuid)
 
     def on_simulation_end(self) -> None:
         self._on_simulation_end()

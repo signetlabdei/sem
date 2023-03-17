@@ -340,7 +340,7 @@ class SimulationRunner(object):
             end = time.time()  # Time execution
 
             for cb in callbacks:
-                cb.on_run_end(return_code, end-start)
+                cb.on_run_end(sim_uuid, return_code, end - start)
 
             if return_code != 0:
 

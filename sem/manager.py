@@ -315,7 +315,7 @@ class CampaignManager(object):
                             " for this CampaignManager.")
 
         # Return if the list is empty
-        if param_list == []:
+        if not param_list:
             return
 
         self.check_and_fill_parameters(param_list, needs_rngrun=True)
@@ -378,8 +378,7 @@ class CampaignManager(object):
         self.db.insert_results(results_batch)
         self.db.write_to_disk()
 
-    def get_missing_simulations(self, param_list, runs=None,
-                                with_time_estimate=False):
+    def get_missing_simulations(self, param_list, runs=None, with_time_estimate=False):
         """
         Return a list of the simulations among the required ones that are not
         available in the database.
@@ -390,6 +389,7 @@ class CampaignManager(object):
             runs (int): an integer representing how many repetitions are wanted
                 for each parameter combination, None if the dictionaries in
                 param_list already feature the desired RngRun value.
+            with_time_estimate (bool): a boolean representing ...
         """
 
         params_to_simulate = []
