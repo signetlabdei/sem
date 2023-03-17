@@ -8,6 +8,7 @@ import sem.utils
 import sys
 from importlib.machinery import SourceFileLoader
 import types
+from .utils import CallbackBase
 
 from tqdm import tqdm
 
