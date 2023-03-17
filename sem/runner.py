@@ -329,9 +329,10 @@ class SimulationRunner(object):
             start = time.time()  # Time execution
             stdout_file_path = os.path.join(temp_dir, 'stdout')
             stderr_file_path = os.path.join(temp_dir, 'stderr')
-
-            for cb in callbacks:
-                cb.on_run_start(sim_uuid)
+            
+            if callbacks is not None:
+                for cb in callbacks:
+                    cb.on_run_start(sim_uuid)
 
             with open(stdout_file_path, 'w') as stdout_file, open(
                     stderr_file_path, 'w') as stderr_file:
