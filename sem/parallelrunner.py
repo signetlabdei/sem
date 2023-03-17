@@ -36,8 +36,9 @@ class ParallelRunner(SimulationRunner):
                                               parameter_list):
                 yield result
 
-        for cb in callbacks:
-            cb.on_simulation_end()
+        if callbacks is not None:
+            for cb in callbacks:
+                cb.on_simulation_end()
 
     def launch_simulation(self, parameter):
         """
