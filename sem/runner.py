@@ -289,7 +289,7 @@ class SimulationRunner(object):
     # Simulation running #
     ######################
 
-    def run_simulations(self, parameter_list, data_folder, callbacks: list = [], stop_on_errors=False):
+    def run_simulations(self, parameter_list, data_folder, callbacks: [CallbackBase] = None, stop_on_errors=False):
         """
         Run several simulations using a certain combination of parameters.
 
@@ -302,9 +302,10 @@ class SimulationRunner(object):
         """
         
         # Log simulation start if not already done by parent class
-        for cb in callbacks:
-            if not cb.is_controlled_by_parent():
-                cb.on_simulation_start(len(list(enumerate(parameter_list))))
+        if callbacks is not None:
+            for cb in callbacks:
+                if not cb.is_controlled_by_parent():
+                    cb.on_simulation_start(len(list(enumerate(parameter_list))))
 
         for _, parameter in enumerate(parameter_list):
 
@@ -339,8 +340,9 @@ class SimulationRunner(object):
                                               stderr=stderr_file)
             end = time.time()  # Time execution
 
-            for cb in callbacks:
-                cb.on_run_end(sim_uuid, return_code, end - start)
+            if callbacks is not None:
+                for cb in callbacks:
+                    cb.on_run_end(sim_uuid, return_code, end - start)
 
             if return_code != 0:
 
@@ -371,6 +373,7 @@ class SimulationRunner(object):
             yield current_result
         
         # Log simulation start if not already done by parent class
-        for cb in callbacks:
-            if not cb.is_controlled_by_parent():
-                cb.on_simulation_end()
+        if callbacks is not None:
+            for cb in callbacks:
+                if not cb.is_controlled_by_parent():
+                    cb.on_simulation_end()
