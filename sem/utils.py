@@ -342,10 +342,16 @@ class CallbackBase(ABC):
         pass
 
     def on_run_start(self, configuration, sim_uuid) -> None:
+        """
+        Args:
+            configuration (dict): dictionary representing the combination of parameters simulated in this specific
+            sim_uuid (str): unique identifier string for the simulation. This value is used to name the result folder,
+                            and it is referenced in the result JSON file.
+        """
         self._on_run_start(configuration, sim_uuid)
 
     @abstractmethod
-    def _on_run_start(self, configuration: str, sim_uuid: str) -> None:
+    def _on_run_start(self, configuration: dict, sim_uuid: str) -> None:
         pass
 
     @abstractmethod
