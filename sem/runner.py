@@ -294,12 +294,14 @@ class SimulationRunner(object):
         """
         Run several simulations using a certain combination of parameters.
 
-        Yields results as simulations are completed.
+        Yield results as simulations are completed.
 
         Args:
             parameter_list (list): list of parameter combinations to simulate.
             data_folder (str): folder in which to save subfolders containing
                 simulation output.
+            callbacks (list): list of callbacks to be triggered
+            stop_on_errors (bool): if true, when a simulation outputs an error the whole campaign will be stopped
         """
         
         # Log simulation start if not already done by parent class
@@ -329,10 +331,10 @@ class SimulationRunner(object):
             start = time.time()  # Time execution
             stdout_file_path = os.path.join(temp_dir, 'stdout')
             stderr_file_path = os.path.join(temp_dir, 'stderr')
-            
+
             if callbacks is not None:
                 for cb in callbacks:
-                    cb.on_run_start(sim_uuid)
+                    cb.on_run_start(parameter, sim_uuid)
 
             with open(stdout_file_path, 'w') as stdout_file, open(
                     stderr_file_path, 'w') as stderr_file:
