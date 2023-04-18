@@ -111,8 +111,7 @@ def get_command_from_result(script, path, result, debug=False):
         debug (bool): Whether the command should include the debugging
             template.
     """
-    command = "python3 "
-    command += "./ns3 run " if os.path.exists(os.path.join(path, "ns3")) else " ./waf --run "
+    command = "./ns3 run " if os.path.exists(os.path.join(path, "ns3")) else "python3 ./waf --run "
 
     if not debug:
         command += script + " " + " ".join(
