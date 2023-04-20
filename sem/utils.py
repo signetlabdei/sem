@@ -326,12 +326,17 @@ class CallbackBase(ABC):
 
     def init_callback(self, controlled_by_parent) -> None:
         """
-        Initialize the callbacke.
+        Initialize the callback.
         """
         self.controlled_by_parent = controlled_by_parent
         self._init_callback()
 
     def is_controlled_by_parent(self) -> bool:
+        """
+        Whether this runner is aware of all simulations (false)
+        or it has been triggered by a multithread runner and is thus
+        aware of a subset of all runs only (true).
+        """
         return self.controlled_by_parent
 
     def on_simulation_start(self, n_runs_total) -> None:

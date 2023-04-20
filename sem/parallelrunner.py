@@ -19,6 +19,7 @@ class ParallelRunner(SimulationRunner):
 
         for cb in callbacks:
             cb.on_simulation_start(len(list(enumerate(parameter_list))))
+            cb.controlled_by_parent = True
 
         self.data_folder = data_folder
         self.stop_on_errors = stop_on_errors
