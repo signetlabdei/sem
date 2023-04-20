@@ -331,6 +331,11 @@ class CallbackBase(ABC):
         self.controlled_by_parent = controlled_by_parent
 
     def is_controlled_by_parent(self) -> bool:
+        """
+        Whether this runner is aware of all simulations (false)
+        or it has been triggered by a multithread runner and is thus
+        aware of a subset of all runs only (true).
+        """
         return self.controlled_by_parent
 
     def on_simulation_start(self, n_runs_total) -> None:
