@@ -1,7 +1,22 @@
-from sem import list_param_combinations, automatic_parser, stdout_automatic_parser
+from sem import list_param_combinations, automatic_parser, stdout_automatic_parser, get_command_from_result, CampaignManager
 import json
 import numpy as np
+import pytest
 from operator import getitem
+
+
+@pytest.fixture(scope='function', params=[['compiled', False]])
+def ns_3_compiled_folder_and_command(ns_3_compiled, ns_3_compiled_examples, request):
+    if request.param[0] == 'compiled':
+        if request.param[1] is False:
+            return [ns_3_compiled, False, './ns3 run \"hash-example --dict=/usr/share/dict/american-english --time=False --RngRun=0\"']
+        # elif request.param[1] is True:
+        #     return [ns_3_compiled, True, './ns3 run \"hash-example --dict=/usr/share/dict/american-english --time=False --RngRun=0\"']
+    elif request.param[0] == 'compiled_examples':
+        if request.param[1] is False:
+            return [ns_3_compiled_examples, False, 'python3 ./waf --run \"hash-example --dict=/usr/share/dict/american-english --time=False --RngRun=0\"']
+        # elif request.param[1] is True:
+        #     return [ns_3_compiled_examples, True, 'python3 ./waf --run \"hash-example --dict=/usr/share/dict/american-english --time=False --RngRun=0\"']
 
 
 def test_list_param_combinations():
@@ -101,3 +116,30 @@ def test_automatic_parser(result):
                                        [6, 7, 8, 9, 10]])
     assert parsed['stderr'] == []
 
+
+@pytest.mark.parametrize('ns_3_compiled_folder_and_command',
+                         [
+                             ['compiled', False],
+                             ['compiled_examples', False]
+                         ],
+                         indirect=True)
+def test_get_cmnd_from_result(ns_3_compiled_folder_and_command, config, parameter_combination):
+
+    # Create an ns-3 campaign to run simulations and obtain a result
+    ns_3_folder = ns_3_compiled_folder_and_command[0]
+    hardcoded_command = ns_3_compiled_folder_and_command[2]
+
+    cmpgn = CampaignManager.new(ns_3_folder,
+                                config['script'],
+                                config['campaign_dir'],
+                                overwrite=True,
+                                skip_configuration=True)
+
+    cmpgn.run_simulations([parameter_combination], show_progress=False)
+
+    # Retrieve the results, and compare the output of get_command_from_result
+    # with the expected command
+    result = cmpgn.db.get_complete_results()[0]
+    cmnd = get_command_from_result(
+        config['script'], ns_3_folder, result)
+    assert (hardcoded_command == cmnd)
