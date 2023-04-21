@@ -116,11 +116,11 @@ def get_command_from_result(script, path, result, debug=False):
     command = "./ns3 run " if os.path.exists(os.path.join(path, "ns3")) else "python3 ./waf --run "
 
     if not debug:
-        command += script + " " + " ".join(
+        command += "\"" + script + " " + " ".join(
             ['--%s=%s' % (param, value) for param, value in
              result['params'].items()]) + "\""
     else:
-        command += script + " --command-template=\"" +\
+        command += "\"" + script + " --command-template=\"" +\
             "gdb --args %s " + " ".join(['--%s=%s' % (param, value) for
                                          param, value in
                                          result['params'].items()]) + "\""
