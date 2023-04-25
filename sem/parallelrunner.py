@@ -23,6 +23,7 @@ class ParallelRunner(SimulationRunner):
             callbacks (list): list of callbacks to be triggered
             stop_on_errors (bool): check whether simulation has to stop on errors or not
         """
+        
         if callbacks is not None:
             for cb in callbacks:
                 cb.on_simulation_start(len(list(enumerate(parameter_list))))
