@@ -116,14 +116,14 @@ class TestCallback(CallbackBase):
         self.output += 'Start single run!\n'
 
     def _on_run_end(self, sim_uuid: str, return_code: int, sim_time: int) -> bool:
-        self.output += f'Run ended {return_code}\n'
+        self.output += f'Run ended! {return_code}\n'
         return True
 
 
 def test_callback(ns_3_compiled, config, parameter_combination):
     cb = TestCallback()
     n_runs = 10
-    expected_output = 'Starting the simulations!\n' + f'Start single run!\nRun ended {return_code}\n' * n_runs + 'Simulations are over!\n'
+    expected_output = 'Starting the simulations!\n' + f'Start single run!\nRun ended {0}\n' * n_runs + 'Simulations are over!\n'
 
     campaign = sem.CampaignManager.new(ns_3_compiled, config['script'], config['campaign_dir'], runner_type='SimulationRunner',#, overwrite=True,
                                        skip_configuration=True,
