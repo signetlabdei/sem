@@ -305,6 +305,10 @@ class CampaignManager(object):
                 can be either a string or a number).
             show_progress (bool): whether or not to show a progress bar with
                 percentage and expected remaining time.
+            callbacks (list): list of objects extending CallbackBase to be 
+                triggered during the run.
+            stop_on_errors (bool): whether or not to stop the execution of the simulations 
+                if an error occurs.
         """
 
         # Make sure we have a runner to run simulations with.
@@ -452,6 +456,7 @@ class CampaignManager(object):
 
     def run_missing_simulations(self, param_list, runs=None,
                                 condition_checking_function=None,
+                                callbacks=[],
                                 stop_on_errors=True):
         """
         Run the simulations from the parameter list that are not yet available
@@ -471,6 +476,10 @@ class CampaignManager(object):
             runs (int): the number of runs to perform for each parameter
                 combination. This parameter is only allowed if the param_list
                 specification doesn't feature an 'RngRun' key already.
+            callbacks (list): list of objects extending CallbackBase to be 
+                triggered during the run.
+            stop_on_errors (bool): whether or not to stop the execution of the simulations 
+                if an error occurs.
         """
         # Expand the parameter specification
         param_list = list_param_combinations(param_list)
@@ -504,10 +513,12 @@ class CampaignManager(object):
                     self.get_missing_simulations(param_list,
                                                  runs,
                                                  with_time_estimate=True),
+                    callbacks=callbacks,
                     stop_on_errors=stop_on_errors)
             else:
                 self.run_simulations(
                     self.get_missing_simulations(param_list, runs),
+                    callbacks=callbacks,
                     stop_on_errors=stop_on_errors)
 
     #####################
