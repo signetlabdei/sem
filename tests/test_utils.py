@@ -1,4 +1,4 @@
-from sem import list_param_combinations, automatic_parser, stdout_automatic_parser
+from sem import list_param_combinations, automatic_parser, stdout_automatic_parser, CallbackBase
 import json
 import numpy as np
 from operator import getitem
@@ -101,3 +101,37 @@ def test_automatic_parser(result):
                                        [6, 7, 8, 9, 10]])
     assert parsed['stderr'] == []
 
+class TestCallback(CallbackBase):
+    def __init__(self):
+        CallbackBase.__init__(self, verbose=2)
+        self.output = ''
+
+    def _on_simulation_start(self) -> None:
+        self.output += 'Starting the simulations!\n'
+
+    def _on_simulation_end(self) -> None:
+        self.output += 'Simulations are over!\n'
+
+    def _on_run_start(self, configuration: dict, sim_uuid: str) -> None:
+        self.output += 'Start single run!\n'
+
+    def _on_run_end(self, sim_uuid: str, return_code: int, sim_time: int) -> bool:
+        self.output += f'Run ended {return_code}\n'
+        return True
+
+
+def test_callback(ns_3_compiled, config, parameter_combination):
+    cb = TestCallback()
+    n_runs = 10
+    expected_output = 'Starting the simulations!\n' + f'Start single run!\nRun ended {return_code}\n' * n_runs + 'Simulations are over!\n'
+
+    campaign = sem.CampaignManager.new(ns_3_compiled, config['script'], config['campaign_dir'], runner_type='SimulationRunner'#, overwrite=True,
+                                       skip_configuration=True,
+                                       check_repo=False 
+                                       #, optimized=True, max_parallel_processes=max_parallel_processes
+                                       )
+    
+    parameter_combination['RngRun'] = [run for run in range(n_runs)]
+    campaign.run_simulations(parameter_combination, callbacks=[cb], stop_on_errors=False)
+
+    assert expected_output == cb.output
