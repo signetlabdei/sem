@@ -125,7 +125,7 @@ def test_callback(ns_3_compiled, config, parameter_combination):
     n_runs = 10
     expected_output = 'Starting the simulations!\n' + f'Start single run!\nRun ended {return_code}\n' * n_runs + 'Simulations are over!\n'
 
-    campaign = sem.CampaignManager.new(ns_3_compiled, config['script'], config['campaign_dir'], runner_type='SimulationRunner'#, overwrite=True,
+    campaign = sem.CampaignManager.new(ns_3_compiled, config['script'], config['campaign_dir'], runner_type='SimulationRunner',#, overwrite=True,
                                        skip_configuration=True,
                                        check_repo=False 
                                        #, optimized=True, max_parallel_processes=max_parallel_processes
