@@ -101,7 +101,12 @@ def test_automatic_parser(result):
                                        [6, 7, 8, 9, 10]])
     assert parsed['stderr'] == []
 
+
 class TestCallback(CallbackBase):
+
+    # Prevent pytest from trying to collect this function as a test
+    __test__ = False
+
     def __init__(self):
         CallbackBase.__init__(self, verbose=2)
         self.output = ''
@@ -123,15 +128,14 @@ class TestCallback(CallbackBase):
 def test_callback(ns_3_compiled, config, parameter_combination):
     cb = TestCallback()
     n_runs = 10
-    expected_output = 'Starting the simulations!\n' + f'Start single run!\nRun ended {0}\n' * n_runs + 'Simulations are over!\n'
+    expected_output = 'Starting the simulations!\n' + \
+        f'Start single run!\nRun ended! {0}\n' * \
+        n_runs + 'Simulations are over!\n'
 
-    campaign = CampaignManager.new(ns_3_compiled, config['script'], config['campaign_dir'], runner_type='SimulationRunner', overwrite=True,
-                                       skip_configuration=True,
-                                       check_repo=False 
-                                       #, optimized=True, max_parallel_processes=max_parallel_processes
-                                       )
-    
-    parameter_combination['RngRun'] = [run for run in range(n_runs)]
-    campaign.run_simulations(parameter_combination, callbacks=[cb], stop_on_errors=False)
-
+    campaign = CampaignManager.new(ns_3_compiled, config['script'], config['campaign_dir'],
+                                   runner_type='SimulationRunner', overwrite=True)
+    parameter_combination.update({'RngRun': [
+        run for run in range(n_runs)]})
+    campaign.run_missing_simulations(
+        param_list=[parameter_combination], callbacks=[cb])
     assert expected_output == cb.output
