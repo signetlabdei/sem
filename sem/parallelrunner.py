@@ -1,8 +1,8 @@
 from .runner import SimulationRunner
 from .utils import CallbackBase
 from multiprocessing.pool import ThreadPool as Pool
-# TODO if this is creating issues a more grain-fined solution may contemplate to check
-
+# We use ThreadPool to share the process memory among the different simulations to enable the use of callbacks.
+# This may be improved eventually using a grain-fined solution that checks the presence or not of callbacks
 
 class ParallelRunner(SimulationRunner):
 
