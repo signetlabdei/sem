@@ -8,6 +8,7 @@ import sem.utils
 import sys
 from importlib.machinery import SourceFileLoader
 import types
+from .utils import CallbackBase
 
 from tqdm import tqdm
 
@@ -289,22 +290,25 @@ class SimulationRunner(object):
     # Simulation running #
     ######################
 
-    def run_simulations(self, parameter_list, data_folder, callbacks: list = [], stop_on_errors=False):
+    def run_simulations(self, parameter_list, data_folder, callbacks: [CallbackBase] = None, stop_on_errors=False):
         """
         Run several simulations using a certain combination of parameters.
 
-        Yields results as simulations are completed.
+        Yield results as simulations are completed.
 
         Args:
             parameter_list (list): list of parameter combinations to simulate.
             data_folder (str): folder in which to save subfolders containing
                 simulation output.
+            callbacks (list): list of callbacks to be triggered
+            stop_on_errors (bool): if true, when a simulation outputs an error the whole campaign will be stopped
         """
         
         # Log simulation start if not already done by parent class
-        for cb in callbacks:
-            if not cb.is_controlled_by_parent():
-                cb.on_simulation_start(len(list(enumerate(parameter_list))))
+        if callbacks is not None:
+            for cb in callbacks:
+                if not cb.is_controlled_by_parent():
+                    cb.on_simulation_start(len(list(enumerate(parameter_list))))
 
         for _, parameter in enumerate(parameter_list):
 
@@ -319,7 +323,8 @@ class SimulationRunner(object):
                                                   parameter.items()]
 
             # Run from dedicated temporary folder
-            current_result['meta']['id'] = str(uuid.uuid4())
+            sim_uuid = str(uuid.uuid4())
+            current_result['meta']['id'] = sim_uuid
             temp_dir = os.path.join(data_folder, current_result['meta']['id'])
             os.makedirs(temp_dir)
 
@@ -327,8 +332,9 @@ class SimulationRunner(object):
             stdout_file_path = os.path.join(temp_dir, 'stdout')
             stderr_file_path = os.path.join(temp_dir, 'stderr')
 
-            for cb in callbacks:
-                cb.on_run_start()
+            if callbacks is not None:
+                for cb in callbacks:
+                    cb.on_run_start(parameter, sim_uuid)
 
             with open(stdout_file_path, 'w') as stdout_file, open(
                     stderr_file_path, 'w') as stderr_file:
@@ -338,8 +344,9 @@ class SimulationRunner(object):
                                               stderr=stderr_file)
             end = time.time()  # Time execution
 
-            for cb in callbacks:
-                cb.on_run_end(return_code, end-start)
+            if callbacks is not None:
+                for cb in callbacks:
+                    cb.on_run_end(sim_uuid, return_code, end - start)
 
             if return_code != 0:
 
@@ -370,6 +377,7 @@ class SimulationRunner(object):
             yield current_result
         
         # Log simulation start if not already done by parent class
-        for cb in callbacks:
-            if not cb.is_controlled_by_parent():
-                cb.on_simulation_end()
+        if callbacks is not None:
+            for cb in callbacks:
+                if not cb.is_controlled_by_parent():
+                    cb.on_simulation_end()

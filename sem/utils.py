@@ -316,7 +316,7 @@ class CallbackBase(ABC):
     def __init__(self, verbose: int = 0):
         super().__init__()
         # Number of time the callback was called
-        self.controlled_by_parent = False
+        self.controlled_by_parent = False  # type: bool
         self.n_runs_over = 0  # type: int
         self.n_runs_over_no_errors = 0  # type: int
         self.n_runs_over_errors = 0  # type: int
@@ -329,7 +329,6 @@ class CallbackBase(ABC):
         Initialize the callback.
         """
         self.controlled_by_parent = controlled_by_parent
-        self._init_callback()
 
     def is_controlled_by_parent(self) -> bool:
         """
@@ -343,39 +342,50 @@ class CallbackBase(ABC):
         self.n_runs_total = n_runs_total
         self._on_simulation_start()
 
+    @abstractmethod
     def _on_simulation_start(self) -> None:
         pass
 
-    def on_run_start(self) -> None:
-        self._on_run_start()
+    def on_run_start(self, configuration, sim_uuid) -> None:
+        """
+        Args:
+            configuration (dict): dictionary representing the combination of parameters simulated in this specific
+            sim_uuid (str): unique identifier string for the simulation. This value is used to name the result folder,
+                            and it is referenced in the result JSON file.
+        """
+        self._on_run_start(configuration, sim_uuid)
 
-    def _on_run_start(self) -> None:
+    @abstractmethod
+    def _on_run_start(self, configuration: dict, sim_uuid: str) -> None:
         pass
 
     @abstractmethod
-    def _on_run_end(self) -> bool:
+    def _on_run_end(self, sim_uuid: str, return_code: int, sim_time: int) -> bool:
         """
         :return: If the callback returns False, training is aborted early.
+        # TODO maybe it does not make a lot of sense since this will be eventually overridden by the callback user
         """
         return True
 
-    def on_run_end(self, return_code: int, sim_time: int) -> bool:
+    def on_run_end(self, sim_uuid: str, return_code: int, sim_time: int) -> bool:
         """
         This method will be called when each simulation run finishes
+        # TODO maybe it does not make a lot of sense since this will be eventually overridden by the callback user
         :return: If the callback returns False, a run has failed.
         """
         self.n_runs_over += 1
         self.run_sim_times.append(sim_time)
-        if (return_code == 0):
-            self.n_runs_over_no_errors = 0  # type: int
+        if return_code == 0:
+            self.n_runs_over_no_errors += 1  # type: int
         else:
-            self.n_runs_over_errors = 0  # type: int
-        
-        self._on_run_end()
+            self.n_runs_over_errors += 1  # type: int
+
+        return self._on_run_end(sim_uuid, return_code, sim_time)
 
     def on_simulation_end(self) -> None:
-         self._on_simulation_end()
+        self._on_simulation_end()
 
+    @abstractmethod
     def _on_simulation_end(self) -> None:
         pass
 
