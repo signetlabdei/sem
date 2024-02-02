@@ -350,6 +350,7 @@ class CampaignManager(object):
         if show_progress:
             result_generator = tqdm(results, total=len(param_list),
                                     unit='simulation',
+                                    smoothing=0,
                                     desc='Running simulations')
         else:
             result_generator = results
