@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Command Line Interface &#8212; sem 0.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=2389946f"></script>
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=01f34227"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
-    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Detailed Functionality" href="detailed-functionality.html" />
@@ -18,8 +18,9 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -32,7 +33,7 @@
           <div class="body" role="main">
             
   <section id="command-line-interface">
-<span id="cli"></span><h1>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Permalink to this heading">¶</a></h1>
+<span id="cli"></span><h1>Command Line Interface<a class="headerlink" href="#command-line-interface" title="Link to this heading">¶</a></h1>
 <p>SEM offers a command line tool that can be used to run simulations, quickly
 scroll the results to make sure everything looks ok and finally exporting the
 results to the MATLAB .mat and Numpy .npy formats for further elaboration by the
@@ -40,7 +41,7 @@ user.</p>
 <p>This documentation page describes a workflow that does not require writing a
 Python script and only relies on the command line interface.</p>
 <section id="getting-help">
-<h2>Getting help<a class="headerlink" href="#getting-help" title="Permalink to this heading">¶</a></h2>
+<h2>Getting help<a class="headerlink" href="#getting-help" title="Link to this heading">¶</a></h2>
 <p>SEM’s command line tool is simply called <cite>sem</cite>. To see usage information, call
 the program with the <cite>–help</cite> flag:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sem</span> <span class="o">--</span><span class="n">help</span>
@@ -62,7 +63,7 @@ the program with the <cite>–help</cite> flag:</p>
 <p>The following sections describe each sub-command in detail.</p>
 </section>
 <section id="running-simulations">
-<h2>Running simulations<a class="headerlink" href="#running-simulations" title="Permalink to this heading">¶</a></h2>
+<h2>Running simulations<a class="headerlink" href="#running-simulations" title="Link to this heading">¶</a></h2>
 <p>Simulations can be run through the <cite>run</cite> sub-command. To visualize information
 about a command, call it with the <cite>–help</cite> flag:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sem</span> <span class="n">run</span> <span class="o">--</span><span class="n">help</span>
@@ -139,7 +140,7 @@ Running simulations: 100%|████████| 80/80 [04:55&lt;00:00,  3.69
 </div>
 </section>
 <section id="viewing-results">
-<h2>Viewing results<a class="headerlink" href="#viewing-results" title="Permalink to this heading">¶</a></h2>
+<h2>Viewing results<a class="headerlink" href="#viewing-results" title="Link to this heading">¶</a></h2>
 <p>At this point, we have a nice set of results in our database. Let’s say we want
 to view them in order to make sure everything is working as expected. To do so,
 it’s possible to use the <cite>view</cite> command:</p>
@@ -193,7 +194,7 @@ script printed on the <cite>stdout</cite> that an aggregated throughput of 18.93
 was achieved.</p>
 </section>
 <section id="getting-commands-to-re-run-simulations">
-<h2>Getting commands to re-run simulations<a class="headerlink" href="#getting-commands-to-re-run-simulations" title="Permalink to this heading">¶</a></h2>
+<h2>Getting commands to re-run simulations<a class="headerlink" href="#getting-commands-to-re-run-simulations" title="Link to this heading">¶</a></h2>
 <p>In the previous section, we were able to view one of the obtained results. Let’s
 say we are interested in replicating that simulation, maybe to debug it. Serving
 this purpose, <cite>sem command</cite> prints out the command that is necessary to run in
@@ -242,7 +243,7 @@ Aggregated throughput: 18.9311 Mbit/s
 command that generated that result.</p>
 </section>
 <section id="exporting-results">
-<h2>Exporting results<a class="headerlink" href="#exporting-results" title="Permalink to this heading">¶</a></h2>
+<h2>Exporting results<a class="headerlink" href="#exporting-results" title="Link to this heading">¶</a></h2>
 <p>One final step we can take now is to export the results into a format that can
 be read from MATLAB, for instance. For this, we can use the export command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sem</span> <span class="n">export</span> <span class="o">--</span><span class="n">help</span>
@@ -333,11 +334,11 @@ parameter that the n-dimensional structure represents.</p></li>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2021, Davide Magrin.
+      &#169;2021, Davide Magrin.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |
       <a href="_sources/cli.rst.txt"

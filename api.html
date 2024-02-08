@@ -1,24 +1,25 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>API Reference &#8212; sem 0.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=039e1c02" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=2389946f"></script>
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=01f34227"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
-    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Contribution guidelines" href="contributing.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -31,12 +32,12 @@
           <div class="body" role="main">
             
   <section id="api-reference">
-<h1>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading">¶</a></h1>
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h1>
 <section id="campaignmanager">
-<h2>CampaignManager<a class="headerlink" href="#campaignmanager" title="Permalink to this heading">¶</a></h2>
+<h2>CampaignManager<a class="headerlink" href="#campaignmanager" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="sem.CampaignManager">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sem.</span></span><span class="sig-name descname"><span class="pre">CampaignManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">campaign_db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">campaign_runner</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_repo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sem.</span></span><span class="sig-name descname"><span class="pre">CampaignManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">campaign_db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">campaign_runner</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_repo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager" title="Link to this definition">¶</a></dt>
 <dd><p>This Simulation Execution Manager class can be used as an interface to
 execute simulations and access the results of simulation campaigns.</p>
 <p>The CampaignManager class wraps up a DatabaseManager and a
@@ -44,7 +45,7 @@ SimulationRunner, which are used internally but can also be accessed as
 public member variables.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.check_repo_ok">
-<span class="sig-name descname"><span class="pre">check_repo_ok</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.check_repo_ok"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.check_repo_ok" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">check_repo_ok</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.check_repo_ok"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.check_repo_ok" title="Link to this definition">¶</a></dt>
 <dd><p>Make sure that the ns-3 repository’s HEAD commit is the same as the one
 saved in the campaign database, and that the ns-3 repository is clean
 (i.e., no untracked or modified files exist).</p>
@@ -52,7 +53,7 @@ saved in the campaign database, and that the ns-3 repository is clean
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.create_runner">
-<span class="sig-name descname"><span class="pre">create_runner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runner_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_parallel_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.create_runner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.create_runner" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">create_runner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runner_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_parallel_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.create_runner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.create_runner" title="Link to this definition">¶</a></dt>
 <dd><p>Create a SimulationRunner from a string containing the desired
 class implementation, and return it.</p>
 <dl class="field-list simple">
@@ -79,14 +80,14 @@ and only perform compilation.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.files_in_dictionary">
-<span class="sig-name descname"><span class="pre">files_in_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.files_in_dictionary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.files_in_dictionary" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">files_in_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.files_in_dictionary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.files_in_dictionary" title="Link to this definition">¶</a></dt>
 <dd><p>Parsing function that returns a dictionary containing one entry for
 each file. Typically used to perform parsing externally.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.get_missing_simulations">
-<span class="sig-name descname"><span class="pre">get_missing_simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_time_estimate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.get_missing_simulations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.get_missing_simulations" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_missing_simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_time_estimate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.get_missing_simulations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.get_missing_simulations" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of the simulations among the required ones that are not
 available in the database.</p>
 <dl class="field-list simple">
@@ -105,7 +106,7 @@ param_list already feature the desired RngRun value.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.get_results_as_dataframe">
-<span class="sig-name descname"><span class="pre">get_results_as_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_constant_columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_parsing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.get_results_as_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.get_results_as_dataframe" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_results_as_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_constant_columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_parsing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.get_results_as_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.get_results_as_dataframe" title="Link to this definition">¶</a></dt>
 <dd><p>Return a Pandas DataFrame containing results parsed using a
 user-specified function.</p>
 <p>If function_yields_multiple_results if False, result_parsing_function is
@@ -129,7 +130,7 @@ of lists of outputs.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.get_results_as_numpy_array">
-<span class="sig-name descname"><span class="pre">get_results_as_numpy_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_complete_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.get_results_as_numpy_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.get_results_as_numpy_array" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_results_as_numpy_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_complete_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.get_results_as_numpy_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.get_results_as_numpy_array" title="Link to this definition">¶</a></dt>
 <dd><p>Return the results relative to the desired parameter space in the form
 of a numpy array.</p>
 <dl class="field-list simple">
@@ -149,7 +150,7 @@ combination.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.get_results_as_xarray">
-<span class="sig-name descname"><span class="pre">get_results_as_xarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_complete_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.get_results_as_xarray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.get_results_as_xarray" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_results_as_xarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_complete_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.get_results_as_xarray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.get_results_as_xarray" title="Link to this definition">¶</a></dt>
 <dd><p>Return the results relative to the desired parameter space in the form
 of an xarray data structure.</p>
 <dl class="field-list simple">
@@ -170,7 +171,7 @@ combination.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.get_space">
-<span class="sig-name descname"><span class="pre">get_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_result_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_complete_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.get_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.get_space" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_result_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_complete_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.get_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.get_space" title="Link to this definition">¶</a></dt>
 <dd><p>Convert a parameter space specification to a nested array structure
 representing the space. In other words, if the parameter space is:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">param_space</span> <span class="o">=</span> <span class="p">{</span>
@@ -212,7 +213,7 @@ combination.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.load">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ns_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runner_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_repo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_parallel_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.load" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ns_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runner_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_repo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_parallel_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.load" title="Link to this definition">¶</a></dt>
 <dd><p>Load an existing simulation campaign.</p>
 <p>Note that specifying an ns-3 installation is not compulsory when using
 this method: existing results will be available, but in order to run
@@ -241,7 +242,7 @@ and only perform compilation.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.new">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">new</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ns_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runner_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_repo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_parallel_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.new"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.new" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">new</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ns_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runner_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_repo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_parallel_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.new"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.new" title="Link to this definition">¶</a></dt>
 <dd><p>Create a new campaign from an ns-3 installation and a campaign
 directory.</p>
 <p>This method will create a DatabaseManager, which will install a
@@ -288,7 +289,7 @@ folder should be manually set to –out=build/optimized.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.run_missing_simulations">
-<span class="sig-name descname"><span class="pre">run_missing_simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_checking_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_on_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.run_missing_simulations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.run_missing_simulations" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">run_missing_simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_checking_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_on_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.run_missing_simulations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.run_missing_simulations" title="Link to this definition">¶</a></dt>
 <dd><p>Run the simulations from the parameter list that are not yet available
 in the database.</p>
 <p>This function also makes sure that we have at least runs replications
@@ -316,7 +317,7 @@ if an error occurs.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.run_simulations">
-<span class="sig-name descname"><span class="pre">run_simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_on_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.run_simulations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.run_simulations" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">run_simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_on_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.run_simulations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.run_simulations" title="Link to this definition">¶</a></dt>
 <dd><p>Run several simulations specified by a list of parameter combinations.</p>
 <p>Note: this function does not verify whether we already have the
 required simulations in the database - it just runs all the parameter
@@ -341,13 +342,13 @@ if an error occurs.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.save_to_folders">
-<span class="sig-name descname"><span class="pre">save_to_folders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.save_to_folders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.save_to_folders" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">save_to_folders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.save_to_folders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.save_to_folders" title="Link to this definition">¶</a></dt>
 <dd><p>Save results to a folder structure.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.save_to_mat_file">
-<span class="sig-name descname"><span class="pre">save_to_mat_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.save_to_mat_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.save_to_mat_file" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">save_to_mat_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.save_to_mat_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.save_to_mat_file" title="Link to this definition">¶</a></dt>
 <dd><p>Return the results relative to the desired parameter space in the form
 of a .mat file.</p>
 <dl class="field-list simple">
@@ -368,13 +369,13 @@ combination.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.save_to_npy_file">
-<span class="sig-name descname"><span class="pre">save_to_npy_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.save_to_npy_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.save_to_npy_file" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">save_to_npy_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.save_to_npy_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.save_to_npy_file" title="Link to this definition">¶</a></dt>
 <dd><p>Save results to a numpy array file format.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.CampaignManager.space_to_folders">
-<span class="sig-name descname"><span class="pre">space_to_folders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_result_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_directory</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.space_to_folders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.space_to_folders" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">space_to_folders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_result_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_directory</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.space_to_folders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.space_to_folders" title="Link to this definition">¶</a></dt>
 <dd><p>Convert a parameter space specification to a directory tree with a
 nested structure.</p>
 </dd></dl>
@@ -383,15 +384,15 @@ nested structure.</p>
 
 </section>
 <section id="simulationrunner">
-<h2>SimulationRunner<a class="headerlink" href="#simulationrunner" title="Permalink to this heading">¶</a></h2>
+<h2>SimulationRunner<a class="headerlink" href="#simulationrunner" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="sem.SimulationRunner">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sem.</span></span><span class="sig-name descname"><span class="pre">SimulationRunner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_parallel_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sem.</span></span><span class="sig-name descname"><span class="pre">SimulationRunner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_parallel_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner" title="Link to this definition">¶</a></dt>
 <dd><p>The class tasked with running simulations and interfacing with the ns-3
 system.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.SimulationRunner.configure_and_build">
-<span class="sig-name descname"><span class="pre">configure_and_build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner.configure_and_build"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner.configure_and_build" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">configure_and_build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner.configure_and_build"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner.configure_and_build" title="Link to this definition">¶</a></dt>
 <dd><p>Configure and build the ns-3 code.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -409,13 +410,13 @@ and only perform compilation.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.SimulationRunner.get_available_parameters">
-<span class="sig-name descname"><span class="pre">get_available_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner.get_available_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner.get_available_parameters" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_available_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner.get_available_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner.get_available_parameters" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list of the parameters made available by the script.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.SimulationRunner.get_build_output">
-<span class="sig-name descname"><span class="pre">get_build_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">process</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_program</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner.get_build_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner.get_build_output" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_build_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">process</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_program</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner.get_build_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner.get_build_output" title="Link to this definition">¶</a></dt>
 <dd><p>Parse the output of the ns-3 build process to extract the information
 that is needed to draw the progress bar.</p>
 <dl class="field-list simple">
@@ -427,7 +428,7 @@ that is needed to draw the progress bar.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.SimulationRunner.run_simulations">
-<span class="sig-name descname"><span class="pre">run_simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks:</span> <span class="pre">[&lt;class</span> <span class="pre">'sem.utils.CallbackBase'&gt;]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_on_errors=False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner.run_simulations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner.run_simulations" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">run_simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks:</span> <span class="pre">[&lt;class</span> <span class="pre">'sem.utils.CallbackBase'&gt;]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_on_errors=False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner.run_simulations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner.run_simulations" title="Link to this definition">¶</a></dt>
 <dd><p>Run several simulations using a certain combination of parameters.</p>
 <p>Yield results as simulations are completed.</p>
 <dl class="field-list simple">
@@ -447,22 +448,22 @@ simulation output.</p></li>
 
 </section>
 <section id="databasemanager">
-<h2>DatabaseManager<a class="headerlink" href="#databasemanager" title="Permalink to this heading">¶</a></h2>
+<h2>DatabaseManager<a class="headerlink" href="#databasemanager" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="sem.DatabaseManager">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sem.</span></span><span class="sig-name descname"><span class="pre">DatabaseManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sem.</span></span><span class="sig-name descname"><span class="pre">DatabaseManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager" title="Link to this definition">¶</a></dt>
 <dd><p>This serves as an interface with the simulation campaign database.</p>
 <p>A database can either be created from scratch or loaded, via the new and
 load &#64;classmethods.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.delete_result">
-<span class="sig-name descname"><span class="pre">delete_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.delete_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.delete_result" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">delete_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.delete_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.delete_result" title="Link to this definition">¶</a></dt>
 <dd><p>Remove the specified result from the database, based on its id.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.get_all_values_of_all_params">
-<span class="sig-name descname"><span class="pre">get_all_values_of_all_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_all_values_of_all_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_all_values_of_all_params" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_all_values_of_all_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_all_values_of_all_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_all_values_of_all_params" title="Link to this definition">¶</a></dt>
 <dd><p>Return a dictionary containing all values that are taken by all
 available parameters.</p>
 <p>Always returns the parameter list in alphabetical order.</p>
@@ -470,13 +471,13 @@ available parameters.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.get_commit">
-<span class="sig-name descname"><span class="pre">get_commit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_commit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_commit" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_commit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_commit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_commit" title="Link to this definition">¶</a></dt>
 <dd><p>Return the commit at which the campaign is operating.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.get_complete_results">
-<span class="sig-name descname"><span class="pre">get_complete_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files_to_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.*'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_complete_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_complete_results" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_complete_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files_to_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.*'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_complete_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_complete_results" title="Link to this definition">¶</a></dt>
 <dd><p>Return available results, analogously to what get_results does, but
 also read the corresponding output files for each result, and
 incorporate them in the result dictionary under the output key, as a
@@ -514,7 +515,7 @@ they are empty.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.get_config">
-<span class="sig-name descname"><span class="pre">get_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_config" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_config" title="Link to this definition">¶</a></dt>
 <dd><p>Return the configuration dictionary of this DatabaseManager’s campaign.</p>
 <p>This is a dictionary containing the following keys:</p>
 <ul class="simple">
@@ -527,19 +528,19 @@ script.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.get_data_dir">
-<span class="sig-name descname"><span class="pre">get_data_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_data_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_data_dir" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_data_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_data_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_data_dir" title="Link to this definition">¶</a></dt>
 <dd><p>Return the data directory, which is simply campaign_directory/data.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.get_next_rngruns">
-<span class="sig-name descname"><span class="pre">get_next_rngruns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_next_rngruns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_next_rngruns" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_next_rngruns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_next_rngruns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_next_rngruns" title="Link to this definition">¶</a></dt>
 <dd><p>Yield the next RngRun values that can be used in this campaign.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.get_next_values">
-<span class="sig-name descname"><span class="pre">get_next_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_next_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_next_values" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_next_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_next_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_next_values" title="Link to this definition">¶</a></dt>
 <dd><p>Given a list of integers, this method yields the lowest integers that
 do not appear in the list.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">sem</span>
@@ -552,13 +553,13 @@ do not appear in the list.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.get_params">
-<span class="sig-name descname"><span class="pre">get_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_params" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_params" title="Link to this definition">¶</a></dt>
 <dd><p>Return a list containing the parameters that can be toggled.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.get_result_files">
-<span class="sig-name descname"><span class="pre">get_result_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_result_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_result_files" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_result_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_result_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_result_files" title="Link to this definition">¶</a></dt>
 <dd><p>Return a dictionary containing filename: filepath values for each
 output file associated with an id.</p>
 <p>Result can be either a result dictionary (e.g., obtained with the
@@ -567,7 +568,7 @@ get_results() method) or a result id.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.get_results">
-<span class="sig-name descname"><span class="pre">get_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_results" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_results" title="Link to this definition">¶</a></dt>
 <dd><p>Return all the results available from the database that fulfill some
 parameter combinations.</p>
 <p>If params is None (or not specified), return all results.</p>
@@ -595,13 +596,13 @@ same structure as results inserted with the insert_result method.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.get_script">
-<span class="sig-name descname"><span class="pre">get_script</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_script"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_script" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_script</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_script"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_script" title="Link to this definition">¶</a></dt>
 <dd><p>Return the ns-3 script that is run in the campaign.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.have_same_structure">
-<span class="sig-name descname"><span class="pre">have_same_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.have_same_structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.have_same_structure" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">have_same_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.have_same_structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.have_same_structure" title="Link to this definition">¶</a></dt>
 <dd><p>Given two dictionaries (possibly with other nested dictionaries as
 values), this function checks whether they have the same key structure.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sem</span> <span class="kn">import</span> <span class="n">DatabaseManager</span>
@@ -629,7 +630,7 @@ values), this function checks whether they have the same key structure.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.insert_result">
-<span class="sig-name descname"><span class="pre">insert_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.insert_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.insert_result" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">insert_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.insert_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.insert_result" title="Link to this definition">¶</a></dt>
 <dd><p>Insert a new result in the database.</p>
 <p>This function also verifies that the result dictionaries saved in the
 database have the following structure (with {‘a’: 1} representing a
@@ -656,7 +657,7 @@ folder.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.load">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.load" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.load" title="Link to this definition">¶</a></dt>
 <dd><p>Initialize from an existing database.</p>
 <p>It is assumed that the database json file has the same name as its
 containing folder.</p>
@@ -669,7 +670,7 @@ containing folder.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.new">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">new</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">commit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.new"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.new" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">new</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">commit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.new"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.new" title="Link to this definition">¶</a></dt>
 <dd><p>Initialize a new class instance with a set configuration and filename.</p>
 <p>The created database has the same name of the campaign directory.</p>
 <dl class="field-list simple">
@@ -691,7 +692,7 @@ overwritten.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.DatabaseManager.wipe_results">
-<span class="sig-name descname"><span class="pre">wipe_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.wipe_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.wipe_results" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">wipe_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.wipe_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.wipe_results" title="Link to this definition">¶</a></dt>
 <dd><p>Remove all results from the database.</p>
 <p>This also removes all output files, and cannot be undone.</p>
 </dd></dl>
@@ -700,21 +701,21 @@ overwritten.</p></li>
 
 </section>
 <section id="module-sem.utils">
-<span id="utils"></span><h2>Utils<a class="headerlink" href="#module-sem.utils" title="Permalink to this heading">¶</a></h2>
+<span id="utils"></span><h2>Utils<a class="headerlink" href="#module-sem.utils" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="sem.utils.CallbackBase">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">CallbackBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.CallbackBase" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">CallbackBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.CallbackBase" title="Link to this definition">¶</a></dt>
 <dd><p>Base class for SEM callbacks.
 :param verbose: Verbosity level: 0 for no output, 1 for info messages, 2 for debug messages</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.utils.CallbackBase.init_callback">
-<span class="sig-name descname"><span class="pre">init_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">controlled_by_parent</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#sem.utils.CallbackBase.init_callback" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">init_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">controlled_by_parent</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#sem.utils.CallbackBase.init_callback" title="Link to this definition">¶</a></dt>
 <dd><p>Initialize the callback.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.utils.CallbackBase.is_controlled_by_parent">
-<span class="sig-name descname"><span class="pre">is_controlled_by_parent</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#sem.utils.CallbackBase.is_controlled_by_parent" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_controlled_by_parent</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#sem.utils.CallbackBase.is_controlled_by_parent" title="Link to this definition">¶</a></dt>
 <dd><p>Whether this runner is aware of all simulations (false)
 or it has been triggered by a multithread runner and is thus
 aware of a subset of all runs only (true).</p>
@@ -722,7 +723,7 @@ aware of a subset of all runs only (true).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.utils.CallbackBase.on_run_end">
-<span class="sig-name descname"><span class="pre">on_run_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim_uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#sem.utils.CallbackBase.on_run_end" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">on_run_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim_uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#sem.utils.CallbackBase.on_run_end" title="Link to this definition">¶</a></dt>
 <dd><p>This method will be called when each simulation run finishes
 # TODO maybe it does not make a lot of sense since this will be eventually overridden by the callback user
 :return: If the callback returns False, a run has failed.</p>
@@ -730,7 +731,7 @@ aware of a subset of all runs only (true).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="sem.utils.CallbackBase.on_run_start">
-<span class="sig-name descname"><span class="pre">on_run_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_uuid</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#sem.utils.CallbackBase.on_run_start" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">on_run_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_uuid</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#sem.utils.CallbackBase.on_run_start" title="Link to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -746,7 +747,7 @@ and it is referenced in the result JSON file.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sem.utils.automatic_parser">
-<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">automatic_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtypes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">converters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.automatic_parser" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">automatic_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtypes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">converters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.automatic_parser" title="Link to this definition">¶</a></dt>
 <dd><p>Try and automatically convert strings formatted as tables into nested
 list structures.</p>
 <p>Under the hood, this function essentially applies the genfromtxt function
@@ -765,20 +766,20 @@ documentation for more details on how to format these.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sem.utils.compute_sensitivity_analysis">
-<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">compute_sensitivity_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">campaign</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ranges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">salib_sample_function=&lt;function</span> <span class="pre">sample&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">salib_analyze_function=&lt;function</span> <span class="pre">analyze&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples=100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.compute_sensitivity_analysis" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">compute_sensitivity_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">campaign</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ranges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">salib_sample_function=&lt;function</span> <span class="pre">sample&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">salib_analyze_function=&lt;function</span> <span class="pre">analyze&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples=100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.compute_sensitivity_analysis" title="Link to this definition">¶</a></dt>
 <dd><p>Compute sensitivity analysis on a campaign using the passed SALib sample
 and analyze functions.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sem.utils.constant_array_parser">
-<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">constant_array_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.constant_array_parser" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">constant_array_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.constant_array_parser" title="Link to this definition">¶</a></dt>
 <dd><p>Dummy parser, used for testing purposes.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sem.utils.get_bounds">
-<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">get_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ranges</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.get_bounds" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">get_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ranges</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.get_bounds" title="Link to this definition">¶</a></dt>
 <dd><p>Format bounds for SALib, starting from a dictionary of ranges for each
 parameter. The values for the parameters contained in ranges can be one of
 the following:
@@ -789,7 +790,7 @@ values for the parameter.
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sem.utils.get_command_from_result">
-<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">get_command_from_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.get_command_from_result" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">get_command_from_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.get_command_from_result" title="Link to this definition">¶</a></dt>
 <dd><p>Return the command that is needed to obtain a certain result.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -804,7 +805,7 @@ template.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sem.utils.list_param_combinations">
-<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">list_param_combinations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_ranges</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.list_param_combinations" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">list_param_combinations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_ranges</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.list_param_combinations" title="Link to this definition">¶</a></dt>
 <dd><p>Create a list of all parameter combinations from a dictionary specifying
 desired parameter values as lists.</p>
 <p class="rubric">Example</p>
@@ -823,14 +824,14 @@ desired parameter values as lists.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sem.utils.salib_param_values_to_params">
-<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">salib_param_values_to_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ranges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.salib_param_values_to_params" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">salib_param_values_to_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ranges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.salib_param_values_to_params" title="Link to this definition">¶</a></dt>
 <dd><p>Convert SALib’s parameter specification to a SEM-compatible parameter
 specification.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="sem.utils.stdout_automatic_parser">
-<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">stdout_automatic_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.stdout_automatic_parser" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">stdout_automatic_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.stdout_automatic_parser" title="Link to this definition">¶</a></dt>
 <dd><p>Try and automatically convert strings formatted as tables into a matrix.</p>
 <p>Under the hood, this function essentially applies the genfromtxt function
 to the stdout.</p>
@@ -953,11 +954,11 @@ to the stdout.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2021, Davide Magrin.
+      &#169;2021, Davide Magrin.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 7.1.2</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.13</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |
       <a href="_sources/api.rst.txt"
