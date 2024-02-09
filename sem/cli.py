@@ -235,9 +235,11 @@ def command(results_dir, result_id):
 
     click.echo("Simulation command:")
     click.echo(sem.utils.get_command_from_result(campaign.db.get_script(),
+                                                 campaign.dir,
                                                  result))
     click.echo("Debug command:")
     click.echo(sem.utils.get_command_from_result(campaign.db.get_script(),
+                                                 campaign.dir,
                                                  result,
                                                  debug=True))
 
