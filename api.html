@@ -35,15 +35,815 @@
 <h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h1>
 <section id="campaignmanager">
 <h2>CampaignManager<a class="headerlink" href="#campaignmanager" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="sem.CampaignManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sem.</span></span><span class="sig-name descname"><span class="pre">CampaignManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">campaign_db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">campaign_runner</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_repo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager" title="Link to this definition">¶</a></dt>
+<dd><p>This Simulation Execution Manager class can be used as an interface to
+execute simulations and access the results of simulation campaigns.</p>
+<p>The CampaignManager class wraps up a DatabaseManager and a
+SimulationRunner, which are used internally but can also be accessed as
+public member variables.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.check_repo_ok">
+<span class="sig-name descname"><span class="pre">check_repo_ok</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.check_repo_ok"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.check_repo_ok" title="Link to this definition">¶</a></dt>
+<dd><p>Make sure that the ns-3 repository’s HEAD commit is the same as the one
+saved in the campaign database, and that the ns-3 repository is clean
+(i.e., no untracked or modified files exist).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.create_runner">
+<span class="sig-name descname"><span class="pre">create_runner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runner_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_parallel_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.create_runner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.create_runner" title="Link to this definition">¶</a></dt>
+<dd><p>Create a SimulationRunner from a string containing the desired
+class implementation, and return it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ns_path</strong> (<em>str</em>) – path to the ns-3 installation to employ in this
+SimulationRunner.</p></li>
+<li><p><strong>script</strong> (<em>str</em>) – ns-3 script that will be executed to run simulations.</p></li>
+<li><p><strong>runner_type</strong> (<em>str</em>) – implementation of the SimulationRunner to use.
+Value can be: SimulationRunner (for running sequential
+simulations locally), ParallelRunner (for running parallel
+simulations locally), GridRunner (for running simulations using
+a DRMAA-compatible parallel task scheduler). If Auto,
+automatically pick the best available runner (GridRunner if
+DRMAA is available, ParallelRunner otherwise).</p></li>
+<li><p><strong>optimized</strong> (<em>bool</em>) – whether to configure the runner to employ an
+optimized ns-3 build.</p></li>
+<li><p><strong>skip_configuration</strong> (<em>bool</em>) – whether to skip the configuration step,
+and only perform compilation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.files_in_dictionary">
+<span class="sig-name descname"><span class="pre">files_in_dictionary</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.files_in_dictionary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.files_in_dictionary" title="Link to this definition">¶</a></dt>
+<dd><p>Parsing function that returns a dictionary containing one entry for
+each file. Typically used to perform parsing externally.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.get_missing_simulations">
+<span class="sig-name descname"><span class="pre">get_missing_simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_time_estimate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.get_missing_simulations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.get_missing_simulations" title="Link to this definition">¶</a></dt>
+<dd><p>Return a list of the simulations among the required ones that are not
+available in the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_list</strong> (<em>list</em>) – a list of dictionaries containing all the
+parameters combinations.</p></li>
+<li><p><strong>runs</strong> (<em>int</em>) – an integer representing how many repetitions are wanted
+for each parameter combination, None if the dictionaries in
+param_list already feature the desired RngRun value.</p></li>
+<li><p><strong>with_time_estimate</strong> (<em>bool</em>) – a boolean representing …</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.get_results_as_dataframe">
+<span class="sig-name descname"><span class="pre">get_results_as_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_constant_columns</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_parsing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.get_results_as_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.get_results_as_dataframe" title="Link to this definition">¶</a></dt>
+<dd><p>Return a Pandas DataFrame containing results parsed using a
+user-specified function.</p>
+<p>If function_yields_multiple_results if False, result_parsing_function is
+expected to return a list of outputs for each parsed result, and column
+should contain an equal number of labels describing the contents of the
+output list.</p>
+<p>If function_yields_multiple_results is True, instead,
+result_parsing_function is expected to return multiple lists of outputs,
+as described by the labels in columns, for each result. In this case,
+each result in the database will yield a number of rows in the output
+dataframe that is equal to the length of the result_parsing_function
+output computed on that result.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>result_parsing_function</strong> (<em>function</em>) – user-defined function, taking a
+result dictionary as input and returning a list of outputs or a list
+of lists of outputs.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.get_results_as_numpy_array">
+<span class="sig-name descname"><span class="pre">get_results_as_numpy_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_complete_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.get_results_as_numpy_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.get_results_as_numpy_array" title="Link to this definition">¶</a></dt>
+<dd><p>Return the results relative to the desired parameter space in the form
+of a numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameter_space</strong> (<em>dict</em>) – dictionary containing
+parameter/list-of-values pairs.</p></li>
+<li><p><strong>result_parsing_function</strong> (<em>function</em>) – user-defined function, taking a
+result dictionary as argument, that can be used to parse the
+result files and return a list of values.</p></li>
+<li><p><strong>runs</strong> (<em>int</em>) – number of runs to gather for each parameter
+combination.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.get_results_as_xarray">
+<span class="sig-name descname"><span class="pre">get_results_as_xarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_labels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_complete_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.get_results_as_xarray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.get_results_as_xarray" title="Link to this definition">¶</a></dt>
+<dd><p>Return the results relative to the desired parameter space in the form
+of an xarray data structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameter_space</strong> (<em>dict</em>) – The space of parameters to export.</p></li>
+<li><p><strong>result_parsing_function</strong> (<em>function</em>) – user-defined function, taking a
+result dictionary as argument, that can be used to parse the
+result files and return a list of values.</p></li>
+<li><p><strong>output_labels</strong> (<em>list</em>) – a list of labels to apply to the results
+dimensions, output by the result_parsing_function.</p></li>
+<li><p><strong>runs</strong> (<em>int</em>) – the number of runs to export for each parameter
+combination.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.get_space">
+<span class="sig-name descname"><span class="pre">get_space</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_result_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_complete_results</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.get_space"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.get_space" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a parameter space specification to a nested array structure
+representing the space. In other words, if the parameter space is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">param_space</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+    <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>the function will return a structure like the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+    <span class="p">[</span>
+        <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+    <span class="p">],</span>
+    <span class="p">[</span>
+        <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span>
+        <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>where the first dimension represents a, and the second dimension
+represents b. This nested-array structure can then be easily converted
+to a numpy array via np.array().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current_query</strong> (<em>dict</em>) – the query to apply to the structure.</p></li>
+<li><p><strong>param_space</strong> (<em>dict</em>) – representation of the parameter space.</p></li>
+<li><p><strong>result_parsing_function</strong> (<em>function</em>) – user-defined function to call
+on results, typically used to parse data and outputting
+metrics.</p></li>
+<li><p><strong>runs</strong> (<em>int</em>) – the number of runs to query for each parameter
+combination.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.load">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ns_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runner_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_repo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_parallel_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.load" title="Link to this definition">¶</a></dt>
+<dd><p>Load an existing simulation campaign.</p>
+<p>Note that specifying an ns-3 installation is not compulsory when using
+this method: existing results will be available, but in order to run
+additional simulations it will be necessary to specify a
+SimulationRunner object, and assign it to the CampaignManager.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>campaign_dir</strong> (<em>str</em>) – path to the directory in which to save the
+simulation campaign database.</p></li>
+<li><p><strong>ns_path</strong> (<em>str</em>) – path to the ns-3 installation to employ in this
+campaign.</p></li>
+<li><p><strong>runner_type</strong> (<em>str</em>) – implementation of the SimulationRunner to use.
+Value can be: SimulationRunner (for running sequential
+simulations locally), ParallelRunner (for running parallel
+simulations locally), GridRunner (for running simulations using
+a DRMAA-compatible parallel task scheduler).</p></li>
+<li><p><strong>optimized</strong> (<em>bool</em>) – whether to configure the runner to employ an
+optimized ns-3 build.</p></li>
+<li><p><strong>skip_configuration</strong> (<em>bool</em>) – whether to skip the configuration step,
+and only perform compilation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.new">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">new</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ns_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runner_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_repo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_parallel_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.new"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.new" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new campaign from an ns-3 installation and a campaign
+directory.</p>
+<p>This method will create a DatabaseManager, which will install a
+database in the specified campaign_dir. If a database is already
+available at the ns_path described in the specified campaign_dir and
+its configuration matches config, this instance is used instead. If the
+overwrite argument is set to True instead, the specified directory is
+wiped and a new campaign is created in its place.</p>
+<p>Furthermore, this method will initialize a SimulationRunner, of type
+specified by the runner_type parameter, which will be locked on the
+ns-3 installation at ns_path and set up to run the desired script.</p>
+<p>Finally, note that creation of a campaign requires a git repository to
+be initialized at the specified ns_path. This will allow SEM to save
+the commit at which the simulations are run, enforce reproducibility
+and avoid mixing results coming from different versions of ns-3 and its
+libraries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ns_path</strong> (<em>str</em>) – path to the ns-3 installation to employ in this
+campaign.</p></li>
+<li><p><strong>script</strong> (<em>str</em>) – ns-3 script that will be executed to run simulations.</p></li>
+<li><p><strong>campaign_dir</strong> (<em>str</em>) – path to the directory in which to save the
+simulation campaign database.</p></li>
+<li><p><strong>runner_type</strong> (<em>str</em>) – implementation of the SimulationRunner to use.
+Value can be: SimulationRunner (for running sequential
+simulations locally), ParallelRunner (for running parallel
+simulations locally), GridRunner (for running simulations using
+a DRMAA-compatible parallel task scheduler). Use Auto to
+automatically pick the best runner.</p></li>
+<li><p><strong>overwrite</strong> (<em>bool</em>) – whether to overwrite already existing
+campaign_dir folders. This deletes the directory if and only if
+it only contains files that were detected to be created by sem.</p></li>
+<li><p><strong>optimized</strong> (<em>bool</em>) – whether to configure the runner to employ an
+optimized ns-3 build.</p></li>
+<li><p><strong>skip_configuration</strong> (<em>bool</em>) – whether to skip the configuration step,
+and only perform compilation.
+NOTE: if skip_configuration=True and optimized=True, the build
+folder should be manually set to –out=build/optimized.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.run_missing_simulations">
+<span class="sig-name descname"><span class="pre">run_missing_simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_checking_function</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_on_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.run_missing_simulations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.run_missing_simulations" title="Link to this definition">¶</a></dt>
+<dd><p>Run the simulations from the parameter list that are not yet available
+in the database.</p>
+<p>This function also makes sure that we have at least runs replications
+for each parameter combination.</p>
+<p>Additionally, param_list can either be a list containing the desired
+parameter combinations or a dictionary containing multiple values for
+each parameter, to be expanded into a list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_list</strong> (<em>list</em><em>, </em><em>dict</em>) – either a list of parameter combinations or
+a dictionary to be expanded into a list through the
+list_param_combinations function.</p></li>
+<li><p><strong>runs</strong> (<em>int</em>) – the number of runs to perform for each parameter
+combination. This parameter is only allowed if the param_list
+specification doesn’t feature an ‘RngRun’ key already.</p></li>
+<li><p><strong>callbacks</strong> (<em>list</em>) – list of objects extending CallbackBase to be
+triggered during the run.</p></li>
+<li><p><strong>stop_on_errors</strong> (<em>bool</em>) – whether or not to stop the execution of the simulations
+if an error occurs.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.run_simulations">
+<span class="sig-name descname"><span class="pre">run_simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_on_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.run_simulations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.run_simulations" title="Link to this definition">¶</a></dt>
+<dd><p>Run several simulations specified by a list of parameter combinations.</p>
+<p>Note: this function does not verify whether we already have the
+required simulations in the database - it just runs all the parameter
+combinations that are specified in the list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_list</strong> (<em>list</em>) – list of parameter combinations to execute.
+Items of this list are dictionaries, with one key for each
+parameter, and a value specifying the parameter value (which
+can be either a string or a number).</p></li>
+<li><p><strong>show_progress</strong> (<em>bool</em>) – whether or not to show a progress bar with
+percentage and expected remaining time.</p></li>
+<li><p><strong>callbacks</strong> (<em>list</em>) – list of objects extending CallbackBase to be
+triggered during the run.</p></li>
+<li><p><strong>stop_on_errors</strong> (<em>bool</em>) – whether or not to stop the execution of the simulations
+if an error occurs.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.save_to_folders">
+<span class="sig-name descname"><span class="pre">save_to_folders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.save_to_folders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.save_to_folders" title="Link to this definition">¶</a></dt>
+<dd><p>Save results to a folder structure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.save_to_mat_file">
+<span class="sig-name descname"><span class="pre">save_to_mat_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.save_to_mat_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.save_to_mat_file" title="Link to this definition">¶</a></dt>
+<dd><p>Return the results relative to the desired parameter space in the form
+of a .mat file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameter_space</strong> (<em>dict</em>) – dictionary containing
+parameter/list-of-values pairs.</p></li>
+<li><p><strong>result_parsing_function</strong> (<em>function</em>) – user-defined function, taking a
+result dictionary as argument, that can be used to parse the
+result files and return a list of values.</p></li>
+<li><p><strong>filename</strong> (<em>path</em>) – name of output .mat file.</p></li>
+<li><p><strong>runs</strong> (<em>int</em>) – number of runs to gather for each parameter
+combination.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.save_to_npy_file">
+<span class="sig-name descname"><span class="pre">save_to_npy_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.save_to_npy_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.save_to_npy_file" title="Link to this definition">¶</a></dt>
+<dd><p>Save results to a numpy array file format.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.CampaignManager.space_to_folders">
+<span class="sig-name descname"><span class="pre">space_to_folders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_result_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_directory</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/manager.html#CampaignManager.space_to_folders"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.CampaignManager.space_to_folders" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a parameter space specification to a directory tree with a
+nested structure.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="simulationrunner">
 <h2>SimulationRunner<a class="headerlink" href="#simulationrunner" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="sem.SimulationRunner">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sem.</span></span><span class="sig-name descname"><span class="pre">SimulationRunner</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_parallel_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner" title="Link to this definition">¶</a></dt>
+<dd><p>The class tasked with running simulations and interfacing with the ns-3
+system.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.SimulationRunner.configure_and_build">
+<span class="sig-name descname"><span class="pre">configure_and_build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">show_progress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_configuration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner.configure_and_build"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner.configure_and_build" title="Link to this definition">¶</a></dt>
+<dd><p>Configure and build the ns-3 code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>show_progress</strong> (<em>bool</em>) – whether or not to display a progress bar
+during compilation.</p></li>
+<li><p><strong>optimized</strong> (<em>bool</em>) – whether to use an optimized build. If False, use
+a standard configure.</p></li>
+<li><p><strong>skip_configuration</strong> (<em>bool</em>) – whether to skip the configuration step,
+and only perform compilation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.SimulationRunner.get_available_parameters">
+<span class="sig-name descname"><span class="pre">get_available_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner.get_available_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner.get_available_parameters" title="Link to this definition">¶</a></dt>
+<dd><p>Return a list of the parameters made available by the script.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.SimulationRunner.get_build_output">
+<span class="sig-name descname"><span class="pre">get_build_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">process</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">build_program</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner.get_build_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner.get_build_output" title="Link to this definition">¶</a></dt>
+<dd><p>Parse the output of the ns-3 build process to extract the information
+that is needed to draw the progress bar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>process</strong> – the subprocess instance to listen to.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.SimulationRunner.run_simulations">
+<span class="sig-name descname"><span class="pre">run_simulations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameter_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">callbacks:</span> <span class="pre">[&lt;class</span> <span class="pre">'sem.utils.CallbackBase'&gt;]</span> <span class="pre">=</span> <span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_on_errors=False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/runner.html#SimulationRunner.run_simulations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.SimulationRunner.run_simulations" title="Link to this definition">¶</a></dt>
+<dd><p>Run several simulations using a certain combination of parameters.</p>
+<p>Yield results as simulations are completed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parameter_list</strong> (<em>list</em>) – list of parameter combinations to simulate.</p></li>
+<li><p><strong>data_folder</strong> (<em>str</em>) – folder in which to save subfolders containing
+simulation output.</p></li>
+<li><p><strong>callbacks</strong> (<em>list</em>) – list of callbacks to be triggered</p></li>
+<li><p><strong>stop_on_errors</strong> (<em>bool</em>) – if true, when a simulation outputs an error the whole campaign will be stopped</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="databasemanager">
 <h2>DatabaseManager<a class="headerlink" href="#databasemanager" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="sem.DatabaseManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sem.</span></span><span class="sig-name descname"><span class="pre">DatabaseManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager" title="Link to this definition">¶</a></dt>
+<dd><p>This serves as an interface with the simulation campaign database.</p>
+<p>A database can either be created from scratch or loaded, via the new and
+load &#64;classmethods.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.delete_result">
+<span class="sig-name descname"><span class="pre">delete_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.delete_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.delete_result" title="Link to this definition">¶</a></dt>
+<dd><p>Remove the specified result from the database, based on its id.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.get_all_values_of_all_params">
+<span class="sig-name descname"><span class="pre">get_all_values_of_all_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_all_values_of_all_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_all_values_of_all_params" title="Link to this definition">¶</a></dt>
+<dd><p>Return a dictionary containing all values that are taken by all
+available parameters.</p>
+<p>Always returns the parameter list in alphabetical order.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.get_commit">
+<span class="sig-name descname"><span class="pre">get_commit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_commit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_commit" title="Link to this definition">¶</a></dt>
+<dd><p>Return the commit at which the campaign is operating.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.get_complete_results">
+<span class="sig-name descname"><span class="pre">get_complete_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">files_to_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.*'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_complete_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_complete_results" title="Link to this definition">¶</a></dt>
+<dd><p>Return available results, analogously to what get_results does, but
+also read the corresponding output files for each result, and
+incorporate them in the result dictionary under the output key, as a
+dictionary of filename: file_contents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>params</strong> (<em>dict</em>) – parameter specification of the desired parameter
+values, as described in the get_results documentation.</p>
+</dd>
+</dl>
+<p>In other words, results returned by this function will be in the form:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;param1&#39;</span><span class="p">:</span> <span class="n">value1</span><span class="p">,</span>
+                <span class="s1">&#39;param2&#39;</span><span class="p">:</span> <span class="n">value2</span><span class="p">,</span>
+                <span class="o">...</span>
+                <span class="s1">&#39;RngRun&#39;</span><span class="p">:</span> <span class="n">value3</span>
+               <span class="p">},</span>
+    <span class="s1">&#39;meta&#39;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="s1">&#39;elapsed_time&#39;</span><span class="p">:</span> <span class="n">value4</span><span class="p">,</span>
+              <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">value5</span>
+            <span class="p">}</span>
+    <span class="s1">&#39;output&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;stdout&#39;</span><span class="p">:</span> <span class="n">stdout_as_string</span><span class="p">,</span>
+                <span class="s1">&#39;stderr&#39;</span><span class="p">:</span> <span class="n">stderr_as_string</span><span class="p">,</span>
+                <span class="s1">&#39;file1&#39;</span><span class="p">:</span> <span class="n">file1_as_string</span><span class="p">,</span>
+                <span class="o">...</span>
+              <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Note that the stdout and stderr entries are always included, even if
+they are empty.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.get_config">
+<span class="sig-name descname"><span class="pre">get_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_config" title="Link to this definition">¶</a></dt>
+<dd><p>Return the configuration dictionary of this DatabaseManager’s campaign.</p>
+<p>This is a dictionary containing the following keys:</p>
+<ul class="simple">
+<li><p>script: the name of the script that is executed in the campaign.</p></li>
+<li><p>params: a list of the command line parameters that can be used on the
+script.</p></li>
+<li><p>commit: the commit at which the campaign is operating.</p></li>
+</ul>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.get_data_dir">
+<span class="sig-name descname"><span class="pre">get_data_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_data_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_data_dir" title="Link to this definition">¶</a></dt>
+<dd><p>Return the data directory, which is simply campaign_directory/data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.get_next_rngruns">
+<span class="sig-name descname"><span class="pre">get_next_rngruns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_next_rngruns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_next_rngruns" title="Link to this definition">¶</a></dt>
+<dd><p>Yield the next RngRun values that can be used in this campaign.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.get_next_values">
+<span class="sig-name descname"><span class="pre">get_next_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_next_values"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_next_values" title="Link to this definition">¶</a></dt>
+<dd><p>Given a list of integers, this method yields the lowest integers that
+do not appear in the list.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">sem</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sem</span><span class="o">.</span><span class="n">DatabaseManager</span><span class="o">.</span><span class="n">get_next_values</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>[2, 5, 6, …]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.get_params">
+<span class="sig-name descname"><span class="pre">get_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_params" title="Link to this definition">¶</a></dt>
+<dd><p>Return a list containing the parameters that can be toggled.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.get_result_files">
+<span class="sig-name descname"><span class="pre">get_result_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_result_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_result_files" title="Link to this definition">¶</a></dt>
+<dd><p>Return a dictionary containing filename: filepath values for each
+output file associated with an id.</p>
+<p>Result can be either a result dictionary (e.g., obtained with the
+get_results() method) or a result id.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.get_results">
+<span class="sig-name descname"><span class="pre">get_results</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_results" title="Link to this definition">¶</a></dt>
+<dd><p>Return all the results available from the database that fulfill some
+parameter combinations.</p>
+<p>If params is None (or not specified), return all results.</p>
+<p>If params is specified, it must be a dictionary specifying the result
+values we are interested in, with multiple values specified as lists.</p>
+<p>For example, if the following params value is used:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+<span class="s1">&#39;param1&#39;</span><span class="p">:</span> <span class="s1">&#39;value1&#39;</span><span class="p">,</span>
+<span class="s1">&#39;param2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;value2&#39;</span><span class="p">,</span> <span class="s1">&#39;value3&#39;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>the database will be queried for results having param1 equal to value1,
+and param2 equal to value2 or value3.</p>
+<p>Not specifying a value for all the available parameters is allowed:
+unspecified parameters are assumed to be ‘free’, and can take any
+value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of results matching the query. Returned results have the
+same structure as results inserted with the insert_result method.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.get_script">
+<span class="sig-name descname"><span class="pre">get_script</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.get_script"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.get_script" title="Link to this definition">¶</a></dt>
+<dd><p>Return the ns-3 script that is run in the campaign.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.have_same_structure">
+<span class="sig-name descname"><span class="pre">have_same_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.have_same_structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.have_same_structure" title="Link to this definition">¶</a></dt>
+<dd><p>Given two dictionaries (possibly with other nested dictionaries as
+values), this function checks whether they have the same key structure.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">sem</span> <span class="kn">import</span> <span class="n">DatabaseManager</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d1</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d2</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d3</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">DatabaseManager</span><span class="o">.</span><span class="n">have_same_structure</span><span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">DatabaseManager</span><span class="o">.</span><span class="n">have_same_structure</span><span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">d3</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d4</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d5</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">},</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d6</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;c&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">},</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">DatabaseManager</span><span class="o">.</span><span class="n">have_same_structure</span><span class="p">(</span><span class="n">d1</span><span class="p">,</span> <span class="n">d4</span><span class="p">)</span>
+<span class="go">False</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">DatabaseManager</span><span class="o">.</span><span class="n">have_same_structure</span><span class="p">(</span><span class="n">d4</span><span class="p">,</span> <span class="n">d5</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">DatabaseManager</span><span class="o">.</span><span class="n">have_same_structure</span><span class="p">(</span><span class="n">d4</span><span class="p">,</span> <span class="n">d6</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.insert_result">
+<span class="sig-name descname"><span class="pre">insert_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.insert_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.insert_result" title="Link to this definition">¶</a></dt>
+<dd><p>Insert a new result in the database.</p>
+<p>This function also verifies that the result dictionaries saved in the
+database have the following structure (with {‘a’: 1} representing a
+dictionary, ‘a’ a key and 1 its value):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;param1&#39;</span><span class="p">:</span> <span class="n">value1</span><span class="p">,</span>
+                <span class="s1">&#39;param2&#39;</span><span class="p">:</span> <span class="n">value2</span><span class="p">,</span>
+                <span class="o">...</span>
+                <span class="s1">&#39;RngRun&#39;</span><span class="p">:</span> <span class="n">value3</span>
+               <span class="p">},</span>
+    <span class="s1">&#39;meta&#39;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="s1">&#39;elapsed_time&#39;</span><span class="p">:</span> <span class="n">value4</span><span class="p">,</span>
+              <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="n">value5</span>
+            <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Where elapsed time is a float representing the seconds the simulation
+execution took, and id is a UUID uniquely identifying the result, and
+which is used to locate the output files in the campaign_dir/data
+folder.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.load">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.load" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize from an existing database.</p>
+<p>It is assumed that the database json file has the same name as its
+containing folder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>campaign_dir</strong> (<em>str</em>) – The path to the campaign directory.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.new">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">new</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">commit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">campaign_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.new"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.new" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize a new class instance with a set configuration and filename.</p>
+<p>The created database has the same name of the campaign directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>script</strong> (<em>str</em>) – the ns-3 name of the script that will be used in this
+campaign;</p></li>
+<li><p><strong>commit</strong> (<em>str</em>) – the commit of the ns-3 installation that is used to
+run the simulations.</p></li>
+<li><p><strong>params</strong> (<em>list</em>) – a list of the parameters that can be used on the
+script.</p></li>
+<li><p><strong>campaign_dir</strong> (<em>str</em>) – The path of the file where to save the DB.</p></li>
+<li><p><strong>overwrite</strong> (<em>bool</em>) – Whether or not existing directories should be
+overwritten.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.DatabaseManager.wipe_results">
+<span class="sig-name descname"><span class="pre">wipe_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/sem/database.html#DatabaseManager.wipe_results"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#sem.DatabaseManager.wipe_results" title="Link to this definition">¶</a></dt>
+<dd><p>Remove all results from the database.</p>
+<p>This also removes all output files, and cannot be undone.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
-<section id="utils">
-<h2>Utils<a class="headerlink" href="#utils" title="Link to this heading">¶</a></h2>
+<section id="module-sem.utils">
+<span id="utils"></span><h2>Utils<a class="headerlink" href="#module-sem.utils" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="sem.utils.CallbackBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">CallbackBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.CallbackBase" title="Link to this definition">¶</a></dt>
+<dd><p>Base class for SEM callbacks.
+:param verbose: Verbosity level: 0 for no output, 1 for info messages, 2 for debug messages</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.utils.CallbackBase.init_callback">
+<span class="sig-name descname"><span class="pre">init_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">controlled_by_parent</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#sem.utils.CallbackBase.init_callback" title="Link to this definition">¶</a></dt>
+<dd><p>Initialize the callback.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.utils.CallbackBase.is_controlled_by_parent">
+<span class="sig-name descname"><span class="pre">is_controlled_by_parent</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#sem.utils.CallbackBase.is_controlled_by_parent" title="Link to this definition">¶</a></dt>
+<dd><p>Whether this runner is aware of all simulations (false)
+or it has been triggered by a multithread runner and is thus
+aware of a subset of all runs only (true).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.utils.CallbackBase.on_run_end">
+<span class="sig-name descname"><span class="pre">on_run_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sim_uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_code</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#sem.utils.CallbackBase.on_run_end" title="Link to this definition">¶</a></dt>
+<dd><p>This method will be called when each simulation run finishes
+# TODO maybe it does not make a lot of sense since this will be eventually overridden by the callback user
+:return: If the callback returns False, a run has failed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sem.utils.CallbackBase.on_run_start">
+<span class="sig-name descname"><span class="pre">on_run_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configuration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sim_uuid</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#sem.utils.CallbackBase.on_run_start" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>configuration</strong> (<em>dict</em>) – dictionary representing the combination of parameters simulated in this specific</p></li>
+<li><p><strong>sim_uuid</strong> (<em>str</em>) – unique identifier string for the simulation. This value is used to name the result folder,
+and it is referenced in the result JSON file.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sem.utils.automatic_parser">
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">automatic_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtypes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">converters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.automatic_parser" title="Link to this definition">¶</a></dt>
+<dd><p>Try and automatically convert strings formatted as tables into nested
+list structures.</p>
+<p>Under the hood, this function essentially applies the genfromtxt function
+to all files in the output, and passes it the additional kwargs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>result</strong> (<em>dict</em>) – the result to parse.</p></li>
+<li><p><strong>dtypes</strong> (<em>dict</em>) – a dictionary containing the dtype specification to perform
+parsing for each available filename. See the numpy genfromtxt
+documentation for more details on how to format these.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sem.utils.compute_sensitivity_analysis">
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">compute_sensitivity_analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">campaign</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result_parsing_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ranges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">salib_sample_function=&lt;function</span> <span class="pre">sample&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">salib_analyze_function=&lt;function</span> <span class="pre">analyze&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples=100</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.compute_sensitivity_analysis" title="Link to this definition">¶</a></dt>
+<dd><p>Compute sensitivity analysis on a campaign using the passed SALib sample
+and analyze functions.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sem.utils.constant_array_parser">
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">constant_array_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.constant_array_parser" title="Link to this definition">¶</a></dt>
+<dd><p>Dummy parser, used for testing purposes.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sem.utils.get_bounds">
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">get_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ranges</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.get_bounds" title="Link to this definition">¶</a></dt>
+<dd><p>Format bounds for SALib, starting from a dictionary of ranges for each
+parameter. The values for the parameters contained in ranges can be one of
+the following:
+1. A dictionary containing min and max keys, describing a range of possible
+values for the parameter.
+2. A list of allowed values for the parameter.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sem.utils.get_command_from_result">
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">get_command_from_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">script</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">result</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.get_command_from_result" title="Link to this definition">¶</a></dt>
+<dd><p>Return the command that is needed to obtain a certain result.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>params</strong> (<em>dict</em>) – Dictionary containing parameter: value pairs.</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – The path to the ns-3 folder, used to discern which
+build system (waf/CMake) is used</p></li>
+<li><p><strong>debug</strong> (<em>bool</em>) – Whether the command should include the debugging
+template.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sem.utils.list_param_combinations">
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">list_param_combinations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_ranges</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.list_param_combinations" title="Link to this definition">¶</a></dt>
+<dd><p>Create a list of all parameter combinations from a dictionary specifying
+desired parameter values as lists.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">param_ranges</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list_param_combinations</span><span class="p">(</span><span class="n">param_ranges</span><span class="p">)</span>
+<span class="go">[{&#39;a&#39;: 1, &#39;b&#39;: 2}, {&#39;a&#39;: 1, &#39;b&#39;: 3}]</span>
+</pre></div>
+</div>
+<p>Additionally, this function is robust in case values are not lists:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">param_ranges</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">list_param_combinations</span><span class="p">(</span><span class="n">param_ranges</span><span class="p">)</span>
+<span class="go">[{&#39;a&#39;: 1, &#39;b&#39;: 2}, {&#39;a&#39;: 1, &#39;b&#39;: 3}]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sem.utils.salib_param_values_to_params">
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">salib_param_values_to_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ranges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.salib_param_values_to_params" title="Link to this definition">¶</a></dt>
+<dd><p>Convert SALib’s parameter specification to a SEM-compatible parameter
+specification.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="sem.utils.stdout_automatic_parser">
+<span class="sig-prename descclassname"><span class="pre">sem.utils.</span></span><span class="sig-name descname"><span class="pre">stdout_automatic_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">result</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sem.utils.stdout_automatic_parser" title="Link to this definition">¶</a></dt>
+<dd><p>Try and automatically convert strings formatted as tables into a matrix.</p>
+<p>Under the hood, this function essentially applies the genfromtxt function
+to the stdout.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>result</strong> (<em>dict</em>) – the result to parse.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 
@@ -57,10 +857,79 @@
 <h3><a href="index.html">Contents</a></h3>
 <ul>
 <li><a class="reference internal" href="#">API Reference</a><ul>
-<li><a class="reference internal" href="#campaignmanager">CampaignManager</a></li>
-<li><a class="reference internal" href="#simulationrunner">SimulationRunner</a></li>
-<li><a class="reference internal" href="#databasemanager">DatabaseManager</a></li>
-<li><a class="reference internal" href="#utils">Utils</a></li>
+<li><a class="reference internal" href="#campaignmanager">CampaignManager</a><ul>
+<li><a class="reference internal" href="#sem.CampaignManager"><code class="docutils literal notranslate"><span class="pre">CampaignManager</span></code></a><ul>
+<li><a class="reference internal" href="#sem.CampaignManager.check_repo_ok"><code class="docutils literal notranslate"><span class="pre">CampaignManager.check_repo_ok()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.create_runner"><code class="docutils literal notranslate"><span class="pre">CampaignManager.create_runner()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.files_in_dictionary"><code class="docutils literal notranslate"><span class="pre">CampaignManager.files_in_dictionary()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.get_missing_simulations"><code class="docutils literal notranslate"><span class="pre">CampaignManager.get_missing_simulations()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.get_results_as_dataframe"><code class="docutils literal notranslate"><span class="pre">CampaignManager.get_results_as_dataframe()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.get_results_as_numpy_array"><code class="docutils literal notranslate"><span class="pre">CampaignManager.get_results_as_numpy_array()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.get_results_as_xarray"><code class="docutils literal notranslate"><span class="pre">CampaignManager.get_results_as_xarray()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.get_space"><code class="docutils literal notranslate"><span class="pre">CampaignManager.get_space()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.load"><code class="docutils literal notranslate"><span class="pre">CampaignManager.load()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.new"><code class="docutils literal notranslate"><span class="pre">CampaignManager.new()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.run_missing_simulations"><code class="docutils literal notranslate"><span class="pre">CampaignManager.run_missing_simulations()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.run_simulations"><code class="docutils literal notranslate"><span class="pre">CampaignManager.run_simulations()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.save_to_folders"><code class="docutils literal notranslate"><span class="pre">CampaignManager.save_to_folders()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.save_to_mat_file"><code class="docutils literal notranslate"><span class="pre">CampaignManager.save_to_mat_file()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.save_to_npy_file"><code class="docutils literal notranslate"><span class="pre">CampaignManager.save_to_npy_file()</span></code></a></li>
+<li><a class="reference internal" href="#sem.CampaignManager.space_to_folders"><code class="docutils literal notranslate"><span class="pre">CampaignManager.space_to_folders()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#simulationrunner">SimulationRunner</a><ul>
+<li><a class="reference internal" href="#sem.SimulationRunner"><code class="docutils literal notranslate"><span class="pre">SimulationRunner</span></code></a><ul>
+<li><a class="reference internal" href="#sem.SimulationRunner.configure_and_build"><code class="docutils literal notranslate"><span class="pre">SimulationRunner.configure_and_build()</span></code></a></li>
+<li><a class="reference internal" href="#sem.SimulationRunner.get_available_parameters"><code class="docutils literal notranslate"><span class="pre">SimulationRunner.get_available_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#sem.SimulationRunner.get_build_output"><code class="docutils literal notranslate"><span class="pre">SimulationRunner.get_build_output()</span></code></a></li>
+<li><a class="reference internal" href="#sem.SimulationRunner.run_simulations"><code class="docutils literal notranslate"><span class="pre">SimulationRunner.run_simulations()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#databasemanager">DatabaseManager</a><ul>
+<li><a class="reference internal" href="#sem.DatabaseManager"><code class="docutils literal notranslate"><span class="pre">DatabaseManager</span></code></a><ul>
+<li><a class="reference internal" href="#sem.DatabaseManager.delete_result"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.delete_result()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_all_values_of_all_params"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_all_values_of_all_params()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_commit"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_commit()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_complete_results"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_complete_results()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_config"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_config()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_data_dir"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_data_dir()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_next_rngruns"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_next_rngruns()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_next_values"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_next_values()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_params"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_params()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_result_files"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_result_files()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_results"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_results()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.get_script"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.get_script()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.have_same_structure"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.have_same_structure()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.insert_result"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.insert_result()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.load"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.load()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.new"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.new()</span></code></a></li>
+<li><a class="reference internal" href="#sem.DatabaseManager.wipe_results"><code class="docutils literal notranslate"><span class="pre">DatabaseManager.wipe_results()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-sem.utils">Utils</a><ul>
+<li><a class="reference internal" href="#sem.utils.CallbackBase"><code class="docutils literal notranslate"><span class="pre">CallbackBase</span></code></a><ul>
+<li><a class="reference internal" href="#sem.utils.CallbackBase.init_callback"><code class="docutils literal notranslate"><span class="pre">CallbackBase.init_callback()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.CallbackBase.is_controlled_by_parent"><code class="docutils literal notranslate"><span class="pre">CallbackBase.is_controlled_by_parent()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.CallbackBase.on_run_end"><code class="docutils literal notranslate"><span class="pre">CallbackBase.on_run_end()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.CallbackBase.on_run_start"><code class="docutils literal notranslate"><span class="pre">CallbackBase.on_run_start()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sem.utils.automatic_parser"><code class="docutils literal notranslate"><span class="pre">automatic_parser()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.compute_sensitivity_analysis"><code class="docutils literal notranslate"><span class="pre">compute_sensitivity_analysis()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.constant_array_parser"><code class="docutils literal notranslate"><span class="pre">constant_array_parser()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.get_bounds"><code class="docutils literal notranslate"><span class="pre">get_bounds()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.get_command_from_result"><code class="docutils literal notranslate"><span class="pre">get_command_from_result()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.list_param_combinations"><code class="docutils literal notranslate"><span class="pre">list_param_combinations()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.salib_param_values_to_params"><code class="docutils literal notranslate"><span class="pre">salib_param_values_to_params()</span></code></a></li>
+<li><a class="reference internal" href="#sem.utils.stdout_automatic_parser"><code class="docutils literal notranslate"><span class="pre">stdout_automatic_parser()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
