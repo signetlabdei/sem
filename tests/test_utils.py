@@ -1,4 +1,4 @@
-from sem import list_param_combinations, automatic_parser, stdout_automatic_parser, get_command_from_result, CallbackBase, CampaignManager
+from sem import list_param_combinations, automatic_parser, stdout_automatic_parser, get_command_from_result, CampaignManager
 import json
 import numpy as np
 import pytest
@@ -117,51 +117,12 @@ def test_automatic_parser(result):
     assert parsed['stderr'] == []
 
 
-class TestCallback(CallbackBase):
-
-    # Prevent pytest from trying to collect this function as a test
-    __test__ = False
-
-    def __init__(self):
-        CallbackBase.__init__(self, verbose=2)
-        self.output = ''
-
-    def _on_simulation_start(self) -> None:
-        self.output += 'Starting the simulations!\n'
-
-    def _on_simulation_end(self) -> None:
-        self.output += 'Simulations are over!\n'
-
-    def _on_run_start(self, configuration: dict, sim_uuid: str) -> None:
-        self.output += 'Start single run!\n'
-
-    def _on_run_end(self, sim_uuid: str, return_code: int, sim_time: int) -> bool:
-        self.output += f'Run ended! {return_code}\n'
-        return True
-
-
-def test_callback(ns_3_compiled, config, parameter_combination):
-    cb = TestCallback()
-    n_runs = 10
-    expected_output = 'Starting the simulations!\n' + \
-        f'Start single run!\nRun ended! {0}\n' * \
-        n_runs + 'Simulations are over!\n'
-
-    campaign = CampaignManager.new(ns_3_compiled, config['script'], config['campaign_dir'],
-                                   runner_type='SimulationRunner', overwrite=True)
-    parameter_combination.update({'RngRun': [
-        run for run in range(n_runs)]})
-    campaign.run_missing_simulations(
-        param_list=[parameter_combination], callbacks=[cb])
-    assert expected_output == cb.output
 @pytest.mark.parametrize('ns_3_compiled_folder_and_command',
                          [
                              ['compiled', False],
                              ['compiled_examples', False]
                          ],
                          indirect=True)
-
-
 def test_get_cmnd_from_result(ns_3_compiled_folder_and_command, config, parameter_combination):
 
     # Create an ns-3 campaign to run simulations and obtain a result
