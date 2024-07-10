@@ -10,12 +10,12 @@ You can easily install SEM using pip:
 
    pip3 install --user sem
 
-To get the latest development version, install directly from the develop branch
+To get the latest development version, install directly from the latest commit on the master branch
 of the Github repository:
 
 .. code:: bash
 
-  pip3 install --user -U https://github.com/signetlabdei/sem/archive/develop.zip
+  pip3 install --user -U https://github.com/signetlabdei/sem/archive/master.zip
 
 This will install the sem package and its dependencies in your current python
 library path. This same command can also be re-issued to update the library.
@@ -45,4 +45,4 @@ release with the following command:
 
 .. code:: bash
 
-  git checkout ns-3.33
+  git checkout ns-3.42
