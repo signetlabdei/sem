@@ -11,7 +11,9 @@ import types
 from .utils import CallbackBase
 
 from tqdm import tqdm
+from typing import Final
 
+SIGKILL_CODE: Final = -9    # POSIX return code which usually corresponds to out of memory events.
 
 class SimulationRunner(object):
     """
@@ -352,21 +354,30 @@ class SimulationRunner(object):
 
                 with open(stdout_file_path, 'r') as stdout_file, open(
                         stderr_file_path, 'r') as stderr_file:
-                    complete_command = sem.utils.get_command_from_result(self.script, current_result)
-                    complete_command_debug = sem.utils.get_command_from_result(self.script, current_result, debug=True)
-                    error_message = ('\nSimulation exited with an error.\n'
-                                     'Params: %s\n'
-                                     'Stderr: %s\n'
-                                     'Stdout: %s\n'
-                                     'Use this command to reproduce:\n'
-                                     '%s\n'
-                                     'Debug with gdb:\n'
-                                     '%s'
-                                     % (parameter,
-                                        stderr_file.read(),
-                                        stdout_file.read(),
-                                        complete_command,
-                                        complete_command_debug))
+                    common_error_message = ('Params: %s\n'
+                                            'Stderr: %s\n'
+                                            'Stdout: %s\n'
+                                            'Return code: %d\n'
+                                            % (parameter,
+                                               stderr_file.read(),
+                                               stdout_file.read(),
+                                               return_code))
+                    if return_code == SIGKILL_CODE:
+                        error_message = '\nSimulation was killed. Possible causes may include an out of memory error.\n' + \
+                                        'Check kernel logs (dmesg, for instance) to confirm.\n' + \
+                                        common_error_message 
+                    else:
+                        complete_command = sem.utils.get_command_from_result(self.script, current_result)
+                        complete_command_debug = sem.utils.get_command_from_result(self.script, current_result, debug=True)
+                        error_message = '\nSimulation exited with an error.\n' + \
+                                        common_error_message + \
+                                        ('Use this command to reproduce:\n'
+                                         '%s\n'
+                                         'Debug with gdb:\n'
+                                         '%s'
+                                         % (complete_command,
+                                            complete_command_debug))
+                                            
                     if stop_on_errors:
                         raise Exception(error_message)
                     print(error_message) 
