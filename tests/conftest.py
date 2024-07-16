@@ -42,7 +42,7 @@ def ns_3_compiled(tmpdir):
 
     # Relocate build by running the same command in the new directory
     if subprocess.call([build_program, 'configure', '--disable-gtk',
-                        '--build-profile=optimized', '--enable-modules=core',
+                        '--build-profile=optimized', '--enable-modules=core', '--enable-examples',
                         '--out=build/optimized'],
                        cwd=ns_3_tempdir,
                        stdout=subprocess.DEVNULL,
@@ -70,7 +70,7 @@ def ns_3_compiled_debug(tmpdir):
 
     # Relocate build by running the same command in the new directory
     if subprocess.call([build_program, 'configure', '--disable-gtk',
-                        '--build-profile=debug', '--enable-modules=core',
+                        '--build-profile=debug', '--enable-modules=core', '--enable-examples',
                         '--out=build'],
                        cwd=ns_3_tempdir,
                        stdout=subprocess.DEVNULL,
@@ -85,6 +85,26 @@ def ns_3_compiled_debug(tmpdir):
 
     return ns_3_tempdir
 
+@pytest.fixture(scope='function')
+def ns_3_compiled_examples():
+    # Configure and build WAF-based ns-3
+    build_program = get_build_program(ns_3_examples)
+
+    if subprocess.call([build_program, 'configure', '--disable-gtk',
+                        '--build-profile=optimized', '--enable-modules=core',
+                        '--out=build/optimized'],
+                       cwd=ns_3_examples,
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.STDOUT) != 0:
+        raise Exception("Examples configuration failed.")
+    
+    if subprocess.call([build_program, 'build'],
+                       cwd=ns_3_examples,
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL) > 0:
+        raise Exception("Examples build failed.")
+    
+    return ns_3_examples
 
 @pytest.fixture(scope='function')
 def config(tmpdir, ns_3_compiled):
