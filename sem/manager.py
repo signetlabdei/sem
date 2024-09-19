@@ -587,11 +587,11 @@ class CampaignManager(object):
         if parallel_parsing:
             with Pool(processes=self.runner.max_parallel_processes) as pool:
                 for parsed_result in tqdm(pool.imap_unordered(parse_result,
-                                                              [[self.db.get_complete_results(result_id=result['meta']['id'],
+                                                              ([self.db.get_complete_results(result_id=result['meta']['id'],
                                                                                              files_to_load=files_to_load)[0],
                                                                 function_yields_multiple_results,
                                                                 result_parsing_function,
-                                                                param_columns] for result in results_list]),
+                                                                param_columns] for result in results_list)),
                                           total=len(results_list),
                                           unit='result',
                                           desc='Parsing Results',
