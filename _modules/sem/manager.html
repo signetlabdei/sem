@@ -641,11 +641,11 @@
         <span class="k">if</span> <span class="n">parallel_parsing</span><span class="p">:</span>
             <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">runner</span><span class="o">.</span><span class="n">max_parallel_processes</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">parsed_result</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">imap_unordered</span><span class="p">(</span><span class="n">parse_result</span><span class="p">,</span>
-                                                              <span class="p">[[</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">get_complete_results</span><span class="p">(</span><span class="n">result_id</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
+                                                              <span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">get_complete_results</span><span class="p">(</span><span class="n">result_id</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">],</span>
                                                                                              <span class="n">files_to_load</span><span class="o">=</span><span class="n">files_to_load</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
                                                                 <span class="n">function_yields_multiple_results</span><span class="p">,</span>
                                                                 <span class="n">result_parsing_function</span><span class="p">,</span>
-                                                                <span class="n">param_columns</span><span class="p">]</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results_list</span><span class="p">]),</span>
+                                                                <span class="n">param_columns</span><span class="p">]</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results_list</span><span class="p">)),</span>
                                           <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">results_list</span><span class="p">),</span>
                                           <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;result&#39;</span><span class="p">,</span>
                                           <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Parsing Results&#39;</span><span class="p">,</span>
@@ -1011,7 +1011,7 @@
           
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
         <div class="sphinxsidebarwrapper"><h3><a href="../../index.html">Home</a></h3><div class="relations">
 <h3>Related Topics</h3>
 <ul>
@@ -1039,7 +1039,7 @@
       &#169;2021, Davide Magrin.
       
       |
-      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.3.7</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
       &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
     </div>
