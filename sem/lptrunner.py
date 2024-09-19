@@ -1,9 +1,8 @@
 from .runner import SimulationRunner
-from multiprocessing import Pool, Queue, Lock, Array, cpu_count
+from multiprocessing import Pool, Queue, Lock, Array
 import queue
 import numpy as np
 from copy import deepcopy
-import itertools
 
 
 def have_same_combination(dict1, dict2):

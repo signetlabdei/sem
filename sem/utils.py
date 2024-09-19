@@ -2,14 +2,11 @@ import io
 import math
 import copy
 import warnings
-from itertools import product
 from functools import wraps
 from abc import ABC, abstractmethod
-from typing import Dict, Any
 
-import matplotlib.pyplot as plt
 import numpy as np
-import numpy.core.numeric as nx
+import numpy._core.numeric as nx
 import SALib.analyze.sobol
 import SALib.sample.saltelli
 

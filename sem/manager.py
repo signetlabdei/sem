@@ -1,5 +1,4 @@
 import collections
-import gc
 import os
 import shutil
 from copy import deepcopy
@@ -16,9 +15,7 @@ from tqdm import tqdm
 
 from .database import DatabaseManager
 from .lptrunner import LptRunner
-from .parallelrunner import ParallelRunner
 from .conditionalrunner import ConditionalRunner
-from .runner import SimulationRunner
 from .utils import DRMAA_AVAILABLE, list_param_combinations
 import pandas as pd
 

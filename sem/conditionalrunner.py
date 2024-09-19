@@ -2,9 +2,6 @@ from .runner import SimulationRunner
 from multiprocessing import Pool, Queue, Lock, Array, cpu_count
 import queue
 import copy
-import numpy as np
-from copy import deepcopy
-import itertools
 from tqdm import tqdm
 
 
